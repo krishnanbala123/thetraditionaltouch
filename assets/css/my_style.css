@@ -1,0 +1,271 @@
+/* Desktop - Default (3 Columns) */
+.footer-row-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Forces exactly 3 equal columns */
+  gap: 40px;
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Ensure the brand section stays left-aligned on desktop */
+.footer-grid {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  align-items: center;
+}
+
+.footer-grid h4 {
+  margin-bottom: 25px;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+/* Responsive Arrow & List Alignment */
+.footer-list,
+.footer-contact {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left; /* Keeps text left-aligned on desktop */
+}
+
+.footer-list li,
+.footer-contact li {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center; /* Vertically centers the arrow with the text */
+}
+
+.footer-list li a,
+.footer-contact li a {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  transition: 0.3s;
+}
+
+/* Tablet & Mobile Screens (991px and below) */
+@media (max-width: 991px) {
+  .footer-row-grid {
+    grid-template-columns: 1fr; /* Stack columns */
+    gap: 40px;
+    text-align: center;
+  }
+
+  .footer-grid {
+    align-items: center; /* Centers items like logo and headings */
+  }
+
+  .footer-grid p {
+    text-align: center !important;
+  }
+
+  /* Keep the list items centered but the arrows next to them */
+  .footer-list,
+  .footer-contact {
+    display: inline-block; /* Allows the container to shrink to text width */
+    text-align: left; /* Keeps the arrow to the left of the text */
+  }
+
+  .footer-social {
+    justify-content: center !important;
+    width: 100%;
+  }
+}
+@media (max-width: 575px) {
+  .subfooter .container p {
+    padding-bottom: 40px;
+    font-size: 15px;
+  }
+} /* Desktop only - Fix Contact Us alignment */
+@media (min-width: 992px) {
+  .footer-grid:nth-child(3) {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .footer-grid:nth-child(3) h4 {
+    text-align: left;
+    width: 100%;
+  }
+
+  .footer-grid:nth-child(3) .footer-contact {
+    text-align: left;
+  }
+}
+/* Desktop only - Move Contact Us slightly right */
+@media (min-width: 992px) {
+  .footer-grid:nth-child(3) {
+    margin-left: 50px; /* adjust value (30px / 50px) based on need */
+  }
+}
+@media (min-width: 992px) {
+  .footer-grid:nth-child(2) {
+    align-items: center; /* keep center position */
+  }
+
+  .footer-grid:nth-child(2) .footer-list {
+    width: 200px; /* important fix */
+    margin: 0 auto; /* center the block */
+  }
+
+  .footer-grid:nth-child(2) h4 {
+    width: 200px; /* same width as list */
+    margin: 0 auto 20px;
+    text-align: left;
+  }
+}
+/* Move Explore Us slightly to right (Desktop only) */
+@media (min-width: 992px) {
+  .footer-grid:nth-child(2) {
+    transform: translateX(40px); /* adjust 20px / 40px if needed */
+  }
+}
+.subfooter a.footer-link {
+  color: #ffffff !important; /* default color */
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.subfooter a.footer-link:hover {
+  color: #2384bd !important; /* hover color */
+}
+
+.map-container {
+  width: 100%;
+  height: 500px;
+  margin-bottom: 40px;
+  padding: 0 130px;
+  border-radius: 10px;
+}
+
+.map-container iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 10px;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .map-container {
+    padding: 0 60px;
+    height: 350px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .map-container {
+    padding: 0 20px;
+    height: 300px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .map-container {
+    padding: 0 10px;
+    height: 250px;
+  }
+}
+
+/* one big image card */
+/* .about-us .img-wrap img {
+  width: 100%;
+  height: 640px;
+  object-fit: cover;
+}
+
+@media (max-width: 992px) {
+  .about-us .img-wrap img {
+    height: 400px;
+  }
+}
+
+@media (max-width: 576px) {
+  .about-us .img-wrap img {
+    height: 250px;
+  }
+} */
+
+/* 4 image card  */
+.about-us .img-wrap img {
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  height: 320px;
+}
+
+@media (max-width: 991px) {
+  .about-us .img-wrap img {
+    height: 280px;
+  }
+}
+
+@media (max-width: 575px) {
+  .about-us .img-wrap img {
+    height: 220px;
+  }
+}
+
+/* 📱 MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .cdxshopping-cart .cart-tbl th,
+  .cdxshopping-cart .cart-tbl td {
+    font-size: 13px;
+    padding: 10px 8px;
+    min-width: 120px;
+  }
+
+  .cdxshopping-cart .cart-tbl .product-imgwrap img {
+    width: 60px;
+  }
+
+  .cdxshopping-cart .pro-quantity .form-control {
+    width: 40px;
+    text-align: center;
+    padding: 5px;
+  }
+
+  .cdxshopping-cart .input-group-text {
+    padding: 5px 8px;
+  }
+
+  .cdxshopping-cart .cartbtn-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cdxshopping-cart .group-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cdxshopping-cart .group-btn .btn {
+    width: 100%;
+  }
+
+  .cdxshopping-cart .cartbtn-group > div {
+    width: 100%;
+  }
+}
+
+/* 📲 EXTRA SMALL DEVICES */
+@media (max-width: 480px) {
+  .cdxshopping-cart .cart-tbl th,
+  .cdxshopping-cart .cart-tbl td {
+    font-size: 12px;
+    min-width: 100px;
+  }
+
+  .cdxshopping-cart .cart-tbl .product-imgwrap img {
+    width: 50px;
+  }
+}
