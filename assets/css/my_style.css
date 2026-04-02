@@ -270,10 +270,18 @@
   }
 }
 
+@media (max-width: 375px) {
+  .fashion-slider .fashion-contain > div {
+    text-align: center;
+    padding: 63px 50px;
+    border-radius: 10px;
+    background-color: rgba(10, 31, 45, 0.8);
+  }
+}
 @media (max-width: 425px) {
   .fashion-slider .fashion-contain > div {
     text-align: center;
-    padding: 60px 50px;
+    padding: 65px 50px;
     border-radius: 10px;
     background-color: rgba(10, 31, 45, 0.8);
   }
