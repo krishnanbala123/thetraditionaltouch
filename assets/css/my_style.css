@@ -286,3 +286,9 @@
     background-color: rgba(10, 31, 45, 0.8);
   }
 }
+
+@media (max-width: 576px) {
+  .bg-primary {
+    background-image: url("./assets/images/dress/mobile_banner_1.png") !important;
+  }
+}
