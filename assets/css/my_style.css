@@ -270,15 +270,7 @@
   }
 }
 
-@media (max-width: 375px) {
-  .fashion-slider .fashion-contain > div {
-    text-align: center;
-    padding: 60px 50px;
-    border-radius: 10px;
-    background-color: rgba(10, 31, 45, 0.8);
-  }
-}
-@media (max-width: 425px) {
+/* @media (max-width: 375px) {
   .fashion-slider .fashion-contain > div {
     text-align: center;
     padding: 70px 50px;
@@ -286,9 +278,179 @@
     background-color: rgba(10, 31, 45, 0.8);
   }
 }
+@media (max-width: 425px) {
+  .fashion-slider .fashion-contain > div {
+    text-align: center;
+    padding: 80px 50px;
+    border-radius: 10px;
+    background-color: rgba(10, 31, 45, 0.8);
+  }
+} */
 
 @media (max-width: 576px) {
   .bg-primary {
     background-image: url("./assets/images/dress/mobile_banner_1.png") !important;
+  }
+}
+@media (max-width: 1199px) {
+  .menu-list .close-menu {
+    padding: 11px 20px;
+    display: block;
+  }
+}
+/* Cart buttons - mobile fix */
+@media (max-width: 576px) {
+  .cartbtn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cartbtn-group .btn,
+  .cartbtn-group .group-btn .btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+
+  .cartbtn-group .group-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .cartbtn-group > div {
+    width: 100%;
+  }
+}
+.cdxshopping-cart .group-btn .btn:nth-child(n + 2) {
+  margin-left: 0px;
+}
+
+/* ===== LOGIN & REGISTER - NO SCROLL FIX ===== */
+
+/* html, body {
+  height: 100%;
+  overflow: hidden;
+} */
+
+/* Login page fix */
+.auth-main {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Register page fix */
+.authentication-wrap section {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.authentication-wrap .container {
+  height: auto !important;
+}
+
+.authentication-wrap .row {
+  justify-content: center;
+  width: 100%;
+}
+
+/* Both pages - box compact */
+.codex-authbox {
+  padding: 30px 50px !important;
+}
+
+.codex-authbox .auth-header {
+  margin-bottom: 15px !important;
+}
+
+.codex-authbox .auth-header .codex-brand {
+  margin-bottom: 8px !important;
+}
+
+.codex-authbox .auth-header .codex-brand img {
+  width: 65px !important;
+}
+
+.codex-authbox .auth-header h3 {
+  font-size: 17px !important;
+  margin-bottom: 3px !important;
+}
+
+.codex-authbox .auth-header h6 {
+  font-size: 12px !important;
+}
+
+.codex-authbox .form-group {
+  margin-bottom: 8px !important;
+}
+
+.codex-authbox .form-label {
+  font-size: 12px !important;
+  margin-bottom: 3px !important;
+}
+
+.codex-authbox .form-control {
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+}
+
+.codex-authbox .btn {
+  margin-top: 10px !important;
+  font-size: 15px !important;
+  padding: 8px 20px !important;
+}
+
+.codex-authbox .auth-footer {
+  margin-top: 12px !important;
+}
+
+.codex-authbox .auth-footer .auth-with {
+  margin-bottom: 10px !important;
+  font-size: 13px !important;
+}
+
+.codex-authbox .auth-footer .login-list li a {
+  padding: 8px 15px !important;
+  font-size: 13px !important;
+}
+
+.codex-authbox .auth-footer .login-list li + li {
+  margin-left: 10px !important;
+}
+
+/* Remember me & Forgot password - mobile fix */
+@media (max-width: 576px) {
+  .codex-authbox .auth-remember {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+  }
+
+  .codex-authbox .auth-remember .form-check {
+    display: flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+    margin: 0 !important;
+  }
+
+  .codex-authbox .auth-remember .form-check-label {
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  .codex-authbox .auth-remember .f-pwd {
+    font-size: 12px !important;
+    white-space: nowrap !important;
+    text-align: right !important;
   }
 }
