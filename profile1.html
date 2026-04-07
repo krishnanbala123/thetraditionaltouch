@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Profile - The Traditional Touch</title>
+  <link rel="shortcut icon" href="./assets/images/dress/logo_1.png" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="./assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="./assets/css/vendor/themify-icons.css" rel="stylesheet">
+  <link href="./assets/css/vendor/animate.css" rel="stylesheet">
+  <link href="./assets/css/vendor/sal.css" rel="stylesheet">
+  <link href="./assets/css/vendor/swiper-bundle.min.css" rel="stylesheet">
+  <link href="./assets/css/vendor/simplebar.css" rel="stylesheet">
+  <link href="./assets/css/style.css" rel="stylesheet">
+  <link href="./assets/css/my_style.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --blue: #3a9fd8;
+      --blue-dark: #2d86bb;
+      --blue-light: #e8f4fb;
+      --border: #e5e9ef;
+      --text: #333;
+      --muted: #888;
+      --bg: #f4f6f9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body { background: var(--bg); font-family: 'Jost', sans-serif; margin: 0; }
+
+    .profile-wrap { padding: 36px 0 60px; min-height: 100vh; }
+
+    /* Breadcrumb */
+    .profile-breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+    .profile-breadcrumb a { color: var(--muted); text-decoration: none; }
+    .profile-breadcrumb a:hover { color: var(--blue); }
+    .profile-breadcrumb span { margin: 0 6px; color: #ccc; }
+
+    /* ===== LAYOUT ===== */
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    /* sidebar-wrapper holds toggle + sidebar as one column */
+    .sidebar-wrapper {
+      position: sticky;
+      top: 20px;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .profile-sidebar {
+      background: #fff;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      /* mobile default: hidden, rounded bottom */
+      display: none;
+      border-radius: 0 0 12px 12px;
+      border-top: none;
+    }
+    .profile-sidebar.sidebar-open { display: block; }
+
+    /* Desktop: always show sidebar, normal radius */
+    @media (min-width: 993px) {
+      .profile-sidebar {
+        display: block !important;
+        border-radius: 12px;
+        border-top: 1px solid var(--border);
+      }
+      .mobile-sidebar-toggle { display: none !important; }
+    }
+
+    /* Mobile sidebar toggle — hidden on desktop */
+    .mobile-sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--blue);
+  color: #fff;
+  padding: 14px 18px;
+  cursor: pointer;
+  border-radius: 12px;             /* ← closed: fully rounded */
+  transition: border-radius 0.15s;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.mobile-sidebar-toggle.open {
+  border-radius: 12px 12px 0 0;
+}
+.mobile-sidebar-toggle i { font-size: 16px; transition: transform 0.3s; }
+.mobile-sidebar-toggle.open i.fa-chevron-down { transform: rotate(180deg); }
+
+    .sidebar-top {
+      background: var(--blue);
+      padding: 26px 20px 22px;
+      text-align: center;
+    }
+
+    .avatar-circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.22);
+      border: 2px solid rgba(255,255,255,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sidebar-name  { color: #fff; font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+    .sidebar-email { color: rgba(255,255,255,0.78); font-size: 12px; margin: 0; word-break: break-all; }
+
+    .sidebar-nav { list-style: none; margin: 0; padding: 8px 0; }
+
+    .sidebar-nav li a {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 18px;
+      color: #555;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-left: 3px solid transparent;
+      transition: all 0.18s;
+    }
+
+    .sidebar-nav li a i { width: 16px; color: #bbb; font-size: 13px; transition: color 0.18s; }
+
+    .sidebar-nav li a:hover,
+    .sidebar-nav li a.active {
+      background: var(--blue-light);
+      color: var(--blue);
+      border-left-color: var(--blue);
+    }
+    .sidebar-nav li a:hover i,
+    .sidebar-nav li a.active i { color: var(--blue); }
+
+    .nav-sep { height: 1px; background: var(--border); margin: 6px 18px; }
+
+    .sidebar-nav li a.logout-link { color: #e74c3c; }
+    .sidebar-nav li a.logout-link i { color: #e74c3c; }
+    .sidebar-nav li a.logout-link:hover { background: #fff5f5; border-left-color: #e74c3c; }
+
+    /* ===== MAIN ===== */
+    .profile-main { display: flex; flex-direction: column; gap: 18px; }
+    .profile-section { display: none; flex-direction: column; gap: 18px; }
+    .profile-section.active { display: flex; }
+
+    /* Info cards row */
+    .info-cards-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .info-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 14px;
+      text-align: center;
+    }
+
+    .info-card-label { font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 7px; }
+    .info-card-value { font-size: 13px; color: var(--muted); margin: 0; }
+
+    /* Blue table */
+    .blue-table-wrap {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      overflow-x: auto; 
+    }
+
+    .blue-table-wrap table { width: 100%; border-collapse: collapse; min-width: 480px; }
+
+    .blue-table-wrap thead tr { background: var(--blue); }
+
+    .blue-table-wrap thead th {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      padding: 14px 16px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .blue-table-wrap tbody td {
+      padding: 13px 16px;
+      font-size: 13px;
+      color: #555;
+      text-align: center;
+      border-bottom: 1px solid #f2f4f7;
+      white-space: nowrap;
+    }
+
+    .blue-table-wrap tbody tr:last-child td { border-bottom: none; }
+    .blue-table-wrap tbody tr:hover { background: #fafbfd; }
+
+    /* Badges */
+    .badge { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-delivered  { background: #eafaf1; color: #27ae60; }
+    .badge-shipped    { background: #e8f4fb; color: #3a9fd8; }
+    .badge-processing { background: #fff3e0; color: #e67e22; }
+    .badge-cancelled  { background: #fdf0f0; color: #e74c3c; }
+
+    /* Section card */
+    .section-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .section-card-header { background: var(--blue); padding: 15px 22px; }
+    .section-card-header h3 { color: #fff; font-size: 15px; font-weight: 600; margin: 0; }
+    .section-card-body { padding: 22px; }
+
+    /* Form */
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .fp-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .fp-group input,
+    .fp-group select {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 13px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: 'Jost', sans-serif;
+      background: #fafbfc;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      box-sizing: border-box;
+    }
+
+    .fp-group input:focus,
+    .fp-group select:focus { border-color: var(--blue); background: #fff; }
+    .fp-group input[readonly] { background: #f2f4f7; color: #aaa; cursor: not-allowed; }
+
+    /* ===== BUTTONS - White text on hover ===== */
+    .blue-btn {
+      background: var(--blue);
+      color: #fff;
+      border: 2px solid var(--blue);
+      padding: 12px 26px;
+      border-radius: 8px;
+      font-family: 'Jost', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, transform 0.1s, border-color 0.2s;
+    }
+    .blue-btn:hover {
+      background: var(--blue-dark);
+      color: var(--blue-dark);           /* white text on hover */
+      border-color: var(--blue-dark);
+      transform: translateY(-1px);
+    }
+    .blue-btn:active { transform: translateY(0); }
+
+    .back-btn {
+      background: var(--blue);
+      color: #fff;
+      border: 2px solid var(--blue);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: 'Jost', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      letter-spacing: 0.2px;
+    }
+    .back-btn:hover {
+      background: var(--blue-dark);
+      color: var(--blue-dark);           /* white text on hover */
+      border-color: var(--blue-dark);
+    }
+
+    /* Password strength */
+    .pwd-bar { height: 4px; background: #eee; border-radius: 2px; margin-top: 7px; overflow: hidden; }
+    .pwd-fill { height: 100%; border-radius: 2px; transition: width 0.3s, background 0.3s; width: 0%; }
+    .pwd-text { font-size: 11px; margin-top: 4px; font-weight: 600; color: #aaa; }
+
+    /* Address */
+    .address-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .address-card { border: 1.5px solid var(--border); border-radius: 10px; padding: 17px; transition: border-color 0.2s; }
+    .address-card:hover { border-color: var(--blue); }
+    .address-card.default { border-color: var(--blue); background: var(--blue-light); }
+
+    .addr-badge {
+      display: inline-block;
+      background: var(--blue);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 9px;
+    }
+
+    .addr-name { font-weight: 600; font-size: 14px; color: #333; margin: 0 0 6px; }
+    .addr-text { font-size: 13px; color: #666; line-height: 1.7; margin: 0 0 13px; }
+    .addr-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .addr-btn {
+      font-size: 12px;
+      padding: 5px 13px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      color: #555;
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .addr-btn:hover { border-color: var(--blue); color: #fff; background: var(--blue); }
+    .addr-btn.danger:hover { border-color: #e74c3c; color: #fff; background: #e74c3c; }
+
+    .add-addr-card {
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      padding: 17px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 148px;
+      color: #bbb;
+    }
+    .add-addr-card:hover { border-color: var(--blue); color: var(--blue); }
+    .add-addr-card i { font-size: 22px; }
+    .add-addr-card span { font-size: 13px; font-weight: 500; }
+
+    /* Back btn row */
+    .back-btn-row { text-align: right; }
+
+    /* Not logged in */
+    .not-logged-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 80px 40px;
+      text-align: center;
+    }
+    .not-logged-card i { font-size: 52px; color: #ddd; display: block; margin-bottom: 16px; }
+    .not-logged-card h3 { font-size: 20px; color: #333; margin: 0 0 8px; }
+    .not-logged-card p { color: #999; font-size: 14px; margin: 0 0 22px; }
+    .not-logged-card a {
+      display: inline-block;
+      background: var(--blue);
+      color: #fff;
+      padding: 12px 30px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.2s, color 0.2s;
+      border: 2px solid var(--blue);
+    }
+    .not-logged-card a:hover { background: var(--blue-dark); color: #fff; border-color: var(--blue-dark); }
+
+    /* Toast */
+    .toast-msg {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      padding: 13px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Jost', sans-serif;
+      font-weight: 500;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.3s;
+      pointer-events: none;
+      color: #fff;
+      max-width: calc(100vw - 40px);
+    }
+    .toast-msg.show { opacity: 1; transform: translateY(0); }
+    .toast-msg.success { background: #27ae60; }
+    .toast-msg.error   { background: #e74c3c; }
+
+    /* ============================================
+       RESPONSIVE BREAKPOINTS
+       ============================================ */
+
+    /* Tablet: 768px - 992px */
+    @media (max-width: 992px) {
+      .profile-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .sidebar-wrapper { position: static; }
+
+      /* Show toggle button */
+      .mobile-sidebar-toggle { display: flex; }
+
+      .sidebar-top { border-radius: 0; }
+
+      .info-cards-row { grid-template-columns: repeat(2, 1fr); }
+      .form-grid-2    { grid-template-columns: 1fr 1fr; }
+      .address-grid   { grid-template-columns: 1fr 1fr; }
+
+      .profile-main { margin-top: 0; }
+      .sidebar-wrapper { width: 100%; }
+    }
+    
+
+    /* Mobile: < 600px */
+    @media (max-width: 600px) {
+      .profile-wrap { padding: 20px 0 40px; }
+
+      /* Cards: 2 equal columns, equal height */
+      .info-cards-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .info-card {
+        padding: 16px 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80px;
+      }
+      .info-card-label { font-size: 12px; margin-bottom: 5px; }
+      .info-card-value { font-size: 13px; }
+
+      .form-grid-2 { grid-template-columns: 1fr; }
+      .address-grid { grid-template-columns: 1fr; }
+      .section-card-body { padding: 16px; }
+
+      .blue-btn,
+      .back-btn {
+        width: 100%;
+        text-align: center;
+        padding: 13px 16px;
+        display: block;
+      }
+
+      .back-btn-row { text-align: center; }
+      .not-logged-card { padding: 50px 20px; }
+
+      /* Table scroll fix */
+      .blue-table-wrap { border-radius: 10px; }
+      .blue-table-wrap table { min-width: 340px; }
+      .blue-table-wrap thead th,
+      .blue-table-wrap tbody td { padding: 11px 10px; font-size: 12px; }
+
+      .toast-msg { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+      .avatar-circle { width: 60px; height: 60px; font-size: 20px; }
+      .sidebar-name  { font-size: 14px; }
+      .sidebar-email { font-size: 11px; }
+
+      /* Toggle button full width neat */
+      .mobile-sidebar-toggle {
+        border-radius: 10px;
+        padding: 13px 16px;
+      }
+
+      /* Profile main gap reduce */
+      .profile-main { gap: 12px; }
+    }
+
+    /* Very small: < 400px */
+    @media (max-width: 400px) {
+      .info-cards-row { gap: 8px; }
+      .info-card { padding: 14px 8px; min-height: 75px; }
+      .info-card-label { font-size: 11px; }
+      .info-card-value { font-size: 12px; }
+      .blue-table-wrap table { min-width: 300px; }
+      .blue-table-wrap thead th,
+      .blue-table-wrap tbody td { padding: 10px 8px; font-size: 11px; }
+    }
+    .sidebar-nav li {
+  display: block;       
+}
+
+  </style>
+</head>
+
+<body>
+
+  <!-- header start -->
+  <header class="cdx-header">
+    <div class="container">
+      <div class="grid grid-cols-12">
+        <div class="col-span-12">
+          <div class="header-contian">
+            <div class="brand-logo"><a href="index.html"><img class="img-fluid" src="./assets/images/dress/logo_1.png" alt="fashion.png" style="width: 85px;"></a></div>
+            <div class="menu-block">
+              <ul class="menu-list">
+                <li class="close-menu">
+                  <div class="menu-brand"><img class="img-fluid" src="./assets/images/dress/logo_1.png" alt="" style="width: 85px;">
+                    <svg class="feather feather-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </div>
+                </li>
+                <li class="menu-item"><a href="index.html">home</a></li>
+                <li class="menu-item"><a href="about.html">About</a></li>
+                <li class="menu-item"><a href="shop.html">Shop</a></li>
+                <li class="menu-item"><a href="contact.html">Contact</a></li>
+              </ul>
+              <div class="cdx-layer"></div>
+            </div>
+            <div class="nav-iconlist">
+              <ul>
+                <li><a class="search-toggle" href="javascript:void(0);">
+                    <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                      <path d="M20.9999 21L16.6499 16.65" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg></a></li>
+                <li><a href="cart.html">
+                    <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M9 22C9.55228 22 10 21.5523 10 21C10 20.4477 9.55228 20 9 20C8.44772 20 8 20.4477 8 21C8 21.5523 8.44772 22 9 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                      <path d="M20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20C19.4477 20 19 20.4477 19 21C19 21.5523 19.4477 22 20 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                      <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    <div class="nav-notification">2</div></a></li>
+                <li><a href="wishlist.html">
+                    <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20.4201 4.57996C19.9184 4.07653 19.3223 3.67709 18.6659 3.40455C18.0095 3.132 17.3058 2.9917 16.5951 2.9917C15.8844 2.9917 15.1806 3.132 14.5243 3.40455C13.8679 3.67709 13.2718 4.07653 12.7701 4.57996L12.0001 5.35996L11.2301 4.57996C10.7284 4.07653 10.1323 3.67709 9.47591 3.40455C8.81953 3.132 8.1158 2.9917 7.40509 2.9917C6.69437 2.9917 5.99065 3.132 5.33427 3.40455C4.67789 3.67709 4.08176 4.07653 3.58009 4.57996C1.46009 6.69996 1.33009 10.28 4.00009 13L12.0001 21L20.0001 13C22.6701 10.28 22.5401 6.69996 20.4201 4.57996Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    <div class="nav-notification">2</div></a></li>
+                <li class="dropdownmenu" id="user-dropdown-wrap"><a class="dropdown-action" href="javascript:void(0);">
+                    <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                      <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg></a>
+                  <ul class="dropdownitem-list">
+                    <li><a href="login.html">login</a></li>
+                    <li><a href="register.html">register</a></li>
+                  </ul>
+                </li>
+              </ul><a class="menu-action" href="javascript:void(0);"><span></span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="search-bar">
+    <div class="input-group">
+      <input class="form-control" type="text" placeholder="Find Your product">
+      <div class="input-group-text"><a class="btn btn-primary" href="javascript:void(0);">search now</a></div>
+    </div>
+    <div class="clsoe-search"><i class="fa-solid fa-close"></i></div>
+  </div>
+  <!-- header end -->
+
+  <div class="profile-wrap">
+    <div class="container">
+
+      <div class="profile-breadcrumb">
+        <a href="index.html">Home</a><span>›</span>My Account
+      </div>
+
+      <!-- NOT LOGGED IN -->
+      <div id="not-logged-view" style="display:none;">
+        <div class="not-logged-card">
+          <i class="fa fa-user-lock"></i>
+          <h3>Please Login First</h3>
+          <p>You need to be logged in to view your profile.</p>
+          <a href="login.html"><i class="fa fa-sign-in-alt"></i> &nbsp;Login Now</a>
+        </div>
+      </div>
+
+      <!-- LOGGED IN -->
+      <div id="logged-view" style="display:none;">
+
+        <!-- Mobile sidebar toggle button -->
+
+        <div class="profile-layout">
+
+          <!-- SIDEBAR WRAPPER -->
+          <div class="sidebar-wrapper">
+          <!-- Mobile sidebar toggle button -->
+          <div class="mobile-sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+            <span id="toggleLabel"><i class="fa fa-user"></i> &nbsp; My Account Menu</span>
+            <i class="fa fa-chevron-down" id="toggleIcon"></i>
+          </div>
+          <div class="profile-sidebar" id="profileSidebar">
+            <div class="sidebar-top">
+              <div class="avatar-circle" id="avatar-init">U</div>
+              <p class="sidebar-name"  id="sb-name">User</p>
+              <p class="sidebar-email" id="sb-email">user@email.com</p>
+            </div>
+            <ul class="sidebar-nav">
+              <li><a href="#" class="active" data-tab="overview"><i class="fa fa-th-large"></i> Overview</a></li>
+              <li><a href="#" data-tab="personal"><i class="fa fa-user"></i> Personal Info</a></li>
+              <li><a href="#" data-tab="orders"><i class="fa fa-box"></i> My Orders</a></li>
+              <li><a href="#" data-tab="address"><i class="fa fa-map-marker-alt"></i> My Addresses</a></li>
+              <li><a href="track-order.html"><i class="fa fa-truck"></i> Track Order</a></li>
+              <li><a href="wishlist.html"><i class="fa fa-heart"></i> Wishlist</a></li>
+              <li><a href="#" data-tab="password"><i class="fa fa-lock"></i> Change Password</a></li>
+              <div class="nav-sep"></div>
+              <li><a href="#" class="logout-link" id="profile-logout"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+          </div>
+
+          </div><!-- sidebar-wrapper -->
+
+          <!-- MAIN CONTENT -->
+          <div class="profile-main">
+
+            <!-- OVERVIEW -->
+            <div class="profile-section active" id="tab-overview">
+              <div class="info-cards-row">
+                <div class="info-card">
+                  <p class="info-card-label">Total Orders</p>
+                  <p class="info-card-value" id="ov-orders">12</p>
+                </div>
+                <div class="info-card">
+                  <p class="info-card-label">Member Since</p>
+                  <p class="info-card-value" id="ov-since">—</p>
+                </div>
+                <div class="info-card">
+                  <p class="info-card-label">Wishlist Items</p>
+                  <p class="info-card-value">3</p>
+                </div>
+                <div class="info-card">
+                  <p class="info-card-label">Saved Addresses</p>
+                  <p class="info-card-value">2</p>
+                </div>
+              </div>
+
+              <div class="blue-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Date</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ov-tbody"></tbody>
+                </table>
+              </div>
+
+              <div class="back-btn-row">
+                <button class="back-btn btn btn-primary btn-md" onclick="window.location.href='shop.html'">Continue Shopping</button>
+              </div>
+            </div>
+
+            <!-- PERSONAL INFO -->
+            <div class="profile-section" id="tab-personal">
+              <div class="section-card">
+                <div class="section-card-header"><h3>Personal Information</h3></div>
+                <div class="section-card-body">
+                  <div class="form-grid-2">
+                    <div class="fp-group"><label>Full Name</label><input type="text" id="p-name" placeholder="Your full name"></div>
+                    <div class="fp-group"><label>Email Address</label><input type="email" id="p-email" readonly></div>
+                    <div class="fp-group"><label>Phone Number</label><input type="tel" id="p-phone" placeholder="Your phone number"></div>
+                    <div class="fp-group"><label>Date of Birth</label><input type="date" id="p-dob"></div>
+                    <div class="fp-group">
+                      <label>Gender</label>
+                      <select id="p-gender">
+                        <option value="">Select Gender</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                        <option value="other">Prefer not to say</option>
+                      </select>
+                    </div>
+                    <div class="fp-group"><label>Member Since</label><input type="text" id="p-since" readonly></div>
+                  </div>
+                  <button class="blue-btn btn btn-primary btn-md" onclick="savePersonal()"><i class="fa fa-save"></i> &nbsp;Save Changes</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- MY ORDERS -->
+            <div class="profile-section" id="tab-orders">
+              <div class="blue-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Date</th>
+                      <th>Location</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Track</th>
+                    </tr>
+                  </thead>
+                  <tbody id="all-tbody"></tbody>
+                </table>
+              </div>
+              <div class="back-btn-row">
+                <button class="back-btn btn btn-primary btn-md" onclick="window.location.href='track-order.html'">Track Order</button>
+              </div>
+            </div>
+
+            <!-- ADDRESS -->
+            <div class="profile-section" id="tab-address">
+              <div class="section-card">
+                <div class="section-card-header"><h3>My Addresses</h3></div>
+                <div class="section-card-body">
+                  <div class="address-grid">
+                    <div class="address-card default">
+                      <span class="addr-badge">Default</span>
+                      <p class="addr-name" id="addr-uname">—</p>
+                      <p class="addr-text">
+                        42, Gandhi Street, Anna Nagar,<br>
+                        Madurai - 625 020,<br>
+                        Tamil Nadu, India.<br>
+                        📞 +91 98765 43210
+                      </p>
+                      <div class="addr-actions">
+                        <button class="addr-btn">Edit</button>
+                        <button class="addr-btn danger">Remove</button>
+                      </div>
+                    </div>
+                    <div class="add-addr-card" onclick="showToast('Address form coming soon!','success')">
+                      <i class="fa fa-plus-circle"></i>
+                      <span>Add New Address</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CHANGE PASSWORD -->
+            <div class="profile-section" id="tab-password">
+              <div class="section-card">
+                <div class="section-card-header"><h3>Change Password</h3></div>
+                <div class="section-card-body" style="max-width:440px;">
+                  <div class="fp-group" style="margin-bottom:16px;">
+                    <label>Current Password</label>
+                    <input type="password" id="cur-pwd" placeholder="Enter current password">
+                  </div>
+                  <div class="fp-group" style="margin-bottom:16px;">
+                    <label>New Password</label>
+                    <input type="password" id="new-pwd" placeholder="Enter new password" oninput="checkStrength(this.value)">
+                    <div class="pwd-bar"><div class="pwd-fill" id="str-bar"></div></div>
+                    <div class="pwd-text" id="str-text">Enter a password</div>
+                  </div>
+                  <div class="fp-group" style="margin-bottom:22px;">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="con-pwd" placeholder="Re-enter new password">
+                  </div>
+                  <button class="blue-btn" onclick="changePwd()"><i class="fa fa-lock"></i> &nbsp;Update Password</button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- profile-main -->
+        </div><!-- profile-layout -->
+      </div><!-- logged-view -->
+
+    </div>
+  </div>
+
+  <div class="toast-msg" id="toast"></div>
+
+  <!-- footer start -->
+  <footer class="space-py-100">
+    <div class="container">
+      <div class="footer-row-grid">
+        <div class="footer-grid">
+          <div class="codex-brand">
+            <a href="javascript:void(0)">
+              <img class="img-fluid" src="./assets/images/dress/logo.png" alt="logo" style="max-width: 85px;">
+            </a>
+          </div>
+          <p style="text-align: center; margin-top: 0px;">The Traditional Touch offers elegant Anarkali styles with quality, comfort, and timeless appeal for every occasion.</p>
+          <div class="follow-us">
+            <ul class="footer-social" style="display: flex; list-style: none; gap: 3px; padding: 0; justify-content: flex-start;">
+              <li><a href="https://www.facebook.com/share/1Cdy1AAmpi/?mibextid=wwXIfr" target="_blank"><i class="fa-brands fa-facebook-f"></i></a></li>
+              <li><a href="https://www.youtube.com/@thetraditionaltouch" target="_blank"><i class="fa-brands fa-youtube"></i></a></li>
+              <li><a href="https://www.instagram.com/the_traditional_touch_?igsh=MXR4bDZuYnIxMnVpdw%3D%3D&utm_source=qr" target="_blank"><i class="fa-brands fa-instagram"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-grid">
+          <h4>Explore Us</h4>
+          <ul class="footer-list">
+            <li><a href="index.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Home</a></li>
+            <li><a href="about.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>About</a></li>
+            <li><a href="shop.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Shop</a></li>
+            <li><a href="contact.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-grid">
+          <h4>Contact Us</h4>
+          <ul class="footer-contact footer-list">
+            <li><a href="tel:+917092735882"><i class="fa fa-phone" style="margin-right: 8px;"></i>+91 7092735882</a></li>
+            <li><a href="mailto:thetraditionaltouch308@gmail.com"><i class="fa fa-envelope" style="margin-right: 8px;"></i>thetraditionaltouch308@gmail.com</a></li>
+            <li><a href="https://maps.app.goo.gl/jUnvCWeagzxH8sxh8" target="_blank"><i class="fa fa-map-marker" aria-hidden="true" style="margin-right: 8px;"></i>Maraimalai Nagar, Chengalpattu</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="subfooter" style="padding: 10px 0; border-top: 1px solid #eee;">
+    <div class="container">
+      <div style="display: flex; justify-content: center; align-items: center;">
+        <p style="text-align: center; margin: 0;">&copy; <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">The Traditional Touch</a> <span id="current-year"></span>. All Rights Reserved. Developed by
+          <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">Bala</a> &
+          <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">Selva</a></p>
+      </div>
+    </div>
+  </div>
+  <!-- footer end -->
+
+  <a class="scroll-top" href="javascript:void(0);"><i class="fa fa-angle-double-up"></i></a>
+
+  <div class="codex-loader d-none">
+    <div><div></div></div><div><div></div></div><div><div></div></div>
+    <div><div></div></div><div><div></div></div><div><div></div></div>
+    <div><div></div></div><div><div></div></div><div><div></div></div>
+    <div><div></div></div><div><div></div></div><div><div></div></div>
+  </div>
+
+  <script>document.getElementById("current-year").textContent = new Date().getFullYear();</script>
+
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/navbar-auth.js"></script>
+  <script src="./assets/js/jquery-3.6.0.min.js"></script>
+  <script src="./assets/js/vendors/feather.min.js"></script>
+  <script src="./assets/js/script.js"></script>
+
+  <script>
+    const token = localStorage.getItem("token");
+    const user  = JSON.parse(localStorage.getItem("user") || "null");
+
+    if (!token || !user) {
+      document.getElementById("not-logged-view").style.display = "block";
+    } else {
+      document.getElementById("logged-view").style.display = "block";
+      initProfile();
+    }
+
+    function initProfile() {
+      const name  = user.name  || "User";
+      const email = user.email || "";
+
+      document.getElementById("sb-name").textContent  = name;
+      document.getElementById("sb-email").textContent = email;
+
+      const init = name.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
+      document.getElementById("avatar-init").textContent = init;
+
+      const since = user.createdAt
+        ? new Date(user.createdAt).toLocaleDateString("en-IN",{year:"numeric",month:"short"})
+        : "2024";
+
+      document.getElementById("ov-since").textContent = since;
+      document.getElementById("addr-uname").textContent = name;
+
+      document.getElementById("p-name").value   = name;
+      document.getElementById("p-email").value  = email;
+      document.getElementById("p-phone").value  = user.phone  || "";
+      document.getElementById("p-dob").value    = user.dob    || "";
+      document.getElementById("p-gender").value = user.gender || "";
+      document.getElementById("p-since").value  = since;
+
+      const orders = [
+        { id:"#TTT-1042", date:"28-Mar-2025", loc:"Madurai",    amt:"₹2,850", status:"Delivered", cls:"badge-delivered" },
+        { id:"#TTT-1038", date:"15-Mar-2025", loc:"Chennai",    amt:"₹1,200", status:"Shipped",   cls:"badge-shipped"   },
+        { id:"#TTT-1031", date:"22-Feb-2025", loc:"Coimbatore", amt:"₹3,600", status:"Delivered", cls:"badge-delivered" },
+        { id:"#TTT-1025", date:"01-Feb-2025", loc:"Madurai",    amt:"₹950",   status:"Cancelled", cls:"badge-cancelled" },
+      ];
+
+      document.getElementById("ov-tbody").innerHTML = orders.slice(0,3).map(o => `
+        <tr>
+          <td><strong style="color:#333;">${o.id}</strong></td>
+          <td>${o.date}</td>
+          <td><strong>${o.amt}</strong></td>
+          <td><span class="badge ${o.cls}">${o.status}</span></td>
+        </tr>
+      `).join("");
+
+      document.getElementById("all-tbody").innerHTML = orders.map(o => `
+        <tr>
+          <td><strong style="color:#333;">${o.id}</strong></td>
+          <td>${o.date}</td>
+          <td>${o.loc}</td>
+          <td><strong>${o.amt}</strong></td>
+          <td><span class="badge ${o.cls}">${o.status}</span></td>
+          <td><a href="track-order.html" style="color:var(--blue);font-size:12px;text-decoration:none;font-weight:600;">
+            <i class="fa fa-map-marker-alt"></i> Track
+          </a></td>
+        </tr>
+      `).join("");
+    }
+
+    /* ===== Mobile sidebar toggle ===== */
+    function toggleSidebar() {
+      const sidebar = document.getElementById("profileSidebar");
+      const toggle  = document.getElementById("sidebarToggle");
+      sidebar.classList.toggle("sidebar-open");
+      toggle.classList.toggle("open");
+    }
+
+    /* ===== Tab switch ===== */
+    document.querySelectorAll(".sidebar-nav a[data-tab]").forEach(link => {
+      link.addEventListener("click", function(e) {
+        e.preventDefault();
+        const tab = this.getAttribute("data-tab");
+
+        document.querySelectorAll(".sidebar-nav a").forEach(a => a.classList.remove("active"));
+        this.classList.add("active");
+
+        document.querySelectorAll(".profile-section").forEach(s => s.classList.remove("active"));
+        document.getElementById("tab-" + tab).classList.add("active");
+
+        /* On mobile: close sidebar after selecting a tab */
+        if (window.innerWidth <= 992) {
+          document.getElementById("profileSidebar").classList.remove("sidebar-open");
+          document.getElementById("sidebarToggle").classList.remove("open");
+        }
+      });
+    });
+
+    /* ===== Logout ===== */
+    document.getElementById("profile-logout").addEventListener("click", function(e) {
+      e.preventDefault();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "login.html";
+    });
+
+    /* ===== Save personal ===== */
+    function savePersonal() {
+      const name = document.getElementById("p-name").value.trim();
+      if (!name) { showToast("Name cannot be empty!", "error"); return; }
+
+      const updated = { ...user, name,
+        phone:  document.getElementById("p-phone").value.trim(),
+        gender: document.getElementById("p-gender").value,
+        dob:    document.getElementById("p-dob").value
+      };
+      localStorage.setItem("user", JSON.stringify(updated));
+      document.getElementById("sb-name").textContent = name;
+      const init = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+      document.getElementById("avatar-init").textContent = init;
+      showToast("Profile updated successfully! ✓", "success");
+    }
+
+    /* ===== Password strength ===== */
+    function checkStrength(val) {
+      let s = 0;
+      if (val.length >= 6)        s++;
+      if (val.length >= 10)       s++;
+      if (/[A-Z]/.test(val))      s++;
+      if (/[0-9]/.test(val))      s++;
+      if (/[!@#$%^&*]/.test(val)) s++;
+
+      const lvl = [
+        {w:"0%",   c:"#eee",    t:"",            tc:"#aaa"   },
+        {w:"25%",  c:"#e74c3c", t:"Weak",        tc:"#e74c3c"},
+        {w:"50%",  c:"#e67e22", t:"Fair",        tc:"#e67e22"},
+        {w:"75%",  c:"#f1c40f", t:"Good",        tc:"#e0a800"},
+        {w:"90%",  c:"#27ae60", t:"Strong",      tc:"#27ae60"},
+        {w:"100%", c:"#1a7a45", t:"Very Strong", tc:"#1a7a45"},
+      ][s];
+
+      document.getElementById("str-bar").style.cssText = `width:${lvl.w};background:${lvl.c}`;
+      const el = document.getElementById("str-text");
+      el.textContent = lvl.t;
+      el.style.color = lvl.tc;
+    }
+
+    /* ===== Change password ===== */
+    function changePwd() {
+      const cur = document.getElementById("cur-pwd").value.trim();
+      const nw  = document.getElementById("new-pwd").value.trim();
+      const con = document.getElementById("con-pwd").value.trim();
+      if (!cur||!nw||!con) { showToast("Please fill all fields!","error"); return; }
+      if (nw !== con)       { showToast("Passwords do not match!","error"); return; }
+      if (nw.length < 6)    { showToast("Min 6 characters required!","error"); return; }
+      showToast("Password updated successfully! ✓","success");
+      document.getElementById("cur-pwd").value="";
+      document.getElementById("new-pwd").value="";
+      document.getElementById("con-pwd").value="";
+      checkStrength("");
+    }
+
+    /* ===== Toast ===== */
+    function showToast(msg, type="success") {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className   = "toast-msg " + type + " show";
+      setTimeout(() => t.classList.remove("show"), 3000);
+    }
+  </script>
+</body>
+</html>

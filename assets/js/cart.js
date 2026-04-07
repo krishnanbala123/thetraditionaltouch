@@ -1,12 +1,4 @@
-// =============================================
-//  THE TRADITIONAL TOUCH - Cart Manager
-//  Uses CONFIG.BASE_URL from config.js
-//  APIs:
-//   POST   /api/cart  → Add to cart
-//   GET    /api/cart  → View cart
-//   PUT    /api/cart  → Update quantity
-//   DELETE /api/cart  → Remove item
-// =============================================
+// assets/js/cart.js
 
 const CartManager = (() => {
   function getEndpoint() {
@@ -21,11 +13,18 @@ const CartManager = (() => {
   // Navbar Badge Update
   // -------------------------------------------------------
   function updateBadge(count) {
-    const badges = document.querySelectorAll(".nav-iconlist .nav-notification");
-    const cartBadge = badges[0];
+    // Cart icon-க்கு next-ல உள்ள first nav-notification
+    const allBadges = document.querySelectorAll(".nav-notification");
+    const cartBadge = allBadges[0]; // First one = cart badge
     if (!cartBadge) return;
-    cartBadge.textContent = count;
-    cartBadge.style.display = count > 0 ? "flex" : "none";
+
+    if (count > 0) {
+      cartBadge.textContent = count;
+      cartBadge.style.display = "flex";
+    } else {
+      cartBadge.textContent = "0";
+      cartBadge.style.display = "none";
+    }
   }
 
   // -------------------------------------------------------
@@ -66,9 +65,14 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // POST /api/cart → Add item to cart
+  // POST /api/cart → Add item ✅ size added
   // -------------------------------------------------------
-  async function addToCart(productId, quantity = 1, buttonEl = null) {
+  async function addToCart(
+    productId,
+    quantity = 1,
+    buttonEl = null,
+    size = "M",
+  ) {
     const token = getToken();
 
     if (!token) {
@@ -84,6 +88,7 @@ const CartManager = (() => {
       buttonEl._origHTML = buttonEl.innerHTML;
       buttonEl.innerHTML = `<i class="fa fa-spinner fa-spin"></i>`;
     }
+    console.log(productId, size, quantity, "cart");
 
     try {
       const res = await fetch(getEndpoint(), {
@@ -92,7 +97,7 @@ const CartManager = (() => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ productId, size, quantity }),
       });
 
       const data = await res.json();
@@ -123,9 +128,9 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // PUT /api/cart → Update quantity
+  // PUT /api/cart → Update quantity ✅ size added
   // -------------------------------------------------------
-  async function updateCartItem(productId, quantity) {
+  async function updateCartItem(productId, quantity, size) {
     const token = getToken();
     if (!token) return null;
 
@@ -136,7 +141,7 @@ const CartManager = (() => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ productId, quantity, size }),
       });
 
       const data = await res.json();
@@ -144,7 +149,6 @@ const CartManager = (() => {
         showToast(data?.message || "Update failed.", "error");
         return null;
       }
-
       return data;
     } catch (err) {
       console.error("[Cart] Update error:", err);
@@ -154,9 +158,9 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // DELETE /api/cart → Remove item
+  // DELETE /api/cart → Remove item ✅ size added
   // -------------------------------------------------------
-  async function removeCartItem(productId) {
+  async function removeCartItem(productId, size) {
     const token = getToken();
     if (!token) return null;
 
@@ -167,7 +171,7 @@ const CartManager = (() => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ productId, size }),
       });
 
       const data = await res.json();
@@ -175,7 +179,6 @@ const CartManager = (() => {
         showToast(data?.message || "Remove failed.", "error");
         return null;
       }
-
       return data;
     } catch (err) {
       console.error("[Cart] Remove error:", err);
@@ -185,27 +188,27 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // CART PAGE - Render cart items into table
+  // CART PAGE - Render
   // -------------------------------------------------------
   async function renderCartPage() {
     const cartBody = document.querySelector(".cartBody");
-    if (!cartBody) return; // Not on cart page
+    if (!cartBody) return;
 
     const token = getToken();
 
-    // Not logged in
     if (!token) {
       cartBody.innerHTML = `
         <tr>
           <td colspan="7" style="text-align:center; padding:40px;">
-            <p style="font-size:16px; color:#888;">Please <a href="login.html" style="color:#e74c3c;">login</a> to view your cart.</p>
+            <p style="font-size:16px; color:#888;">
+              Please <a href="login.html" style="color:#e74c3c;">login</a> to view your cart.
+            </p>
           </td>
         </tr>`;
-      updateSummary([], 0);
+      updateSummary([]);
       return;
     }
 
-    // Loading state
     cartBody.innerHTML = `
       <tr>
         <td colspan="7" style="text-align:center; padding:40px;">
@@ -224,7 +227,12 @@ const CartManager = (() => {
       });
 
       if (!res.ok) {
-        cartBody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#888;">Failed to load cart.</td></tr>`;
+        cartBody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center;padding:30px;color:#888;">
+              Failed to load cart.
+            </td>
+          </tr>`;
         return;
       }
 
@@ -243,59 +251,74 @@ const CartManager = (() => {
         cartBody.innerHTML = `
           <tr>
             <td colspan="7" style="text-align:center; padding:50px;">
-              <i class="fa fa-shopping-cart" style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
-              <p style="font-size:16px; color:#888; margin-bottom:20px;">Your cart is empty!</p>
+              <i class="fa fa-shopping-cart" 
+                 style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
+              <p style="font-size:16px; color:#888; margin-bottom:20px;">
+                Your cart is empty!
+              </p>
               <a href="shop.html" class="btn btn-primary btn-md">Continue Shopping</a>
             </td>
           </tr>`;
-        updateSummary([], 0);
+        updateSummary([]);
         return;
       }
 
       // Render rows
       cartBody.innerHTML = items
         .map((item) => {
-          const product = item.productId; // populated object from API
-          const itemId = item._id;
+          const product = item.productId;
           const pid = product?._id || "";
           const name = product?.name || "Product";
           const price = product?.price || 0;
+          const discount = product?.discount || 0;
+          const discountedPrice = discount
+            ? Math.round(price - (price * discount) / 100)
+            : price;
           const image =
             product?.image || "./assets/images/fashion/product/1.jpg";
           const qty = item.quantity || 1;
-          const total = price * qty;
-          const tax = (total * 0.01).toFixed(2); // 1% tax example
+          const size = item.size || "";
+          const total = discountedPrice * qty;
 
-          // Image URL — if it's just a filename, use placeholder
           const imgSrc = image.startsWith("http")
             ? image
-            : `./assets/images/fashion/product/1.jpg`;
+            : "./assets/images/fashion/product/1.jpg";
 
           return `
-          <tr data-product-id="${pid}" data-item-id="${itemId}">
+          <tr data-product-id="${pid}" data-size="${size}">
             <td>
               <div class="product-imgwrap">
-                <img class="img-fluid" src="${imgSrc}" alt="${name}" style="width:70px; height:70px; object-fit:cover; border-radius:8px;">
+                <img class="img-fluid" src="${imgSrc}" alt="${name}"
+                     style="width:70px; height:70px; object-fit:cover; border-radius:8px;"
+                     onerror="this.src='./assets/images/fashion/product/1.jpg'">
               </div>
             </td>
-            <td><strong>${name}</strong></td>
+            <td>
+              <strong>${name}</strong><br>
+              <small class="text-muted">Size: ${size}</small>
+            </td>
             <td>
               <div class="input-group pro-quantity">
-                <span class="input-group-text count-minus" onclick="CartManager.changeQty(this, '${pid}', -1)">
+                <span class="input-group-text count-minus"
+                      onclick="CartManager.changeQty(this, '${pid}', -1, '${size}')">
                   <i class="fa fa-minus"></i>
                 </span>
-                <input class="form-control pro-qty" type="text" value="${qty}" readonly style="width:50px; text-align:center;">
-                <span class="input-group-text count-plus" onclick="CartManager.changeQty(this, '${pid}', 1)">
+                <input class="form-control pro-qty" type="text" 
+                       value="${qty}" readonly 
+                       style="width:50px; text-align:center;">
+                <span class="input-group-text count-plus"
+                      onclick="CartManager.changeQty(this, '${pid}', 1, '${size}')">
                   <i class="fa fa-plus"></i>
                 </span>
               </div>
             </td>
-            <td>₹${price}</td>
-            <td>₹${tax}</td>
+            <td>₹${discountedPrice}</td>
+            <td>-</td>
             <td class="item-total">₹${total}</td>
             <td>
               <div class="cart-action">
-                <a class="delete text-danger ml-10" href="javascript:void(0);" onclick="CartManager.removeItem(this, '${pid}')">
+                <a class="delete text-danger ml-10" href="javascript:void(0);"
+                   onclick="CartManager.removeItem(this, '${pid}', '${size}')">
                   <i data-feather="trash-2"></i>
                 </a>
               </div>
@@ -304,19 +327,21 @@ const CartManager = (() => {
         })
         .join("");
 
-      // Re-init feather icons
       if (window.feather) feather.replace();
-
-      // Update summary table
       updateSummary(items);
     } catch (err) {
       console.error("[Cart] Render error:", err);
-      cartBody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#888;">Something went wrong.</td></tr>`;
+      cartBody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center;padding:30px;color:#888;">
+            Something went wrong.
+          </td>
+        </tr>`;
     }
   }
 
   // -------------------------------------------------------
-  // Update summary table (bottom right)
+  // Summary Table
   // -------------------------------------------------------
   function updateSummary(items) {
     const summaryTable = document.querySelector(".chekout-tbl tbody");
@@ -325,13 +350,15 @@ const CartManager = (() => {
     let subtotal = 0;
     items.forEach((item) => {
       const price = item.productId?.price || 0;
+      const discount = item.productId?.discount || 0;
+      const discountedPrice = discount
+        ? Math.round(price - (price * discount) / 100)
+        : price;
       const qty = item.quantity || 1;
-      subtotal += price * qty;
+      subtotal += discountedPrice * qty;
     });
 
-    const tax = (subtotal * 0.01).toFixed(2);
-    const discount = 0;
-    const grand = (subtotal + parseFloat(tax) - discount).toFixed(2);
+    const grand = subtotal.toFixed(2);
 
     summaryTable.innerHTML = `
       <tr>
@@ -339,83 +366,59 @@ const CartManager = (() => {
         <td>₹${subtotal.toFixed(2)}</td>
       </tr>
       <tr>
-        <th>Tax (1%)</th>
-        <td>₹${tax}</td>
-      </tr>
-      <tr>
-        <th>Discount</th>
-        <td>₹${discount}.00</td>
-      </tr>
-      <tr>
         <th>Grand Total</th>
         <td class="text-success"><strong>₹${grand}</strong></td>
       </tr>
       <tr>
         <td colspan="2">
-          <a class="btn btn-primary btn-md" href="checkout.html">Proceed to checkout</a>
+          <a class="btn btn-primary btn-md" href="checkout.html">
+            Proceed to checkout
+          </a>
         </td>
       </tr>`;
   }
 
   // -------------------------------------------------------
-  // Change quantity (+/-)  — called from HTML onclick
+  // Change Qty ✅ size pass
   // -------------------------------------------------------
-  async function changeQty(btnEl, productId, delta) {
+  async function changeQty(btnEl, productId, delta, size) {
     const row = btnEl.closest("tr");
     const qtyEl = row.querySelector(".pro-qty");
     let qty = parseInt(qtyEl.value) + delta;
-
     if (qty < 1) qty = 1;
 
-    // Disable buttons during API call
     row
       .querySelectorAll(".count-minus, .count-plus")
       .forEach((b) => (b.style.pointerEvents = "none"));
 
-    const data = await updateCartItem(productId, qty);
+    const data = await updateCartItem(productId, qty, size);
 
     if (data) {
       qtyEl.value = qty;
 
-      // Recalculate row total
       const priceEl = row.querySelector("td:nth-child(4)");
       const totalEl = row.querySelector(".item-total");
       const price = parseFloat(priceEl?.textContent?.replace("₹", "") || 0);
       const total = price * qty;
-      const tax = (total * 0.01).toFixed(2);
-
       if (totalEl) totalEl.textContent = `₹${total}`;
-      const taxEl = row.querySelector("td:nth-child(5)");
-      if (taxEl) taxEl.textContent = `₹${tax}`;
 
       // Recalculate summary
       const allRows = document.querySelectorAll(
         ".cartBody tr[data-product-id]",
       );
-      let subtotal = 0;
-      allRows.forEach((r) => {
-        const t = parseFloat(
-          r.querySelector(".item-total")?.textContent?.replace("₹", "") || 0,
-        );
-        subtotal += t;
-      });
-
-      const items = data?.cart?.items || [];
-      updateBadge(items.reduce((s, i) => s + (i.quantity || 1), 0));
-
-      // Re-render summary with current values
       const fakeitems = [];
       allRows.forEach((r) => {
-        const pid = r.dataset.productId;
         const q = parseInt(r.querySelector(".pro-qty")?.value || 1);
         const p = parseFloat(
           r.querySelector("td:nth-child(4)")?.textContent?.replace("₹", "") ||
             0,
         );
-        fakeitems.push({ productId: { _id: pid, price: p }, quantity: q });
+        fakeitems.push({ productId: { price: p, discount: 0 }, quantity: q });
       });
       updateSummary(fakeitems);
 
+      const items = data?.cart?.items || [];
+      updateBadge(items.reduce((s, i) => s + (i.quantity || 1), 0));
       showToast("Cart updated!", "success");
     }
 
@@ -425,26 +428,22 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // Remove item — called from HTML onclick
+  // Remove Item ✅ size pass
   // -------------------------------------------------------
-  async function removeItem(btnEl, productId) {
+  async function removeItem(btnEl, productId, size) {
     const row = btnEl.closest("tr");
-
-    // Animate row
     row.style.opacity = "0.4";
     row.style.pointerEvents = "none";
 
-    const data = await removeCartItem(productId);
+    const data = await removeCartItem(productId, size);
 
     if (data) {
       row.remove();
 
-      // Update badge
       const items = data?.cart?.items || [];
       const totalQty = items.reduce((sum, i) => sum + (i.quantity || 1), 0);
       updateBadge(totalQty);
 
-      // Check if cart is now empty
       const remaining = document.querySelectorAll(
         ".cartBody tr[data-product-id]",
       );
@@ -452,14 +451,16 @@ const CartManager = (() => {
         document.querySelector(".cartBody").innerHTML = `
           <tr>
             <td colspan="7" style="text-align:center; padding:50px;">
-              <i class="fa fa-shopping-cart" style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
-              <p style="font-size:16px; color:#888; margin-bottom:20px;">Your cart is empty!</p>
+              <i class="fa fa-shopping-cart" 
+                 style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
+              <p style="font-size:16px; color:#888; margin-bottom:20px;">
+                Your cart is empty!
+              </p>
               <a href="shop.html" class="btn btn-primary btn-md">Continue Shopping</a>
             </td>
           </tr>`;
         updateSummary([]);
       } else {
-        // Recalculate summary
         const allRows = document.querySelectorAll(
           ".cartBody tr[data-product-id]",
         );
@@ -470,11 +471,10 @@ const CartManager = (() => {
             r.querySelector("td:nth-child(4)")?.textContent?.replace("₹", "") ||
               0,
           );
-          fakeitems.push({ productId: { price: p }, quantity: q });
+          fakeitems.push({ productId: { price: p, discount: 0 }, quantity: q });
         });
         updateSummary(fakeitems);
       }
-
       showToast("Item removed from cart.", "success");
     } else {
       row.style.opacity = "1";
@@ -483,25 +483,27 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // Clear entire cart — "Clear Shopping Cart" button
+  // Clear Cart
   // -------------------------------------------------------
   async function clearCart() {
     const rows = document.querySelectorAll(".cartBody tr[data-product-id]");
     if (rows.length === 0) return;
-
     if (!confirm("Are you sure you want to clear the entire cart?")) return;
 
-    // Remove all items one by one
     for (const row of rows) {
       const pid = row.dataset.productId;
-      await removeCartItem(pid);
+      const size = row.dataset.size;
+      await removeCartItem(pid, size);
     }
 
     document.querySelector(".cartBody").innerHTML = `
       <tr>
         <td colspan="7" style="text-align:center; padding:50px;">
-          <i class="fa fa-shopping-cart" style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
-          <p style="font-size:16px; color:#888; margin-bottom:20px;">Your cart is empty!</p>
+          <i class="fa fa-shopping-cart" 
+             style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
+          <p style="font-size:16px; color:#888; margin-bottom:20px;">
+            Your cart is empty!
+          </p>
           <a href="shop.html" class="btn btn-primary btn-md">Continue Shopping</a>
         </td>
       </tr>`;
@@ -512,7 +514,7 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // Toast Notification
+  // Toast
   // -------------------------------------------------------
   function showToast(message, type = "success") {
     const existing = document.getElementById("ttt-toast");
@@ -520,17 +522,6 @@ const CartManager = (() => {
 
     const bg = { success: "#22c55e", error: "#ef4444", warn: "#f97316" };
     const icon = { success: "✓", error: "✕", warn: "⚠" };
-
-    if (!document.getElementById("ttt-toast-style")) {
-      const style = document.createElement("style");
-      style.id = "ttt-toast-style";
-      style.textContent = `
-        @keyframes tttSlideIn {
-          from { opacity:0; transform: translateY(20px); }
-          to   { opacity:1; transform: translateY(0); }
-        }`;
-      document.head.appendChild(style);
-    }
 
     const toast = document.createElement("div");
     toast.id = "ttt-toast";
@@ -541,7 +532,7 @@ const CartManager = (() => {
       border-radius: 10px; font-size: 14px; font-weight: 500;
       z-index: 999999; box-shadow: 0 6px 20px rgba(0,0,0,0.18);
       display: flex; align-items: center; gap: 10px;
-      max-width: 290px; animation: tttSlideIn .3s ease;
+      max-width: 290px;
     `;
     toast.innerHTML = `<span style="font-size:17px">${icon[type]}</span>${message}`;
     document.body.appendChild(toast);
@@ -554,27 +545,7 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // Bind product card cart buttons (index.html, shop.html)
-  // -------------------------------------------------------
-  function bindCardButtons() {
-    document.querySelectorAll(".product-boxwrap").forEach((wrap) => {
-      const productId = wrap.dataset.productId;
-      if (!productId) return;
-
-      const cartBtn = wrap.querySelector(".social li:first-child a");
-      if (!cartBtn) return;
-
-      cartBtn.href = "javascript:void(0);";
-      cartBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        addToCart(productId, 1, this);
-      });
-    });
-  }
-
-  // -------------------------------------------------------
-  // Bind product detail page button
+  // Bind Detail Page Button ✅ size pass
   // -------------------------------------------------------
   function bindDetailButton() {
     const addBtn = document.querySelector(
@@ -584,41 +555,30 @@ const CartManager = (() => {
     if (!addBtn.textContent.toLowerCase().includes("add to cart")) return;
 
     const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get("id") || document.body.dataset.productId;
+    const productId = urlParams.get("id");
     if (!productId) return;
 
     addBtn.href = "javascript:void(0);";
     addBtn.addEventListener("click", function (e) {
       e.preventDefault();
-      const qtyEl = document.querySelector(".pro-qty");
-      const qty = qtyEl ? parseInt(qtyEl.value) || 1 : 1;
-      addToCart(productId, qty, this);
-    });
-  }
 
-  // -------------------------------------------------------
-  // Bind Quick-View Popup button
-  // -------------------------------------------------------
-  function bindPopupButton() {
-    const popup = document.getElementById("quickpopupPopup");
-    const addBtn = popup?.querySelector(".btn-primary");
-    if (!addBtn) return;
-    if (!addBtn.textContent.toLowerCase().includes("add to cart")) return;
+      const selectedSizeEl = document.querySelector(".product-size li.active");
+      const size = selectedSizeEl?.dataset?.size || null;
 
-    addBtn.href = "javascript:void(0);";
-    addBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      const productId = popup.dataset.productId;
-      if (!productId) {
-        showToast("Product ID missing.", "error");
+      if (!size) {
+        showToast("Please select a size!", "warn");
         return;
       }
-      addToCart(productId, 1, this);
+
+      const qtyEl = document.querySelector(".pro-qty");
+      const qty = qtyEl ? parseInt(qtyEl.value) || 1 : 1;
+
+      addToCart(productId, qty, this, size);
     });
   }
 
   // -------------------------------------------------------
-  // Bind "Clear Shopping Cart" button
+  // Bind Clear Cart
   // -------------------------------------------------------
   function bindClearCart() {
     const clearBtn = document.querySelector(".removeAll_cart");
@@ -633,19 +593,15 @@ const CartManager = (() => {
   // INIT
   // -------------------------------------------------------
   function init() {
-    loadCartCount(); // navbar badge
-    bindCardButtons(); // shop / index product cards
-    bindDetailButton(); // product detail page
-    bindPopupButton(); // quick view popup
-    bindClearCart(); // clear cart button
+    loadCartCount();
+    bindDetailButton();
+    bindClearCart();
 
-    // If on cart page → render cart
     if (document.querySelector(".cartBody")) {
       renderCartPage();
     }
   }
 
-  // Public API
   return { init, addToCart, loadCartCount, showToast, changeQty, removeItem };
 })();
 

@@ -7,11 +7,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Real-time validation
   // ========================
   const nameInput = form.querySelector('input[type="text"]');
+  const phoneInput = document.getElementById("phone"); // 👈 phone input
   const emailInput = form.querySelector('input[type="email"]');
   const passwordInput = form.querySelector('input[type="password"]');
   const agreeCheckbox = document.getElementById("agree");
 
   nameInput.addEventListener("input", () => validateName(nameInput));
+  phoneInput.addEventListener("input", () => validatePhone(phoneInput)); // 👈 real-time validation
   emailInput.addEventListener("input", () => validateEmail(emailInput));
   passwordInput.addEventListener("input", () =>
     validatePassword(passwordInput),
@@ -24,11 +26,13 @@ document.addEventListener("DOMContentLoaded", function () {
     e.preventDefault();
 
     const name = nameInput.value.trim();
+    const phone = phoneInput.value.trim(); // 👈
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
     // All validations
     const isNameValid = validateName(nameInput);
+    const isPhoneValid = validatePhone(phoneInput); // 👈
     const isEmailValid = validateEmail(emailInput);
     const isPasswordValid = validatePassword(passwordInput);
 
@@ -38,8 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Oru field valid
-    if (!isNameValid || !isEmailValid || !isPasswordValid) return;
+    if (!isNameValid || !isPhoneValid || !isEmailValid || !isPasswordValid)
+      return; // 👈 phone check add
 
     // Button disable
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -53,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, phone, email, password }), // 👈 phone add
       });
 
       const data = await response.json();
@@ -91,6 +95,20 @@ function validateName(input) {
     return false;
   } else if (!/^[a-zA-Z\s]+$/.test(value)) {
     showFieldError(input, "Name must contain only letters!");
+    return false;
+  }
+  clearFieldError(input);
+  return true;
+}
+
+// 👇 Phone validation - New!
+function validatePhone(input) {
+  const value = input.value.trim();
+  if (!value) {
+    showFieldError(input, "Phone number is required!");
+    return false;
+  } else if (!/^[6-9]\d{9}$/.test(value)) {
+    showFieldError(input, "Enter a valid 10-digit Indian mobile number!");
     return false;
   }
   clearFieldError(input);
@@ -145,24 +163,18 @@ function validatePassword(input) {
 
 function showFieldError(input, message) {
   clearFieldError(input);
-
   input.style.borderColor = "#dc3545";
-
   const error = document.createElement("small");
   error.className = "field-error-msg";
   error.style.cssText =
     "color: #dc3545; font-size: 12px; margin-top: 4px; display: block;";
   error.innerText = "⚠️ " + message;
-
   input.closest(".form-group").appendChild(error);
 }
 
 function clearFieldError(input) {
   input.style.borderColor = "";
-
   const formGroup = input.closest(".form-group");
-
-  // 🔥 Remove ALL existing errors inside this group
   const errors = formGroup.querySelectorAll(".field-error-msg");
   errors.forEach((err) => err.remove());
 }

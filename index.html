@@ -160,7 +160,7 @@
                           <path d="M20.4201 4.57996C19.9184 4.07653 19.3223 3.67709 18.6659 3.40455C18.0095 3.132 17.3058 2.9917 16.5951 2.9917C15.8844 2.9917 15.1806 3.132 14.5243 3.40455C13.8679 3.67709 13.2718 4.07653 12.7701 4.57996L12.0001 5.35996L11.2301 4.57996C10.7284 4.07653 10.1323 3.67709 9.47591 3.40455C8.81953 3.132 8.1158 2.9917 7.40509 2.9917C6.69437 2.9917 5.99065 3.132 5.33427 3.40455C4.67789 3.67709 4.08176 4.07653 3.58009 4.57996C1.46009 6.69996 1.33009 10.28 4.00009 13L12.0001 21L20.0001 13C22.6701 10.28 22.5401 6.69996 20.4201 4.57996Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
                         </svg>
                         <div class="nav-notification">2</div></a></li>
-                    <li class="dropdownmenu"><a class="dropdown-action" href="javascript:void(0);">
+                    <li class="dropdownmenu" id="user-dropdown-wrap"><a class="dropdown-action" href="javascript:void(0);">
                         <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
                           <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -317,8 +317,8 @@
       <div class="container">
         <div class="grid grid-cols-12">
           <div class="col-span-12">
-            <div class="swiper productslide5">
-              <div class="swiper-wrapper">
+            <div class="swiper productslide5" id="home-product-slider">
+              <!-- <div class="swiper-wrappegooglr">
                 <div class="swiper-slide">
                     <div class="product-boxwrap" data-product-id="69ce8dc7754359584d17672b">
                       <div class="product-imgwrap"><a href="product-details.html"><img class="img-fluid" src="./assets/images/dress/shop_1.jpeg" alt="product box"></a><span class="product-discount-label">8%</span>
@@ -494,7 +494,7 @@
                       </div>
                     </div>
                 </div>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -1154,9 +1154,6 @@
         document.getElementById("current-year").textContent = new Date().getFullYear();
     </script>
 
- <script src="./assets/js/config.js"></script>
- <script src="./assets/js/cart.js"></script>
-
       <!-- main jquery-->
       <script src="./assets/js/jquery-3.6.0.min.js"></script>
       <!-- feather js-->
@@ -1174,5 +1171,10 @@
       <script src="./assets/js/vendors/timer-count.js"></script>
       <!-- Custom script-->
       <script src="./assets/js/script.js"></script>
+
+       <script src="./assets/js/config.js"></script>
+   <script src="./assets/js/navbar-auth.js"></script>
+   <script src="./assets/js/home.js"></script>
+ <script src="./assets/js/cart.js"></script>
   </body>
 </html>
