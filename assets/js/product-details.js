@@ -59,6 +59,19 @@ function renderProductDetail(product) {
     ? Math.round(product.price - (product.price * product.discount) / 100)
     : product.price;
 
+  // Wishlist button setup
+  const wishlistBtn = document.querySelector(
+    ".cdxpro-detail a.btn-primary[href='wishlist.html']",
+  );
+  if (wishlistBtn) {
+    wishlistBtn.setAttribute("data-wishlist-id", product._id);
+    wishlistBtn.href = "javascript:void(0);";
+    wishlistBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      WishlistManager.toggleWishlist(product._id, this);
+    });
+  }
+
   // Name
   const nameEl = document.querySelector(".cdxpro-detail h2");
   if (nameEl) nameEl.textContent = product.name;
@@ -141,15 +154,7 @@ function setupCartButton(product) {
         }
 
         const qty = parseInt(document.querySelector(".pro-qty")?.value || 1);
-        addToCart(
-          product._id,
-          product.name,
-          product.price,
-          product.discount,
-          product.image,
-          selectedSize,
-          qty,
-        );
+        CartManager.addToCart(product._id, qty, btn, selectedSize);
         showDetailMessage(
           `Added to cart! Size: ${selectedSize}, Qty: ${qty}`,
           "success",

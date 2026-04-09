@@ -3,6 +3,7 @@
 let currentPage = 1;
 const limit = 8;
 let searchQuery = "";
+let allProducts = [];
 
 document.addEventListener("DOMContentLoaded", function () {
   fetchProducts();
@@ -36,6 +37,7 @@ async function fetchProducts(page = 1, search = "") {
     const data = await response.json();
 
     if (response.ok) {
+      allProducts = data.products;
       renderProducts(data.products);
       renderPagination(data.pagination);
     } else {
@@ -93,7 +95,7 @@ function renderProducts(products) {
             ${!hasStock ? `<span class="product-sale-label" style="background:gray;">Out of Stock</span>` : ""}
             <ul class="social">
               <li>
-                <a href="javascript:void(0);" onclick="quickAddToCart(event, '${product._id}', '${product.name}', ${product.price}, ${product.discount}, '${product.image}', ${JSON.stringify(product.sizes).replace(/'/g, "\\'")})">
+                <a href="javascript:void(0);" onclick="quickAddToCart(event, '${product._id}', this)">
                   <i data-feather="shopping-cart"></i>
                 </a>
               </li>
@@ -127,19 +129,23 @@ function renderProducts(products) {
 // ========================
 // Quick Add to Cart (Shop page)
 // ========================
-function quickAddToCart(event, id, name, price, discount, image, sizes) {
+function quickAddToCart(event, id, btnEl) {
   event.preventDefault();
 
-  const availableSizes = sizes.filter((s) => s.stock > 0);
-  if (availableSizes.length === 0) {
-    showShopMessage("This product is out of stock!", "error");
+  const product = allProducts.find((p) => p._id === id);
+  if (!product) {
+    CartManager.showToast("Product not found!", "error");
     return;
   }
 
-  // Default first available size
+  const availableSizes = product.sizes.filter((s) => s.stock > 0);
+  if (availableSizes.length === 0) {
+    CartManager.showToast("Out of stock!", "error");
+    return;
+  }
+
   const defaultSize = availableSizes[0].size;
-  addToCart(id, name, price, discount, image, defaultSize);
-  showShopMessage(`"${name}" added to cart! (Size: ${defaultSize})`, "success");
+  CartManager.addToCart(id, 1, btnEl, defaultSize); // ✅ btnEl pass
 }
 
 // ========================

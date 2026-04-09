@@ -69,7 +69,7 @@ function renderHomeSlider(products) {
             <ul class="social">
               <li>
                 <a href="javascript:void(0);" 
-                   onclick="CartManager.addToCart('${product._id}', 1, this, null)">
+                  onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")})">
                   <i data-feather="shopping-cart"></i>
                 </a>
               </li>

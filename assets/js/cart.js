@@ -127,6 +127,35 @@ const CartManager = (() => {
     }
   }
 
+  async function addToCartAuto(
+    productId,
+    quantity = 1,
+    buttonEl = null,
+    sizes = [],
+  ) {
+    const available = Array.isArray(sizes)
+      ? sizes.filter((s) => s.stock > 0)
+      : [];
+
+    if (available.length === 0) {
+      showToast("Out of stock!", "error");
+      return;
+    }
+
+    const size = available[0].size;
+    await addToCart(productId, quantity, buttonEl, size);
+  }
+
+  // return object:
+  return {
+    init,
+    addToCart,
+    addToCartAuto,
+    loadCartCount,
+    showToast,
+    changeQty,
+    removeItem,
+  };
   // -------------------------------------------------------
   // PUT /api/cart → Update quantity ✅ size added
   // -------------------------------------------------------
@@ -602,7 +631,15 @@ const CartManager = (() => {
     }
   }
 
-  return { init, addToCart, loadCartCount, showToast, changeQty, removeItem };
+  return {
+    init,
+    addToCart,
+    addToCartWithSizes,
+    loadCartCount,
+    showToast,
+    changeQty,
+    removeItem,
+  };
 })();
 
 document.addEventListener("DOMContentLoaded", () => CartManager.init());
