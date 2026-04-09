@@ -13,8 +13,7 @@ const WishlistManager = (() => {
   // Navbar Wishlist Badge Update
   // -------------------------------------------------------
   function updateWishlistBadge(count) {
-    const allBadges = document.querySelectorAll(".nav-notification");
-    const wishlistBadge = allBadges[1]; // Second one = wishlist badge
+    const wishlistBadge = document.querySelector(".wishlist-count");
     if (!wishlistBadge) return;
 
     if (count > 0) {
@@ -66,18 +65,23 @@ const WishlistManager = (() => {
   // Mark already wishlisted heart icons
   // -------------------------------------------------------
   function markWishlistedProducts(productIds) {
+    const normalizedIds = productIds.map(id =>
+      typeof id === "object" ? id._id : id
+    );
+
     document.querySelectorAll("[data-wishlist-id]").forEach((btn) => {
       const pid = btn.dataset.wishlistId;
-      if (productIds.includes(pid)) {
+
+      const icon = btn.querySelector("i");
+
+      if (normalizedIds.includes(pid)) {
         btn.classList.add("wishlisted");
-        const icon = btn.querySelector("i");
         if (icon) {
           icon.style.color = "#e74c3c";
           icon.style.fill = "#e74c3c";
         }
       } else {
         btn.classList.remove("wishlisted");
-        const icon = btn.querySelector("i");
         if (icon) {
           icon.style.color = "";
           icon.style.fill = "";
@@ -120,7 +124,7 @@ const WishlistManager = (() => {
       const products = data?.wishlist?.products || [];
       updateWishlistBadge(products.length);
 
-      const isAdded = data.message?.toLowerCase().includes("added");
+      const isAdded = data.message === "Added to wishlist";
 
       // Update all heart icons for this product
       document
@@ -302,25 +306,47 @@ const WishlistManager = (() => {
   // -------------------------------------------------------
   async function removeFromWishlistPage(productId, btnEl) {
     const row = btnEl.closest("tr");
+
     row.style.opacity = "0.4";
     row.style.pointerEvents = "none";
 
-    await toggleWishlist(productId);
+    try {
+      const token = getToken();
 
-    row.remove();
+      const res = await fetch(getEndpoint(), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }),
+      });
 
-    const remaining = document.querySelectorAll(
-      ".wishlistBody tr[data-product-id]",
-    );
-    if (remaining.length === 0) {
-      document.querySelector(".wishlistBody").innerHTML = `
-        <tr>
-          <td colspan="6" style="text-align:center; padding:50px;">
-            <i class="fa fa-heart" style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
-            <p style="font-size:16px; color:#888; margin-bottom:20px;">Your wishlist is empty!</p>
-            <a href="shop.html" class="btn btn-primary btn-md">Continue Shopping</a>
-          </td>
-        </tr>`;
+      if (!res.ok) throw new Error();
+
+      row.remove();
+
+      loadWishlistCount(); // refresh badge
+
+      const remaining = document.querySelectorAll(
+        ".wishlistBody tr[data-product-id]"
+      );
+
+      if (remaining.length === 0) {
+        document.querySelector(".wishlistBody").innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; padding:50px;">
+              <i class="fa fa-heart" style="font-size:48px; color:#ddd;"></i>
+              <p style="color:#888;">Your wishlist is empty!</p>
+            </td>
+          </tr>`;
+      }
+
+    } catch (err) {
+      console.error(err);
+      showWishlistToast("Failed to remove item", "error");
+      row.style.opacity = "1";
+      row.style.pointerEvents = "auto";
     }
   }
 
