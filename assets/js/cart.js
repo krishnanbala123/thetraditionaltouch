@@ -13,7 +13,6 @@ const CartManager = (() => {
   // Navbar Badge Update
   // -------------------------------------------------------
   function updateBadge(count) {
-    // Cart icon-க்கு next-ல உள்ள first nav-notification
     const allBadges = document.querySelectorAll(".nav-notification");
     const cartBadge = allBadges[0]; // First one = cart badge
     if (!cartBadge) return;
@@ -315,13 +314,15 @@ const CartManager = (() => {
 
           return `
           <tr data-product-id="${pid}" data-size="${size}">
-            <td>
-              <div class="product-imgwrap">
+           <td>
+            <div class="product-imgwrap">
+              <a href="product-details.html?id=${pid}">
                 <img class="img-fluid" src="${imgSrc}" alt="${name}"
-                     style="width:70px; height:70px; object-fit:cover; border-radius:8px;"
-                     onerror="this.src='./assets/images/fashion/product/1.jpg'">
-              </div>
-            </td>
+                    style="width:70px; height:70px; object-fit:cover; border-radius:8px; cursor:pointer;"
+                    onerror="this.src='./assets/images/fashion/product/1.jpg'">
+              </a>
+            </div>
+          </td>
             <td>
               <strong>${name}</strong><br>
               <small class="text-muted">Size: ${size}</small>
@@ -623,7 +624,6 @@ const CartManager = (() => {
   // -------------------------------------------------------
   function init() {
     loadCartCount();
-    bindDetailButton();
     bindClearCart();
 
     if (document.querySelector(".cartBody")) {
@@ -634,7 +634,7 @@ const CartManager = (() => {
   return {
     init,
     addToCart,
-    addToCartWithSizes,
+    addToCartAuto,
     loadCartCount,
     showToast,
     changeQty,

@@ -324,6 +324,82 @@ const WishlistManager = (() => {
     }
   }
 
+  async function toggleWishlist(productId, btnEl = null) {
+    const token = getToken();
+
+    if (!token) {
+      showWishlistToast("Please login to add to wishlist.", "warn");
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 1500);
+      return;
+    }
+
+    // ✅ Loader start
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl._origHTML = btnEl.innerHTML;
+      btnEl.innerHTML = `<i class="fa fa-spinner fa-spin"></i>`;
+    }
+
+    try {
+      const res = await fetch(getEndpoint(), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showWishlistToast(data?.message || "Something went wrong.", "error");
+        return;
+      }
+
+      const products = data?.wishlist?.products || [];
+      updateWishlistBadge(products.length);
+
+      const isAdded = data.message?.toLowerCase().includes("added");
+
+      document
+        .querySelectorAll(`[data-wishlist-id="${productId}"]`)
+        .forEach((btn) => {
+          const icon = btn.querySelector("i");
+          if (isAdded) {
+            btn.classList.add("wishlisted");
+            if (icon) {
+              icon.style.color = "#e74c3c";
+              icon.style.fill = "#e74c3c";
+            }
+          } else {
+            btn.classList.remove("wishlisted");
+            if (icon) {
+              icon.style.color = "";
+              icon.style.fill = "";
+            }
+          }
+        });
+
+      showWishlistToast(
+        isAdded ? "Added to wishlist! ❤️" : "Removed from wishlist.",
+        isAdded ? "success" : "warn",
+      );
+    } catch (err) {
+      console.error("[Wishlist] Toggle error:", err);
+      showWishlistToast("Network error.", "error");
+    } finally {
+      // ✅ Loader stop - heart icon restore
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.innerHTML = btnEl._origHTML || `<i data-feather="heart"></i>`;
+        if (window.feather) feather.replace();
+      }
+    }
+  }
+
   // -------------------------------------------------------
   // Toast
   // -------------------------------------------------------
