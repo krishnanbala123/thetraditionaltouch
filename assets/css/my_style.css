@@ -489,3 +489,6 @@ li.dropdownmenu .dropdownitem-list li a,
 .dropdown-greeting {
   white-space: nowrap;
 }
+.productslide5 .swiper-slide {
+  max-width: 280px;
+}

@@ -104,6 +104,13 @@ function renderProducts(products) {
                   <i data-feather="eye"></i>
                 </a>
               </li>
+               <li>
+                <a href="javascript:void(0);"
+                  data-wishlist-id="${product._id}"
+                  onclick="WishlistManager.toggleWishlist('${product._id}', this)">
+                  <i data-feather="heart"></i>
+                </a>
+              </li>
             </ul>
           </div>
           <div class="product-detailwrap">

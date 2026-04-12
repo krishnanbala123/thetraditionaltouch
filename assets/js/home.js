@@ -22,7 +22,12 @@ async function fetchHomeProducts() {
     const data = await response.json();
 
     if (response.ok) {
-      renderHomeSlider(data.products);
+      // ✅ createdAt by sort — latest first
+      const sorted = (data.products || []).sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      );
+      const latest8 = sorted.slice(0, 8);
+      renderHomeSlider(latest8);
     }
   } catch (error) {
     console.error("Home products error:", error);
@@ -33,10 +38,12 @@ function renderHomeSlider(products) {
   const container = document.querySelector(".productslide5");
   if (!container) return;
 
+  // ✅ Old swiper destroy + HTML clear
   if (homeSwiper) {
     homeSwiper.destroy(true, true);
     homeSwiper = null;
   }
+  container.innerHTML = "";
 
   if (!products || products.length === 0) {
     container.innerHTML = `<div class="swiper-wrapper">
@@ -60,25 +67,30 @@ function renderHomeSlider(products) {
       return `
       <div class="swiper-slide">
         <div class="product-boxwrap" data-product-id="${product._id}">
-          <div class="product-imgwrap">
-            <a href="product-details.html?id=${product._id}">
+        <div class="product-imgwrap">
               <img class="img-fluid" src="${product.image}" alt="${product.name}"
-                   onerror="this.src='./assets/images/dress/shop_1.jpeg'">
-            </a>
-            ${discountLabel}
-            <ul class="social">
-              <li>
-                <a href="javascript:void(0);" 
-                  onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")})">
-                  <i data-feather="shopping-cart"></i>
-                </a>
-              </li>
-              <li>
-                <a href="product-details.html?id=${product._id}">
-                  <i data-feather="eye"></i>
-                </a>
-              </li>
-            </ul>
+                  onerror="this.src='./assets/images/dress/shop_1.jpeg'">
+              ${discountLabel}
+           <ul class="social">
+  <li>
+    <a href="javascript:void(0);" 
+      onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")})">
+      <i data-feather="shopping-cart"></i>
+    </a>
+  </li>
+  <li>
+    <a href="product-details.html?id=${product._id}">
+      <i data-feather="eye"></i>
+    </a>
+  </li>
+  <li>
+    <a href="javascript:void(0);"
+       data-wishlist-id="${product._id}"
+       onclick="WishlistManager.toggleWishlist('${product._id}', this)">
+      <i data-feather="heart"></i>
+    </a>
+  </li>
+</ul>
           </div>
           <div class="product-detailwrap">
             <div>
@@ -103,7 +115,7 @@ function renderHomeSlider(products) {
   const shouldLoop = count > 5;
 
   homeSwiper = new Swiper(".productslide5", {
-    slidesPerView: 1,
+    slidesPerView: Math.min(2, count), // ✅ default minimum 2
     spaceBetween: 24,
     loop: shouldLoop,
     speed: 1200,
