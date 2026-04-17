@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ========================
-// Fetch All → Filter by ID
+// Fetch Product
 // ========================
 async function fetchProductById(productId) {
   const token = localStorage.getItem("token");
@@ -52,110 +52,120 @@ async function fetchProductById(productId) {
 }
 
 // ========================
-// Render Product Detail
+// Render Product
 // ========================
 function renderProductDetail(product) {
   const discountedPrice = product.discount
     ? Math.round(product.price - (product.price * product.discount) / 100)
     : product.price;
 
-  // Name
-  const nameEl = document.querySelector(".cdxpro-detail h2");
-  if (nameEl) nameEl.textContent = product.name;
+  // ================= IMAGE FIX =================
+  const mainWrapper = document.querySelector(".forslider .swiper-wrapper");
+  const thumbWrapper = document.querySelector(".toslider .swiper-wrapper");
 
-  // Price
-  const newPriceEl = document.querySelector(".new-price");
-  if (newPriceEl) newPriceEl.textContent = `₹${discountedPrice}`;
+  if (mainWrapper && thumbWrapper) {
+    mainWrapper.innerHTML = "";
+    thumbWrapper.innerHTML = "";
 
-  const oldPriceEl = document.querySelector(".old-price del");
-  if (oldPriceEl) {
-    oldPriceEl.textContent = product.discount ? `₹${product.price}` : "";
+    product.images.forEach((imgUrl) => {
+      mainWrapper.innerHTML += `
+        <div class="swiper-slide">
+          <div class="product-imgwrap">
+            <img class="img-fluid" src="${imgUrl}" alt="${product.name}">
+          </div>
+        </div>
+      `;
+
+      thumbWrapper.innerHTML += `
+        <div class="swiper-slide">
+          <div class="product-imgwrap">
+            <img class="img-fluid" src="${imgUrl}" alt="${product.name}">
+          </div>
+        </div>
+      `;
+    });
   }
 
-  // Discount Badge
-  const badgeEl = document.querySelector(".ofr-price .badge");
-  if (badgeEl) {
-    badgeEl.textContent = product.discount ? `${product.discount}% off` : "";
-    badgeEl.style.display = product.discount ? "inline-block" : "none";
+  // ================= TEXT =================
+  document.querySelector(".cdxpro-detail h2").textContent = product.name;
+
+  document.querySelector(".new-price").textContent = `₹${discountedPrice}`;
+
+  document.querySelector(".old-price del").textContent =
+    product.discount ? `₹${product.price}` : "";
+
+  const badge = document.querySelector(".ofr-price .badge");
+  if (badge) {
+    badge.textContent = product.discount ? `${product.discount}% off` : "";
+    badge.style.display = product.discount ? "inline-block" : "none";
   }
 
-  // Image - main + thumb
-  const mainImgs = document.querySelectorAll(
-    ".forslider .swiper-slide .product-imgwrap img",
-  );
-  mainImgs.forEach((img) => {
-    img.src = product.image;
-    img.alt = product.name;
-  });
+  // ================= DESCRIPTION FIX =================
+  const descEl = document.getElementById("product-description");
+  if (descEl) descEl.textContent = product.description;
 
-  const thumbImgs = document.querySelectorAll(
-    ".toslider .swiper-slide .product-imgwrap img",
-  );
-  thumbImgs.forEach((img) => {
-    img.src = product.image;
-    img.alt = product.name;
-  });
-
-  // Sizes
+  // ================= SIZE =================
   const sizeList = document.querySelector(".product-size");
   if (sizeList) {
     sizeList.innerHTML = product.sizes
       .map((s) => {
         const isOut = s.stock === 0;
         return `
-        <li
+        <li 
           data-size="${s.size}"
-          data-stock="${s.stock}"
           style="${isOut ? "opacity:0.4;cursor:not-allowed;" : "cursor:pointer;"}"
           onclick="${!isOut ? `selectSize(this, '${s.size}')` : ""}">
           <a href="javascript:void(0);">${s.size}</a>
-          ${isOut ? '<small style="display:block;font-size:9px;color:red;line-height:1;">Out</small>' : ""}
+          ${
+            isOut
+              ? '<small style="color:red;font-size:10px;">Out</small>'
+              : ""
+          }
         </li>
       `;
       })
       .join("");
   }
 
-  // Wishlist button
+  // ================= WISHLIST =================
   const wishlistBtn = document.querySelector(
-    ".cdxpro-detail a.btn-primary[href='wishlist.html']",
+    ".cdxpro-detail a[href='wishlist.html']"
   );
+
   if (wishlistBtn) {
-    wishlistBtn.setAttribute("data-wishlist-id", product._id);
-    wishlistBtn.href = "javascript:void(0);";
-    wishlistBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      WishlistManager.toggleWishlist(product._id, this);
-    });
+    wishlistBtn.href = "javascript:void(0)";
+    wishlistBtn.onclick = () =>
+      WishlistManager.toggleWishlist(product._id, wishlistBtn);
   }
 
-  // Page Title
   document.title = `${product.name} - The Traditional Touch`;
 
-  // Add to Cart Button
   setupCartButton(product);
 }
 
 // ========================
-// Setup Cart Button
+// Cart
 // ========================
 function setupCartButton(product) {
   const cartBtns = document.querySelectorAll(".btn-primary");
-  cartBtns.forEach((btn) => {
-    if (btn.textContent.trim().toLowerCase().includes("add to cart")) {
-      btn.removeAttribute("href");
-      btn.style.cursor = "pointer";
-      btn.addEventListener("click", function (e) {
-        e.preventDefault();
 
+  cartBtns.forEach((btn) => {
+    if (btn.textContent.toLowerCase().includes("add to cart")) {
+      btn.onclick = function () {
         if (!selectedSize) {
           CartManager.showToast("Please select a size!", "warn");
           return;
         }
 
         const qty = parseInt(document.querySelector(".pro-qty")?.value || 1);
+
         CartManager.addToCart(product._id, qty, btn, selectedSize);
-      });
+
+        showDetailMessage(
+          `Added to cart! Size: ${selectedSize}, Qty: ${qty}`,
+          "success"
+        );
+      };
     }
   });
 }
@@ -167,12 +177,13 @@ function selectSize(el, size) {
   document.querySelectorAll(".product-size li").forEach((li) => {
     li.classList.remove("active");
   });
+
   el.classList.add("active");
   selectedSize = size;
 }
 
 // ========================
-// Related Products
+// Toast
 // ========================
 function fetchRelatedProducts(currentProductId, allProducts) {
   const related = allProducts
@@ -180,73 +191,22 @@ function fetchRelatedProducts(currentProductId, allProducts) {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // ✅ latest first
     .slice(0, 7);
 
-  renderRelatedProducts(related);
-}
+  const div = document.createElement("div");
+  div.id = "detail-toast";
 
-function renderRelatedProducts(products) {
-  const wrapper = document.getElementById("related-products-wrapper");
-  if (!wrapper) return;
+  div.style.cssText = `
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    z-index: 9999;
+    background: ${type === "success" ? "#d4edda" : "#f8d7da"};
+    color: ${type === "success" ? "#155724" : "#721c24"};
+  `;
 
-  if (!products || products.length === 0) {
-    wrapper.innerHTML = `
-      <div class="swiper-slide">
-        <p style="padding:20px;color:#888;">No related products found!</p>
-      </div>`;
-    return;
-  }
+  div.innerText = msg;
+  document.body.appendChild(div);
 
-  wrapper.innerHTML = products
-    .map((product) => {
-      const discountedPrice = product.discount
-        ? Math.round(product.price - (product.price * product.discount) / 100)
-        : product.price;
-
-      return `
-      <div class="swiper-slide">
-        <div class="product-boxwrap">
-          <div class="product-imgwrap">
-            <a href="product-details.html?id=${product._id}">
-              <img class="img-fluid" src="${product.image}" alt="${product.name}"
-                   onerror="this.src='./assets/images/fashion/product/1.jpg'">
-            </a>
-            ${product.discount ? `<span class="product-discount-label">${product.discount}%</span>` : ""}
-            <ul class="social">
-              <li>
-                <a href="javascript:void(0);"
-                  onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")})">
-                  <i data-feather="shopping-cart"></i>
-                </a>
-              </li>
-              <li>
-                <a href="product-details.html?id=${product._id}">
-                  <i data-feather="eye"></i>
-                </a>
-              </li>
-              <li>
-                <a href="javascript:void(0);"
-                   data-wishlist-id="${product._id}"
-                   onclick="WishlistManager.toggleWishlist('${product._id}', this)">
-                  <i data-feather="heart"></i>
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div class="product-detailwrap">
-            <div>
-              <a href="product-details.html?id=${product._id}">
-                <h5>${product.name}</h5>
-              </a>
-              <div class="pro-price">
-                ₹${discountedPrice}
-                ${product.discount ? `<span class="old-price">₹${product.price}</span>` : ""}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    })
-    .join("");
-
-  if (typeof feather !== "undefined") feather.replace();
+  setTimeout(() => div.remove(), 3000);
 }
