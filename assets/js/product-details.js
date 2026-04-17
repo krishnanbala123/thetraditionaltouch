@@ -35,8 +35,6 @@ async function fetchProductById(productId) {
       if (product) {
         currentProduct = product;
         renderProductDetail(product);
-        // ✅ Already fetched data — again API call இல்ல
-        fetchRelatedProducts(productId, data.products);
       } else {
         alert("Product not found!");
         window.location.href = "shop.html";
@@ -153,7 +151,7 @@ function setupCartButton(product) {
     if (btn.textContent.toLowerCase().includes("add to cart")) {
       btn.onclick = function () {
         if (!selectedSize) {
-          CartManager.showToast("Please select a size!", "warn");
+          showDetailMessage("Please select a size!", "error");
           return;
         }
 
@@ -185,11 +183,9 @@ function selectSize(el, size) {
 // ========================
 // Toast
 // ========================
-function fetchRelatedProducts(currentProductId, allProducts) {
-  const related = allProducts
-    .filter((p) => p._id !== currentProductId)
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // ✅ latest first
-    .slice(0, 7);
+function showDetailMessage(msg, type) {
+  const existing = document.getElementById("detail-toast");
+  if (existing) existing.remove();
 
   const div = document.createElement("div");
   div.id = "detail-toast";
