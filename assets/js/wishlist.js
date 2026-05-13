@@ -130,10 +130,7 @@ const WishlistManager = (() => {
       const data = await res.json();
 
       if (!res.ok) {
-        showWishlistToast(
-          data?.message || "Something went wrong.",
-          "error"
-        );
+        showWishlistToast(data?.message || "Something went wrong.", "error");
         return;
       }
 
@@ -141,9 +138,7 @@ const WishlistManager = (() => {
 
       updateWishlistBadge(products.length);
 
-      const isAdded = data.message
-        ?.toLowerCase()
-        .includes("added");
+      const isAdded = data.message?.toLowerCase().includes("added");
 
       // Update all buttons
       document
@@ -169,10 +164,8 @@ const WishlistManager = (() => {
         });
 
       showWishlistToast(
-        isAdded
-          ? "Added to wishlist! ❤️"
-          : "Removed from wishlist.",
-        isAdded ? "success" : "warn"
+        isAdded ? "Added to wishlist! ❤️" : "Removed from wishlist.",
+        isAdded ? "success" : "warn",
       );
     } catch (err) {
       console.error("[Wishlist] Toggle error:", err);
@@ -183,8 +176,7 @@ const WishlistManager = (() => {
         btnEl.disabled = false;
 
         btnEl.innerHTML =
-          btnEl.dataset.originalHtml ||
-          `<i data-feather="heart"></i>`;
+          btnEl.dataset.originalHtml || `<i data-feather="heart"></i>`;
 
         if (window.feather) feather.replace();
       }
@@ -294,18 +286,14 @@ const WishlistManager = (() => {
 
           const discountedPrice = product.discount
             ? Math.round(
-                product.price -
-                  (product.price * product.discount) / 100
+                product.price - (product.price * product.discount) / 100,
               )
             : product.price;
 
-          const hasStock = product.sizes?.some(
-            (s) => s.stock > 0
-          );
+          const hasStock = product.sizes?.some((s) => s.stock > 0);
 
           const firstAvailableSize =
-            product.sizes?.find((s) => s.stock > 0)
-              ?.size || "";
+            product.sizes?.find((s) => s.stock > 0)?.size || "";
 
           return `
             <tr data-product-id="${product._id}">
@@ -427,22 +415,13 @@ const WishlistManager = (() => {
   // -------------------------------------------------------
   // Add to Cart
   // -------------------------------------------------------
-  async function addToCartFromWishlist(
-    productId,
-    size,
-    btnEl
-  ) {
+  async function addToCartFromWishlist(productId, size, btnEl) {
     if (!size) {
       showWishlistToast("No size available!", "error");
       return;
     }
 
-    await CartManager.addToCart(
-      productId,
-      1,
-      btnEl,
-      size
-    );
+    await CartManager.addToCart(productId, 1, btnEl, size);
   }
 
   // -------------------------------------------------------
@@ -473,7 +452,7 @@ const WishlistManager = (() => {
       loadWishlistCount();
 
       const remaining = document.querySelectorAll(
-        ".wishlistBody tr[data-product-id]"
+        ".wishlistBody tr[data-product-id]",
       );
 
       if (remaining.length === 0) {
@@ -496,23 +475,15 @@ const WishlistManager = (() => {
       row.style.opacity = "1";
       row.style.pointerEvents = "auto";
 
-      showWishlistToast(
-        "Failed to remove item",
-        "error"
-      );
+      showWishlistToast("Failed to remove item", "error");
     }
   }
 
   // -------------------------------------------------------
   // Toast
   // -------------------------------------------------------
-  function showWishlistToast(
-    message,
-    type = "success"
-  ) {
-    const existing = document.getElementById(
-      "wishlist-toast"
-    );
+  function showWishlistToast(message, type = "success") {
+    const existing = document.getElementById("wishlist-toast");
 
     if (existing) existing.remove();
 

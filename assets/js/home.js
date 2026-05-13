@@ -115,16 +115,17 @@ function renderHomeSlider(products) {
   const shouldLoop = count > 5;
 
   homeSwiper = new Swiper(".productslide5", {
-    slidesPerView: Math.min(2, count), // ✅ default minimum 2
+    slidesPerView: "auto",
     spaceBetween: 24,
     loop: shouldLoop,
     speed: 1200,
+    centeredSlides: true,
     autoplay: count > 1 ? { delay: 2000 } : false,
     breakpoints: {
-      1400: { slidesPerView: Math.min(5, count) },
-      1024: { slidesPerView: Math.min(4, count) },
-      768: { slidesPerView: Math.min(3, count) },
-      480: { slidesPerView: Math.min(2, count) },
+      1400: { slidesPerView: Math.min(5, count), centeredSlides: false },
+      1024: { slidesPerView: Math.min(4, count), centeredSlides: false },
+      768: { slidesPerView: Math.min(3, count), centeredSlides: false },
+      480: { slidesPerView: Math.min(2, count), centeredSlides: false },
     },
   });
 
