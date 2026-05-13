@@ -68,7 +68,7 @@ function renderHomeSlider(products) {
       <div class="swiper-slide">
         <div class="product-boxwrap" data-product-id="${product._id}">
         <div class="product-imgwrap">
-              <img class="img-fluid" src="${product.image}" alt="${product.name}"
+              <img class="img-fluid" src="${product.images[0]}" alt="${product.name}"
                   onerror="this.src='./assets/images/dress/shop_1.jpeg'">
               ${discountLabel}
            <ul class="social">
