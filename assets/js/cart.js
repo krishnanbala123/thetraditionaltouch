@@ -303,7 +303,7 @@ const CartManager = (() => {
             ? Math.round(price - (price * discount) / 100)
             : price;
           const image =
-            product?.image || "./assets/images/fashion/product/1.jpg";
+            product?.images[0] || "./assets/images/fashion/product/1.jpg";
           const qty = item.quantity || 1;
           const size = item.size || "";
           const total = discountedPrice * qty;

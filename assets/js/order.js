@@ -1,117 +1,177 @@
 const OrderManager = (() => {
   const API = CONFIG.BASE_URL;
 
-  function getToken() {
-    return localStorage.getItem("token") || "";
-  }
+  const getToken = () => localStorage.getItem("token") || "";
 
   // -----------------------------------------
-  // 1. Load User Profile (Auto Fill Checkout)
+  // Load Profile
   // -----------------------------------------
   async function loadUserProfile() {
     try {
       const res = await fetch(`${API}/user/profile`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
 
       const user = await res.json();
 
-      // Fill form
       document.getElementById("fname").value =
         user.name?.split(" ")[0] || "";
       document.getElementById("lname").value =
         user.name?.split(" ").slice(1).join(" ") || "";
 
       document.querySelector("textarea").value = user.address || "";
-
-      // Optional: store phone
       document.body.dataset.phone = user.phone || "";
     } catch (err) {
-      console.error("Error loading profile:", err);
+      console.error(err);
     }
   }
 
   // -----------------------------------------
-  // 2. Update User Profile (if changed)
+  // Update Profile
   // -----------------------------------------
   async function updateUserProfile(name, address) {
-    try {
-      await fetch(`${API}/user/profile`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({
-          name,
-          address,
-        }),
-      });
-    } catch (err) {
-      console.error("Profile update failed:", err);
-    }
+    await fetch(`${API}/user/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
+      },
+      body: JSON.stringify({ name, address }),
+    });
   }
 
   // -----------------------------------------
-  // 3. Place Order
+  // 🔥 MAIN PAYMENT FLOW
   // -----------------------------------------
-  async function placeOrder() {
+  async function startPayment() {
     try {
       const fname = document.getElementById("fname").value.trim();
       const lname = document.getElementById("lname").value.trim();
       const address = document.querySelector("textarea").value.trim();
 
-      const fullName = `${fname} ${lname}`;
-
       if (!fname || !address) {
-        alert("Please fill required fields");
+        alert("Fill required fields");
         return;
       }
 
-      // 👉 Update user profile before order
+      const fullName = `${fname} ${lname}`;
+
       await updateUserProfile(fullName, address);
 
-      const res = await fetch(`${API}/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({
-          paymentMethod: "Razorpay", // ✅ only Razorpay
-        }),
+      // 👉 Calculate amount from cart UI instead of localStorage
+      let amount = 0;
+      document.querySelectorAll(".item-total").forEach((el) => {
+        amount += parseFloat(el.textContent.replace("₹", "")) || 0;
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Order failed");
+      if (!amount) {
+        alert("Cart is empty");
+        return;
       }
 
-      alert("Order placed successfully 🎉");
+      // -----------------------------------
+      // 1. Create Razorpay Order
+      // -----------------------------------
+      const res = await fetch(`${API}/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
 
-      // Redirect to orders page (optional)
-      window.location.href = "orders.html";
+      const order = await res.json();
+
+      if (!order.id) {
+        alert("Payment init failed");
+        return;
+      }
+
+      // -----------------------------------
+      // 2. Razorpay
+      // -----------------------------------
+      const options = {
+        key: "rzp_test_Skvus1wnQRpKJr",
+        amount: order.amount,
+        currency: "INR",
+        name: "The Traditional Touch",
+        order_id: order.id,
+
+        handler: async function (response) {
+          try {
+            // -----------------------------------
+            // 3. Verify Payment
+            // -----------------------------------
+            const verifyRes = await fetch(`${API}/verify-payment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (!verifyData.success) {
+              alert("Payment verification failed");
+              return;
+            }
+
+            // -----------------------------------
+            // 4. Place Order
+            // -----------------------------------
+            const finalRes = await fetch(`${API}/orders`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${getToken()}`,
+              },
+              body: JSON.stringify({
+                paymentMethod: "Razorpay",
+                paymentId: response.razorpay_payment_id,
+                address,
+                phone: document.body.dataset.phone,
+              }),
+            });
+
+            const data = await finalRes.json();
+
+            if (!finalRes.ok) throw new Error(data.message);
+
+            alert("✅ Order placed!");
+
+            localStorage.removeItem("cart");
+
+            window.location.href = "orders.html";
+          } catch (err) {
+            console.error(err);
+            alert("Order failed");
+          }
+        },
+
+        prefill: {
+          name: fullName,
+          contact: document.body.dataset.phone || "",
+        },
+
+        theme: { color: "#3399cc" },
+      };
+
+      new Razorpay(options).open();
     } catch (err) {
-      console.error("Order error:", err);
-      alert("Something went wrong!");
+      console.error(err);
+      alert("Payment error");
     }
   }
 
   // -----------------------------------------
-  // 4. Init
+  // INIT
   // -----------------------------------------
   function init() {
     loadUserProfile();
 
-    const btn = document.querySelector(".btn-primary");
+    const btn = document.getElementById("pay-btn");
 
     if (btn) {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
-        placeOrder();
+        startPayment(); // ✅ FIXED
       });
     }
   }

@@ -87,7 +87,7 @@ function renderProducts(products) {
         <div class="product-boxwrap">
           <div class="product-imgwrap">
             <a href="product-details.html?id=${product._id}">
-              <img class="img-fluid" src="${product.image}" 
+              <img class="img-fluid" src="${product.images[0]}" 
                    alt="${product.name}"
                    onerror="this.src='./assets/images/fashion/product/1.jpg'">
             </a>

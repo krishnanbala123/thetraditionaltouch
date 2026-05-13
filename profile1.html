@@ -34,30 +34,15 @@
     body { background: var(--bg); font-family: 'Jost', sans-serif; margin: 0; }
     .profile-wrap { padding: 36px 0 60px; min-height: 100vh; }
 
-    /* Breadcrumb */
     .profile-breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
     .profile-breadcrumb a { color: var(--muted); text-decoration: none; }
     .profile-breadcrumb a:hover { color: var(--blue); }
     .profile-breadcrumb span { margin: 0 6px; color: #ccc; }
 
-    /* Layout */
-    .profile-layout {
-      display: grid;
-      grid-template-columns: 250px 1fr;
-      gap: 22px;
-      align-items: start;
-    }
+    .profile-layout { display: grid; grid-template-columns: 250px 1fr; gap: 22px; align-items: start; }
     .sidebar-wrapper { position: sticky; top: 20px; }
 
-    /* Sidebar */
-    .profile-sidebar {
-      background: #fff;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      display: none;
-      border-radius: 0 0 12px 12px;
-      border-top: none;
-    }
+    .profile-sidebar { background: #fff; border: 1px solid var(--border); overflow: hidden; display: none; border-radius: 0 0 12px 12px; border-top: none; }
     .profile-sidebar.sidebar-open { display: block; }
 
     @media (min-width: 993px) {
@@ -65,138 +50,80 @@
       .mobile-sidebar-toggle { display: none !important; }
     }
 
-    .mobile-sidebar-toggle {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--blue);
-      color: #fff;
-      padding: 14px 18px;
-      cursor: pointer;
-      border-radius: 12px;
-      transition: border-radius 0.15s;
-      font-weight: 600;
-      font-size: 14px;
-    }
+    .mobile-sidebar-toggle { display: none; align-items: center; justify-content: space-between; background: var(--blue); color: #fff; padding: 14px 18px; cursor: pointer; border-radius: 12px; transition: border-radius 0.15s; font-weight: 600; font-size: 14px; }
     .mobile-sidebar-toggle.open { border-radius: 12px 12px 0 0; }
     .mobile-sidebar-toggle i { font-size: 16px; transition: transform 0.3s; }
     .mobile-sidebar-toggle.open i.fa-chevron-down { transform: rotate(180deg); }
 
     .sidebar-top { background: var(--blue); padding: 26px 20px 22px; text-align: center; }
-
-    .avatar-circle {
-      width: 70px; height: 70px; border-radius: 50%;
-      background: rgba(255,255,255,0.22);
-      border: 2px solid rgba(255,255,255,0.55);
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 12px;
-      font-size: 24px; font-weight: 700; color: #fff;
-      overflow: hidden;
-    }
+    .avatar-circle { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.22); border: 2px solid rgba(255,255,255,0.55); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 24px; font-weight: 700; color: #fff; overflow: hidden; }
     .avatar-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-
     .sidebar-name  { color: #fff; font-size: 15px; font-weight: 600; margin: 0 0 4px; }
     .sidebar-email { color: rgba(255,255,255,0.78); font-size: 12px; margin: 0; word-break: break-all; }
 
     .sidebar-nav { list-style: none; margin: 0; padding: 8px 0; }
     .sidebar-nav li { display: block; }
-    .sidebar-nav li a {
-      display: flex; align-items: center; gap: 11px;
-      padding: 12px 18px; color: #555; text-decoration: none;
-      font-size: 14px; font-weight: 500;
-      border-left: 3px solid transparent;
-      transition: all 0.18s;
-    }
+    .sidebar-nav li a { display: flex; align-items: center; gap: 11px; padding: 12px 18px; color: #555; text-decoration: none; font-size: 14px; font-weight: 500; border-left: 3px solid transparent; transition: all 0.18s; }
     .sidebar-nav li a i { width: 16px; color: #bbb; font-size: 13px; transition: color 0.18s; }
-    .sidebar-nav li a:hover, .sidebar-nav li a.active {
-      background: var(--blue-light); color: var(--blue); border-left-color: var(--blue);
-    }
+    .sidebar-nav li a:hover, .sidebar-nav li a.active { background: var(--blue-light); color: var(--blue); border-left-color: var(--blue); }
     .sidebar-nav li a:hover i, .sidebar-nav li a.active i { color: var(--blue); }
     .nav-sep { height: 1px; background: var(--border); margin: 6px 18px; }
     .sidebar-nav li a.logout-link { color: #e74c3c; }
     .sidebar-nav li a.logout-link i { color: #e74c3c; }
     .sidebar-nav li a.logout-link:hover { background: #fff5f5; border-left-color: #e74c3c; }
 
-    /* Main */
     .profile-main { display: flex; flex-direction: column; gap: 18px; }
     .profile-section { display: none; flex-direction: column; gap: 18px; }
     .profile-section.active { display: flex; }
 
-    /* Info cards */
     .info-cards-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
     .info-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 18px 14px; text-align: center; }
     .info-card-label { font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 7px; }
     .info-card-value { font-size: 13px; color: var(--muted); margin: 0; }
 
-    /* Table */
     .blue-table-wrap { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; overflow-x: auto; }
-    .blue-table-wrap table {  width: 100%; 
-  border-collapse: collapse; }
+    .blue-table-wrap table { width: 100%; border-collapse: collapse; }
     .blue-table-wrap thead tr { background: var(--blue); }
     .blue-table-wrap thead th { color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; padding: 14px 16px; text-align: center; white-space: nowrap; }
     .blue-table-wrap tbody td { padding: 13px 16px; font-size: 13px; color: #555; text-align: center; border-bottom: 1px solid #f2f4f7; white-space: nowrap; }
     .blue-table-wrap tbody tr:last-child td { border-bottom: none; }
     .blue-table-wrap tbody tr:hover { background: #fafbfd; }
 
-    /* Badges */
     .badge { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 11px; font-weight: 600; }
     .badge-delivered  { background: #eafaf1; color: #27ae60; }
     .badge-shipped    { background: #e8f4fb; color: #3a9fd8; }
+    .badge-confirmed  { background: #e8f4fb; color: #3a9fd8; }
     .badge-processing { background: #fff3e0; color: #e67e22; }
+    .badge-pending    { background: #fff3e0; color: #e67e22; }
     .badge-cancelled  { background: #fdf0f0; color: #e74c3c; }
 
-    /* Section card */
     .section-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
     .section-card-header { background: var(--blue); padding: 15px 22px; display: flex; align-items: center; justify-content: space-between; }
     .section-card-header h3 { color: #fff; font-size: 15px; font-weight: 600; margin: 0; }
     .section-card-body { padding: 22px; }
 
-    /* Form */
     .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
     .fp-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 7px; }
-    .fp-group input, .fp-group select {
-      width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
-      padding: 10px 13px; font-size: 14px; color: var(--text);
-      font-family: 'Jost', sans-serif; background: #fafbfc; outline: none;
-      transition: border-color 0.2s, background 0.2s; box-sizing: border-box;
-    }
+    .fp-group input, .fp-group select { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 13px; font-size: 14px; color: var(--text); font-family: 'Jost', sans-serif; background: #fafbfc; outline: none; transition: border-color 0.2s, background 0.2s; box-sizing: border-box; }
     .fp-group input:focus, .fp-group select:focus { border-color: var(--blue); background: #fff; }
     .fp-group input[readonly], .fp-group input:disabled { background: #f2f4f7; color: #aaa; cursor: not-allowed; }
 
-    /* Buttons */
-    .blue-btn {
-      background: var(--blue); color: #fff; border: 2px solid var(--blue);
-      padding: 12px 26px; border-radius: 8px; font-family: 'Jost', sans-serif;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      transition: background 0.2s, transform 0.1s, border-color 0.2s;
-    }
+    .blue-btn { background: var(--blue); color: #fff; border: 2px solid var(--blue); padding: 12px 26px; border-radius: 8px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s, border-color 0.2s; }
     .blue-btn:hover { background: var(--blue-dark); border-color: var(--blue-dark); transform: translateY(-1px); }
     .blue-btn:active { transform: translateY(0); }
     .blue-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    .outline-btn {
-      background: transparent; color: var(--blue); border: 2px solid var(--blue);
-      padding: 10px 22px; border-radius: 8px; font-family: 'Jost', sans-serif;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      transition: all 0.2s;
-    }
+    .outline-btn { background: transparent; color: var(--blue); border: 2px solid var(--blue); padding: 10px 22px; border-radius: 8px; font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .outline-btn:hover { background: var(--blue); color: #fff; }
 
-    .back-btn {
-      background: var(--blue); color: #fff; border: 2px solid var(--blue);
-      padding: 12px 24px; border-radius: 8px; font-family: 'Jost', sans-serif;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
-    }
+    .back-btn { background: var(--blue); color: #fff; border: 2px solid var(--blue); padding: 12px 24px; border-radius: 8px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
     .back-btn:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
     .back-btn-row { text-align: right; }
 
-    /* Password strength */
     .pwd-bar { height: 4px; background: #eee; border-radius: 2px; margin-top: 7px; overflow: hidden; }
     .pwd-fill { height: 100%; border-radius: 2px; transition: width 0.3s, background 0.3s; width: 0%; }
     .pwd-text { font-size: 11px; margin-top: 4px; font-weight: 600; color: #aaa; }
 
-    /* Address */
     .address-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .address-card { border: 1.5px solid var(--border); border-radius: 10px; padding: 17px; transition: border-color 0.2s; }
     .address-card:hover { border-color: var(--blue); }
@@ -208,25 +135,14 @@
     .addr-btn { font-size: 12px; padding: 5px 13px; border-radius: 6px; border: 1.5px solid var(--border); background: #fff; color: #555; cursor: pointer; font-family: 'Jost', sans-serif; font-weight: 500; transition: all 0.2s; }
     .addr-btn:hover { border-color: var(--blue); color: #fff; background: var(--blue); }
     .addr-btn.danger:hover { border-color: #e74c3c; color: #fff; background: #e74c3c; }
-
     .add-addr-card { border: 2px dashed #ccc; border-radius: 10px; padding: 17px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: all 0.2s; min-height: 148px; color: #bbb; }
     .add-addr-card:hover { border-color: var(--blue); color: var(--blue); }
     .add-addr-card i { font-size: 22px; }
     .add-addr-card span { font-size: 13px; font-weight: 500; }
 
-    /* Address Form Modal */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45); z-index: 1000;
-      align-items: center; justify-content: center;
-    }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
     .modal-overlay.open { display: flex; }
-    .modal-box {
-      background: #fff; border-radius: 14px; padding: 30px 28px;
-      width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-      animation: slideUp 0.25s ease;
-    }
+    .modal-box { background: #fff; border-radius: 14px; padding: 30px 28px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.18); animation: slideUp 0.25s ease; }
     @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
     .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
     .modal-header h4 { font-size: 16px; font-weight: 700; color: #333; margin: 0; }
@@ -234,7 +150,6 @@
     .modal-close:hover { color: #e74c3c; }
     .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
 
-    /* Not logged in */
     .not-logged-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 80px 40px; text-align: center; }
     .not-logged-card i { font-size: 52px; color: #ddd; display: block; margin-bottom: 16px; }
     .not-logged-card h3 { font-size: 20px; color: #333; margin: 0 0 8px; }
@@ -242,16 +157,13 @@
     .not-logged-card a { display: inline-block; background: var(--blue); color: #fff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s; border: 2px solid var(--blue); }
     .not-logged-card a:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
 
-    /* Loading spinner */
     .loading-text { color: var(--muted); font-size: 13px; text-align: center; padding: 20px; }
 
-    /* Toast */
     .toast-msg { position: fixed; bottom: 28px; right: 28px; padding: 13px 22px; border-radius: 10px; font-size: 14px; font-family: 'Jost', sans-serif; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.3s; pointer-events: none; color: #fff; max-width: calc(100vw - 40px); }
     .toast-msg.show { opacity: 1; transform: translateY(0); }
     .toast-msg.success { background: #27ae60; }
     .toast-msg.error   { background: #e74c3c; }
 
-    /* Responsive */
     @media (max-width: 992px) {
       .profile-layout { grid-template-columns: 1fr; gap: 16px; }
       .sidebar-wrapper { position: static; }
@@ -261,7 +173,6 @@
       .form-grid-2 { grid-template-columns: 1fr 1fr; }
       .address-grid { grid-template-columns: 1fr 1fr; }
     }
-
     @media (max-width: 600px) {
       .profile-wrap { padding: 20px 0 40px; }
       .info-cards-row { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -272,76 +183,20 @@
       .blue-btn, .back-btn { width: 100%; text-align: center; padding: 13px 16px; display: block; }
       .back-btn-row { text-align: center; }
       .not-logged-card { padding: 50px 20px; }
-      .blue-table-wrap table { min-width: 340px; }
       .blue-table-wrap thead th, .blue-table-wrap tbody td { padding: 11px 10px; font-size: 12px; }
       .toast-msg { left: 16px; right: 16px; bottom: 16px; text-align: center; }
       .modal-box { margin: 16px; padding: 22px 18px; }
     }
-    /* Mobile table scroll fix */
-@media (max-width: 600px) {
-  .blue-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .blue-table-wrap table {
-    min-width: unset;
-    width: max-content;
-    max-width: 100%;
-  }
-
-  /* Overview table - less columns needed */
-  #tab-overview .blue-table-wrap table {
-    min-width: 320px;
-  }
-
-  /* Orders table - more columns */
-  #tab-orders .blue-table-wrap table {
-    min-width: 480px;
-  }
-
-  /* Make table text smaller on mobile */
-  .blue-table-wrap thead th,
-  .blue-table-wrap tbody td {
-    padding: 10px 8px;
-    font-size: 11px;
-  }
-
-  /* Order ID column - shorter */
-  .blue-table-wrap tbody td:first-child,
-  .blue-table-wrap thead th:first-child {
-    min-width: 90px;
-  }
-}
-@media (max-width: 768px) {
-  .blue-table-wrap {
-    overflow-x: scroll !important;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-    display: block;
-  }
-
-  .blue-table-wrap table {
-    width: 600px !important;
-    min-width: 600px !important;
-    table-layout: auto;
-  }
-
-  .profile-main {
-    overflow: visible;
-    min-width: 0;
-    width: 100%;
-  }
-
-  .profile-layout {
-    overflow: visible;
-  }
-}
+    @media (max-width: 768px) {
+      .blue-table-wrap { overflow-x: scroll !important; -webkit-overflow-scrolling: touch; width: 100%; display: block; }
+      .blue-table-wrap table { width: 600px !important; min-width: 600px !important; table-layout: auto; }
+      .profile-main { overflow: visible; min-width: 0; width: 100%; }
+      .profile-layout { overflow: visible; }
+    }
   </style>
 </head>
 
 <body>
-
-  <!-- header start -->
   <header class="cdx-header">
     <div class="container">
       <div class="grid grid-cols-12">
@@ -353,8 +208,7 @@
                 <li class="close-menu">
                   <div class="menu-brand"><img class="img-fluid" src="./assets/images/dress/logo_1.png" alt="" style="width: 85px;">
                     <svg class="feather feather-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                      <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                   </div>
                 </li>
@@ -367,28 +221,23 @@
             </div>
             <div class="nav-iconlist">
               <ul>
-                <!-- <li><a class="search-toggle" href="javascript:void(0);">
-                    <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                      <path d="M20.9999 21L16.6499 16.65" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg></a></li> -->
                 <li><a href="cart.html">
-                    <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M9 22C9.55228 22 10 21.5523 10 21C10 20.4477 9.55228 20 9 20C8.44772 20 8 20.4477 8 21C8 21.5523 8.44772 22 9 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                      <path d="M20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20C19.4477 20 19 20.4477 19 21C19 21.5523 19.4477 22 20 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                      <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                   <div class="nav-notification" style="display:none;">0</div></a></li>
+                  <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 22C9.55228 22 10 21.5523 10 21C10 20.4477 9.55228 20 9 20C8.44772 20 8 20.4477 8 21C8 21.5523 8.44772 22 9 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20C19.4477 20 19 20.4477 19 21C19 21.5523 19.4477 22 20 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div class="nav-notification" style="display:none;">0</div></a></li>
                 <li><a href="wishlist.html">
-                    <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M20.4201 4.57996C19.9184 4.07653 19.3223 3.67709 18.6659 3.40455C18.0095 3.132 17.3058 2.9917 16.5951 2.9917C15.8844 2.9917 15.1806 3.132 14.5243 3.40455C13.8679 3.67709 13.2718 4.07653 12.7701 4.57996L12.0001 5.35996L11.2301 4.57996C10.7284 4.07653 10.1323 3.67709 9.47591 3.40455C8.81953 3.132 8.1158 2.9917 7.40509 2.9917C6.69437 2.9917 5.99065 3.132 5.33427 3.40455C4.67789 3.67709 4.08176 4.07653 3.58009 4.57996C1.46009 6.69996 1.33009 10.28 4.00009 13L12.0001 21L20.0001 13C22.6701 10.28 22.5401 6.69996 20.4201 4.57996Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                    <div class="nav-notification" style="display:none;">0</div></a></li>
+                  <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20.4201 4.57996C19.9184 4.07653 19.3223 3.67709 18.6659 3.40455C18.0095 3.132 17.3058 2.9917 16.5951 2.9917C15.8844 2.9917 15.1806 3.132 14.5243 3.40455C13.8679 3.67709 13.2718 4.07653 12.7701 4.57996L12.0001 5.35996L11.2301 4.57996C10.7284 4.07653 10.1323 3.67709 9.47591 3.40455C8.81953 3.132 8.1158 2.9917 7.40509 2.9917C6.69437 2.9917 5.99065 3.132 5.33427 3.40455C4.67789 3.67709 4.08176 4.07653 3.58009 4.57996C1.46009 6.69996 1.33009 10.28 4.00009 13L12.0001 21L20.0001 13C22.6701 10.28 22.5401 6.69996 20.4201 4.57996Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div class="nav-notification" style="display:none;">0</div></a></li>
                 <li class="dropdownmenu" id="user-dropdown-wrap"><a class="dropdown-action" href="javascript:void(0);">
-                    <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                      <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg></a>
+                  <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg></a>
                   <ul class="dropdownitem-list">
                     <li><a href="login.html">login</a></li>
                     <li><a href="register.html">register</a></li>
@@ -408,16 +257,13 @@
     </div>
     <div class="clsoe-search"><i class="fa-solid fa-close"></i></div>
   </div>
-  <!-- header end -->
 
   <div class="profile-wrap">
     <div class="container">
-
       <div class="profile-breadcrumb">
         <a href="index.html">Home</a><span>›</span>My Account
       </div>
 
-      <!-- NOT LOGGED IN -->
       <div id="not-logged-view" style="display:none;">
         <div class="not-logged-card">
           <i class="fa fa-user-lock"></i>
@@ -427,12 +273,9 @@
         </div>
       </div>
 
-      <!-- LOGGED IN -->
       <div id="logged-view" style="display:none;">
-
         <div class="profile-layout">
 
-          <!-- SIDEBAR WRAPPER -->
           <div class="sidebar-wrapper">
             <div class="mobile-sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
               <span id="toggleLabel"><i class="fa fa-user"></i> &nbsp; My Account Menu</span>
@@ -456,9 +299,8 @@
                 <li><a href="#" class="logout-link" id="profile-logout"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
               </ul>
             </div>
-          </div><!-- sidebar-wrapper -->
+          </div>
 
-          <!-- MAIN CONTENT -->
           <div class="profile-main">
 
             <!-- OVERVIEW -->
@@ -474,30 +316,23 @@
                 </div>
                 <div class="info-card">
                   <p class="info-card-label">Wishlist Items</p>
-                  <p class="info-card-value">3</p>
+                  <p class="info-card-value" id="ov-wishlist">—</p>
                 </div>
                 <div class="info-card">
                   <p class="info-card-label">Saved Addresses</p>
                   <p class="info-card-value" id="ov-addr-count">0</p>
                 </div>
               </div>
-
               <div class="blue-table-wrap">
                 <table>
                   <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Date</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                    </tr>
+                    <tr><th>Order ID</th><th>Date</th><th>Amount</th><th>Status</th></tr>
                   </thead>
                   <tbody id="ov-tbody">
-                    <tr><td colspan="4" class="loading-text">Loading orders...</td></tr>
+                    <tr><td colspan="4" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>
                   </tbody>
                 </table>
               </div>
-
               <div class="back-btn-row">
                 <button class="back-btn" onclick="window.location.href='shop.html'">Continue Shopping</button>
               </div>
@@ -508,31 +343,17 @@
               <div class="section-card">
                 <div class="section-card-header">
                   <h3>Personal Information</h3>
-                  <!-- Edit / Cancel button -->
                   <button class="outline-btn" id="edit-toggle-btn" onclick="toggleEdit()" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.5);font-size:13px;padding:7px 18px;">
                     <i class="fa fa-pencil-alt"></i> Edit
                   </button>
                 </div>
                 <div class="section-card-body">
                   <div class="form-grid-2">
-                    <div class="fp-group">
-                      <label>Full Name</label>
-                      <input type="text" id="p-name" placeholder="Your full name" disabled>
-                    </div>
-                    <div class="fp-group">
-                      <label>Email Address</label>
-                      <input type="email" id="p-email" readonly>
-                    </div>
-                    <div class="fp-group">
-                      <label>Phone Number</label>
-                      <input type="tel" id="p-phone" placeholder="Your phone number" disabled>
-                    </div>
-                    <div class="fp-group">
-                      <label>Member Since</label>
-                      <input type="text" id="p-since" readonly>
-                    </div>
+                    <div class="fp-group"><label>Full Name</label><input type="text" id="p-name" placeholder="Your full name" disabled></div>
+                    <div class="fp-group"><label>Email Address</label><input type="email" id="p-email" readonly></div>
+                    <div class="fp-group"><label>Phone Number</label><input type="tel" id="p-phone" placeholder="Your phone number" disabled></div>
+                    <div class="fp-group"><label>Member Since</label><input type="text" id="p-since" readonly></div>
                   </div>
-                  <!-- Save button (hidden until Edit clicked) -->
                   <button class="blue-btn" id="save-personal-btn" onclick="savePersonal()" style="display:none;">
                     <i class="fa fa-save"></i> &nbsp;Save Changes
                   </button>
@@ -545,22 +366,15 @@
               <div class="blue-table-wrap">
                 <table>
                   <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Date</th>
-                      <th>Location</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Track</th>
-                    </tr>
+                    <tr><th>Order ID</th><th>Date</th><th>Items</th><th>Amount</th><th>Payment</th><th>Status</th><th>Track</th></tr>
                   </thead>
                   <tbody id="all-tbody">
-                    <tr><td colspan="6" class="loading-text">Loading orders...</td></tr>
+                    <tr><td colspan="7" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>
                   </tbody>
                 </table>
               </div>
               <div class="back-btn-row">
-                <button class="back-btn" onclick="window.location.href='track-order.html'">Track Order</button>
+                <button class="back-btn" onclick="window.location.href='shop.html'">Continue Shopping</button>
               </div>
             </div>
 
@@ -569,9 +383,7 @@
               <div class="section-card">
                 <div class="section-card-header"><h3>My Addresses</h3></div>
                 <div class="section-card-body">
-                  <div class="address-grid" id="address-grid">
-                    <!-- Rendered by JS -->
-                  </div>
+                  <div class="address-grid" id="address-grid"></div>
                 </div>
               </div>
             </div>
@@ -600,73 +412,42 @@
               </div>
             </div>
 
-          </div><!-- profile-main -->
-        </div><!-- profile-layout -->
-      </div><!-- logged-view -->
-
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ===== ADD ADDRESS MODAL ===== -->
+  <!-- ADDRESS MODAL -->
   <div class="modal-overlay" id="addressModal">
     <div class="modal-box">
       <div class="modal-header">
         <h4><i class="fa fa-map-marker-alt" style="color:var(--blue);margin-right:8px;"></i> Add New Address</h4>
         <button class="modal-close" onclick="closeAddressModal()">✕</button>
       </div>
-
-      <div class="fp-group" style="margin-bottom:14px;">
-        <label>Full Name</label>
-        <input type="text" id="addr-name-input" placeholder="Recipient name">
-      </div>
-      <div class="fp-group" style="margin-bottom:14px;">
-        <label>Phone Number</label>
-        <input type="tel" id="addr-phone-input" placeholder="10-digit mobile number">
-      </div>
-      <div class="fp-group" style="margin-bottom:14px;">
-        <label>Address Line 1</label>
-        <input type="text" id="addr-line1" placeholder="Door no, Street name">
-      </div>
-      <div class="fp-group" style="margin-bottom:14px;">
-        <label>Address Line 2 (optional)</label>
-        <input type="text" id="addr-line2" placeholder="Area, Landmark">
-      </div>
+      <div class="fp-group" style="margin-bottom:14px;"><label>Full Name</label><input type="text" id="addr-name-input" placeholder="Recipient name"></div>
+      <div class="fp-group" style="margin-bottom:14px;"><label>Phone Number</label><input type="tel" id="addr-phone-input" placeholder="10-digit mobile number"></div>
+      <div class="fp-group" style="margin-bottom:14px;"><label>Address Line 1</label><input type="text" id="addr-line1" placeholder="Door no, Street name"></div>
+      <div class="fp-group" style="margin-bottom:14px;"><label>Address Line 2 (optional)</label><input type="text" id="addr-line2" placeholder="Area, Landmark"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-        <div class="fp-group">
-          <label>City</label>
-          <input type="text" id="addr-city" placeholder="City">
-        </div>
-        <div class="fp-group">
-          <label>Pincode</label>
-          <input type="text" id="addr-pin" placeholder="6-digit pincode">
-        </div>
+        <div class="fp-group"><label>City</label><input type="text" id="addr-city" placeholder="City"></div>
+        <div class="fp-group"><label>Pincode</label><input type="text" id="addr-pin" placeholder="6-digit pincode"></div>
       </div>
-      <div class="fp-group" style="margin-bottom:14px;">
-        <label>State</label>
-        <input type="text" id="addr-state" placeholder="State">
-      </div>
-
+      <div class="fp-group" style="margin-bottom:14px;"><label>State</label><input type="text" id="addr-state" placeholder="State"></div>
       <div class="modal-footer">
         <button class="outline-btn" onclick="closeAddressModal()">Cancel</button>
-        <button class="blue-btn" id="save-addr-btn" onclick="saveAddress()">
-          <i class="fa fa-save"></i> &nbsp;Save Address
-        </button>
+        <button class="blue-btn" id="save-addr-btn" onclick="saveAddress()"><i class="fa fa-save"></i> &nbsp;Save Address</button>
       </div>
     </div>
   </div>
 
   <div class="toast-msg" id="toast"></div>
 
-  <!-- footer start -->
   <footer class="space-py-100">
     <div class="container">
       <div class="footer-row-grid">
         <div class="footer-grid">
-          <div class="codex-brand">
-            <a href="javascript:void(0)">
-              <img class="img-fluid" src="./assets/images/dress/logo.png" alt="logo" style="max-width: 85px;">
-            </a>
-          </div>
+          <div class="codex-brand"><a href="javascript:void(0)"><img class="img-fluid" src="./assets/images/dress/logo.png" alt="logo" style="max-width: 85px;"></a></div>
           <p style="text-align: center; margin-top: 0px;">The Traditional Touch offers elegant Anarkali styles with quality, comfort, and timeless appeal for every occasion.</p>
           <div class="follow-us">
             <ul class="footer-social" style="display: flex; list-style: none; gap: 3px; padding: 0; justify-content: flex-start;">
@@ -690,32 +471,22 @@
           <ul class="footer-contact footer-list">
             <li><a href="tel:+917092735882"><i class="fa fa-phone" style="margin-right: 8px;"></i>+91 7092735882</a></li>
             <li><a href="mailto:thetraditionaltouch308@gmail.com"><i class="fa fa-envelope" style="margin-right: 8px;"></i>thetraditionaltouch308@gmail.com</a></li>
-            <li><a href="https://maps.app.goo.gl/efacKC237PTsnMbh7" target="_blank"><i class="fa fa-map-marker" aria-hidden="true" style="margin-right: 8px;"></i>Maraimalai Nagar, Chengalpattu</a></li>
+            <li><a href="https://maps.app.goo.gl/efacKC237PTsnMbh7" target="_blank"><i class="fa fa-map-marker" style="margin-right: 8px;"></i>Maraimalai Nagar, Chengalpattu</a></li>
           </ul>
         </div>
       </div>
     </div>
   </footer>
-
   <div class="subfooter" style="padding: 10px 0; border-top: 1px solid #eee;">
     <div class="container">
       <div style="display: flex; justify-content: center; align-items: center;">
-        <p style="text-align: center; margin: 0;">&copy; <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">The Traditional Touch</a> <span id="current-year"></span>. All Rights Reserved. Developed by
-          <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">Bala</a> &
-          <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">Selva</a></p>
+        <p style="text-align: center; margin: 0;">&copy; <strong>The Traditional Touch</strong> <span id="current-year"></span>. All Rights Reserved. Developed by <strong>Bala</strong> &amp; <strong>Selva</strong></p>
       </div>
     </div>
   </div>
-  <!-- footer end -->
 
   <a class="scroll-top" href="javascript:void(0);"><i class="fa fa-angle-double-up"></i></a>
-
-  <div class="codex-loader d-none">
-    <div><div></div></div><div><div></div></div><div><div></div></div>
-    <div><div></div></div><div><div></div></div><div><div></div></div>
-    <div><div></div></div><div><div></div></div><div><div></div></div>
-    <div><div></div></div><div><div></div></div><div><div></div></div>
-  </div>
+  <div class="codex-loader d-none"><div><div></div></div><div><div></div></div><div><div></div></div><div><div></div></div><div><div></div></div><div><div></div></div><div><div></div></div><div><div></div></div><div><div></div></div><div><div></div></div><div><div></div></div><div><div></div></div></div>
 
   <script>document.getElementById("current-year").textContent = new Date().getFullYear();</script>
   <script src="./assets/js/config.js"></script>
@@ -729,8 +500,8 @@
     //  GLOBALS
     // =============================================
     const token = localStorage.getItem("token");
-    let   currentUser = null;  // will be filled from API
-    let   savedAddresses = [];  // array of address strings stored locally
+    let currentUser = null;
+    let savedAddresses = [];
 
     // =============================================
     //  BOOT
@@ -743,119 +514,157 @@
     }
 
     // =============================================
-    //  FETCH PROFILE FROM API
+    //  AUTO OPEN TAB FROM URL  e.g. ?tab=orders
+    // =============================================
+    function openTabFromURL() {
+      const tab = new URLSearchParams(window.location.search).get("tab");
+      if (!tab) return;
+      const link = document.querySelector(`.sidebar-nav a[data-tab="${tab}"]`);
+      if (!link) return;
+      document.querySelectorAll(".sidebar-nav a").forEach(a => a.classList.remove("active"));
+      link.classList.add("active");
+      document.querySelectorAll(".profile-section").forEach(s => s.classList.remove("active"));
+      const section = document.getElementById("tab-" + tab);
+      if (section) section.classList.add("active");
+    }
+
+    // =============================================
+    //  FETCH PROFILE
     // =============================================
     async function fetchProfile() {
       try {
-        const res  = await fetch(`${CONFIG.BASE_URL}/user/profile`, {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type":  "application/json"
-          }
+        const res = await fetch(`${CONFIG.BASE_URL}/user/profile`, {
+          headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
         });
-
         if (res.status === 401) {
-          // Token expired
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           window.location.href = "login.html";
           return;
         }
-
         const data = await res.json();
         currentUser = data;
-
-        // Also cache in localStorage for other pages (navbar etc.)
         localStorage.setItem("user", JSON.stringify(data));
-
         initProfile();
       } catch (err) {
         console.error("Profile fetch error:", err);
         showToast("Could not load profile. Check connection.", "error");
-
-        // Fallback to localStorage if API fails
         const cached = JSON.parse(localStorage.getItem("user") || "null");
         if (cached) { currentUser = cached; initProfile(); }
       }
     }
 
     // =============================================
-    //  INIT PROFILE UI
+    //  INIT UI
     // =============================================
     function initProfile() {
-      const u = currentUser;
+      const u     = currentUser;
       const name  = u.name  || "User";
       const email = u.email || "";
       const phone = u.phone || "";
 
-      // Sidebar
       document.getElementById("sb-name").textContent  = name;
       document.getElementById("sb-email").textContent = email;
-      const init = name.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
 
-      // Avatar — image or initials
+      const init    = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
       const avatarEl = document.getElementById("avatar-init");
-      if (u.image) {
-        avatarEl.innerHTML = `<img src="${u.image}" alt="${name}">`;
-      } else {
-        avatarEl.textContent = init;
-      }
+      avatarEl.textContent = "";
+      if (u.image) { avatarEl.innerHTML = `<img src="${u.image}" alt="${name}">`; }
+      else         { avatarEl.textContent = init; }
 
-      // Member since
       const since = u.createdAt
-        ? new Date(u.createdAt).toLocaleDateString("en-IN", { year:"numeric", month:"short" })
+        ? new Date(u.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short" })
         : "2024";
 
-      // Overview cards
       document.getElementById("ov-since").textContent = since;
-
-      // Personal Info tab (view mode — disabled inputs)
       document.getElementById("p-name").value  = name;
       document.getElementById("p-email").value = email;
       document.getElementById("p-phone").value = phone;
       document.getElementById("p-since").value = since;
 
-      // Load addresses
       loadAddresses();
-
-      // Load dummy orders
-      loadOrders();
+      loadOrders();           // ✅ Real API
+      openTabFromURL();       // ✅ Handle ?tab=orders redirect
     }
 
     // =============================================
-    //  ORDERS (dummy data — replace with real API)
+    //  ORDERS — REAL API  ✅
     // =============================================
-    const dummyOrders = [
-      { id:"#TTT-1042", date:"28-Mar-2025", loc:"Madurai",    amt:"₹2,850", status:"Delivered", cls:"badge-delivered" },
-      { id:"#TTT-1038", date:"15-Mar-2025", loc:"Chennai",    amt:"₹1,200", status:"Shipped",   cls:"badge-shipped"   },
-      { id:"#TTT-1031", date:"22-Feb-2025", loc:"Coimbatore", amt:"₹3,600", status:"Delivered", cls:"badge-delivered" },
-      { id:"#TTT-1025", date:"01-Feb-2025", loc:"Madurai",    amt:"₹950",   status:"Cancelled", cls:"badge-cancelled" },
-    ];
+    const STATUS_MAP = {
+      Pending:   { cls: "badge-pending",    label: "Pending"   },
+      Confirmed: { cls: "badge-confirmed",  label: "Confirmed" },
+      Shipped:   { cls: "badge-shipped",    label: "Shipped"   },
+      Delivered: { cls: "badge-delivered",  label: "Delivered" },
+      Cancelled: { cls: "badge-cancelled",  label: "Cancelled" },
+    };
 
-    function loadOrders() {
-      document.getElementById("ov-orders").textContent = dummyOrders.length;
+    async function loadOrders() {
+      const loadingRow4 = `<tr><td colspan="4" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>`;
+      const loadingRow7 = `<tr><td colspan="7" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>`;
+      document.getElementById("ov-tbody").innerHTML  = loadingRow4;
+      document.getElementById("all-tbody").innerHTML = loadingRow7;
 
-      document.getElementById("ov-tbody").innerHTML = dummyOrders.slice(0,3).map(o => `
-        <tr>
-          <td><strong style="color:#333;">${o.id}</strong></td>
-          <td>${o.date}</td>
-          <td><strong>${o.amt}</strong></td>
-          <td><span class="badge ${o.cls}">${o.status}</span></td>
-        </tr>
-      `).join("");
+      try {
+        const res    = await fetch(`${CONFIG.BASE_URL}/orders`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const orders = await res.json();
 
-      document.getElementById("all-tbody").innerHTML = dummyOrders.map(o => `
-        <tr>
-          <td><strong style="color:#333;">${o.id}</strong></td>
-          <td>${o.date}</td>
-          <td>${o.loc}</td>
-          <td><strong>${o.amt}</strong></td>
-          <td><span class="badge ${o.cls}">${o.status}</span></td>
-          <td><a href="track-order.html" style="color:var(--blue);font-size:12px;text-decoration:none;font-weight:600;">
-            <i class="fa fa-map-marker-alt"></i> Track
-          </a></td>
-        </tr>
-      `).join("");
+        if (!res.ok) throw new Error(orders.message || "Failed");
+
+        // Total orders count card
+        document.getElementById("ov-orders").textContent = orders.length;
+
+        if (orders.length === 0) {
+          const emptyMsg = `<a href="shop.html" style="color:var(--blue);">Start shopping!</a>`;
+          document.getElementById("ov-tbody").innerHTML  = `<tr><td colspan="4" style="text-align:center;padding:30px;color:#aaa;">No orders yet. ${emptyMsg}</td></tr>`;
+          document.getElementById("all-tbody").innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">No orders yet. ${emptyMsg}</td></tr>`;
+          return;
+        }
+
+        // ── Overview table: latest 3 ──
+        document.getElementById("ov-tbody").innerHTML = orders.slice(0, 3).map(o => {
+          const s    = STATUS_MAP[o.status] || { cls: "badge-pending", label: o.status };
+          const date = new Date(o.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+          const id   = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
+          return `
+            <tr>
+              <td><strong style="color:#333;">${id}</strong></td>
+              <td>${date}</td>
+              <td><strong>₹${(o.totalPrice || 0).toLocaleString("en-IN")}</strong></td>
+              <td><span class="badge ${s.cls}">${s.label}</span></td>
+            </tr>`;
+        }).join("");
+
+        // ── Full orders table ──
+        document.getElementById("all-tbody").innerHTML = orders.map(o => {
+          const s     = STATUS_MAP[o.status] || { cls: "badge-pending", label: o.status };
+          const date  = new Date(o.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+          const id    = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
+          const items = Array.isArray(o.items) ? o.items.length : 0;
+          const pay   = o.paymentMethod || "—";
+          return `
+            <tr>
+              <td><strong style="color:#333;">${id}</strong></td>
+              <td>${date}</td>
+              <td>${items} item${items !== 1 ? "s" : ""}</td>
+              <td><strong>₹${(o.totalPrice || 0).toLocaleString("en-IN")}</strong></td>
+              <td><span style="font-size:11px;background:#f0f4f8;padding:3px 8px;border-radius:4px;">${pay}</span></td>
+              <td><span class="badge ${s.cls}">${s.label}</span></td>
+              <td>
+                <a href="track-order.html?id=${o._id}"
+                   style="color:var(--blue);font-size:12px;text-decoration:none;font-weight:600;">
+                  <i class="fa fa-map-marker-alt"></i> Track
+                </a>
+              </td>
+            </tr>`;
+        }).join("");
+
+      } catch (err) {
+        console.error("Orders error:", err);
+        document.getElementById("ov-tbody").innerHTML  = `<tr><td colspan="4" style="text-align:center;padding:20px;color:#e74c3c;">Failed to load orders.</td></tr>`;
+        document.getElementById("all-tbody").innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:#e74c3c;">Failed to load orders.</td></tr>`;
+      }
     }
 
     // =============================================
@@ -865,25 +674,18 @@
 
     function toggleEdit() {
       isEditing = !isEditing;
-      const btn      = document.getElementById("edit-toggle-btn");
-      const saveBtn  = document.getElementById("save-personal-btn");
-      const nameIn   = document.getElementById("p-name");
-      const phoneIn  = document.getElementById("p-phone");
-
+      const btn     = document.getElementById("edit-toggle-btn");
+      const saveBtn = document.getElementById("save-personal-btn");
+      const nameIn  = document.getElementById("p-name");
+      const phoneIn = document.getElementById("p-phone");
       if (isEditing) {
-        // Enable editing
-        nameIn.disabled  = false;
-        phoneIn.disabled = false;
-        nameIn.focus();
-        btn.innerHTML    = '<i class="fa fa-times"></i> Cancel';
+        nameIn.disabled = false; phoneIn.disabled = false; nameIn.focus();
+        btn.innerHTML = '<i class="fa fa-times"></i> Cancel';
         saveBtn.style.display = "inline-block";
       } else {
-        // Cancel — restore original values
-        nameIn.value     = currentUser.name  || "";
-        phoneIn.value    = currentUser.phone || "";
-        nameIn.disabled  = true;
-        phoneIn.disabled = true;
-        btn.innerHTML    = '<i class="fa fa-pencil-alt"></i> Edit';
+        nameIn.value = currentUser.name || ""; phoneIn.value = currentUser.phone || "";
+        nameIn.disabled = true; phoneIn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-pencil-alt"></i> Edit';
         saveBtn.style.display = "none";
       }
     }
@@ -891,11 +693,9 @@
     async function savePersonal() {
       const name  = document.getElementById("p-name").value.trim();
       const phone = document.getElementById("p-phone").value.trim();
-
-      // Validate
-      if (!name)              { showToast("Name cannot be empty!", "error"); return; }
-      if (name.length < 3)    { showToast("Name must be at least 3 characters!", "error"); return; }
-      if (!/^[a-zA-Z\s]+$/.test(name)) { showToast("Name must contain only letters!", "error"); return; }
+      if (!name)                             { showToast("Name cannot be empty!", "error"); return; }
+      if (name.length < 3)                   { showToast("Name must be at least 3 characters!", "error"); return; }
+      if (!/^[a-zA-Z\s]+$/.test(name))       { showToast("Name must contain only letters!", "error"); return; }
       if (phone && !/^[6-9]\d{9}$/.test(phone)) { showToast("Enter a valid 10-digit Indian mobile number!", "error"); return; }
 
       const saveBtn = document.getElementById("save-personal-btn");
@@ -903,39 +703,28 @@
       saveBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
 
       try {
-        const res = await fetch(`${CONFIG.BASE_URL}/user/profile`, {
-          method:  "PUT",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type":  "application/json"
-          },
+        const res  = await fetch(`${CONFIG.BASE_URL}/user/profile`, {
+          method: "PUT",
+          headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({ name, phone })
         });
-
         const data = await res.json();
-
         if (res.ok) {
           currentUser = data.user || { ...currentUser, name, phone };
           localStorage.setItem("user", JSON.stringify(currentUser));
-
-          // Update sidebar
           document.getElementById("sb-name").textContent = currentUser.name;
-          const init = currentUser.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+          const init = currentUser.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
           if (!currentUser.image) document.getElementById("avatar-init").textContent = init;
-
-          // Exit edit mode
           document.getElementById("p-name").disabled  = true;
           document.getElementById("p-phone").disabled = true;
           document.getElementById("edit-toggle-btn").innerHTML = '<i class="fa fa-pencil-alt"></i> Edit';
           saveBtn.style.display = "none";
           isEditing = false;
-
           showToast("Profile updated successfully! ✓", "success");
         } else {
           showToast(data.message || "Update failed. Try again!", "error");
         }
       } catch (err) {
-        console.error("Save profile error:", err);
         showToast("Network error! Check your connection.", "error");
       } finally {
         saveBtn.disabled = false;
@@ -946,14 +735,8 @@
     // =============================================
     //  ADDRESS
     // =============================================
-
-    // Load addresses from API user object + localStorage extras
     function loadAddresses() {
-      // savedAddresses stored locally as array of address strings
-      const stored = JSON.parse(localStorage.getItem("savedAddresses") || "[]");
-      savedAddresses = stored;
-
-      // If API returned an address and it's not already in local list, prepend it
+      savedAddresses = JSON.parse(localStorage.getItem("savedAddresses") || "[]");
       if (currentUser.address && currentUser.address.trim()) {
         const apiAddr = currentUser.address.trim();
         if (!savedAddresses.includes(apiAddr)) {
@@ -961,16 +744,13 @@
           localStorage.setItem("savedAddresses", JSON.stringify(savedAddresses));
         }
       }
-
       renderAddresses();
     }
 
     function renderAddresses() {
-      const grid = document.getElementById("address-grid");
+      const grid     = document.getElementById("address-grid");
       const userName = currentUser.name || "User";
-
       let html = "";
-
       savedAddresses.forEach((addr, idx) => {
         const isDefault = idx === 0;
         html += `
@@ -981,21 +761,10 @@
             <div class="addr-actions">
               <button class="addr-btn danger" onclick="removeAddress(${idx})">Remove</button>
             </div>
-          </div>
-        `;
+          </div>`;
       });
-
-      // Add new address card
-      html += `
-        <div class="add-addr-card" onclick="openAddressModal()">
-          <i class="fa fa-plus-circle"></i>
-          <span>Add New Address</span>
-        </div>
-      `;
-
+      html += `<div class="add-addr-card" onclick="openAddressModal()"><i class="fa fa-plus-circle"></i><span>Add New Address</span></div>`;
       grid.innerHTML = html;
-
-      // Update overview count
       document.getElementById("ov-addr-count").textContent = savedAddresses.length;
     }
 
@@ -1006,47 +775,34 @@
       showToast("Address removed.", "success");
     }
 
-    // =============================================
-    //  ADDRESS MODAL
-    // =============================================
     function openAddressModal() {
       document.getElementById("addressModal").classList.add("open");
-      // Pre-fill name
-      document.getElementById("addr-name-input").value = currentUser.name || "";
+      document.getElementById("addr-name-input").value  = currentUser.name  || "";
       document.getElementById("addr-phone-input").value = currentUser.phone || "";
     }
 
     function closeAddressModal() {
       document.getElementById("addressModal").classList.remove("open");
-      clearAddrForm();
-    }
-
-    function clearAddrForm() {
       ["addr-name-input","addr-phone-input","addr-line1","addr-line2","addr-city","addr-pin","addr-state"]
         .forEach(id => { document.getElementById(id).value = ""; });
     }
 
-    // Close modal on overlay click
     document.getElementById("addressModal").addEventListener("click", function(e) {
       if (e.target === this) closeAddressModal();
     });
 
     async function saveAddress() {
-      const name  = document.getElementById("addr-name-input").value.trim();
-      const phone = document.getElementById("addr-phone-input").value.trim();
       const line1 = document.getElementById("addr-line1").value.trim();
       const line2 = document.getElementById("addr-line2").value.trim();
       const city  = document.getElementById("addr-city").value.trim();
       const pin   = document.getElementById("addr-pin").value.trim();
       const state = document.getElementById("addr-state").value.trim();
+      const phone = document.getElementById("addr-phone-input").value.trim();
+      if (!line1)                          { showToast("Address Line 1 is required!", "error"); return; }
+      if (!city)                           { showToast("City is required!", "error"); return; }
+      if (!pin || !/^\d{6}$/.test(pin))    { showToast("Enter a valid 6-digit pincode!", "error"); return; }
+      if (!state)                          { showToast("State is required!", "error"); return; }
 
-      // Validate
-      if (!line1)               { showToast("Address Line 1 is required!", "error"); return; }
-      if (!city)                { showToast("City is required!", "error"); return; }
-      if (!pin || !/^\d{6}$/.test(pin)) { showToast("Enter a valid 6-digit pincode!", "error"); return; }
-      if (!state)               { showToast("State is required!", "error"); return; }
-
-      // Build address string
       const parts = [line1];
       if (line2) parts.push(line2);
       parts.push(`${city} - ${pin}`);
@@ -1059,27 +815,17 @@
       btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
 
       try {
-        // Save to API (PUT /api/user/profile with address field)
-        const res = await fetch(`${CONFIG.BASE_URL}/user/profile`, {
-          method:  "PUT",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type":  "application/json"
-          },
+        const res  = await fetch(`${CONFIG.BASE_URL}/user/profile`, {
+          method: "PUT",
+          headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({ address: addressStr })
         });
-
         const data = await res.json();
-
         if (res.ok) {
-          // Update currentUser
           currentUser = data.user || { ...currentUser, address: addressStr };
           localStorage.setItem("user", JSON.stringify(currentUser));
-
-          // Add to local list
           savedAddresses.push(addressStr);
           localStorage.setItem("savedAddresses", JSON.stringify(savedAddresses));
-
           renderAddresses();
           closeAddressModal();
           showToast("Address saved successfully! ✓", "success");
@@ -1087,7 +833,6 @@
           showToast(data.message || "Failed to save address.", "error");
         }
       } catch (err) {
-        console.error("Save address error:", err);
         showToast("Network error! Check connection.", "error");
       } finally {
         btn.disabled = false;
@@ -1096,13 +841,11 @@
     }
 
     // =============================================
-    //  MOBILE SIDEBAR TOGGLE
+    //  SIDEBAR TOGGLE
     // =============================================
     function toggleSidebar() {
-      const sidebar = document.getElementById("profileSidebar");
-      const toggle  = document.getElementById("sidebarToggle");
-      sidebar.classList.toggle("sidebar-open");
-      toggle.classList.toggle("open");
+      document.getElementById("profileSidebar").classList.toggle("sidebar-open");
+      document.getElementById("sidebarToggle").classList.toggle("open");
     }
 
     // =============================================
@@ -1112,13 +855,14 @@
       link.addEventListener("click", function(e) {
         e.preventDefault();
         const tab = this.getAttribute("data-tab");
-
         document.querySelectorAll(".sidebar-nav a").forEach(a => a.classList.remove("active"));
         this.classList.add("active");
-
         document.querySelectorAll(".profile-section").forEach(s => s.classList.remove("active"));
         document.getElementById("tab-" + tab).classList.add("active");
-
+        // Update URL
+        const url = new URL(window.location);
+        url.searchParams.set("tab", tab);
+        window.history.pushState({}, "", url);
         if (window.innerWidth <= 992) {
           document.getElementById("profileSidebar").classList.remove("sidebar-open");
           document.getElementById("sidebarToggle").classList.remove("open");
@@ -1147,20 +891,17 @@
       if (/[A-Z]/.test(val))      s++;
       if (/[0-9]/.test(val))      s++;
       if (/[!@#$%^&*]/.test(val)) s++;
-
       const lvl = [
-        {w:"0%",   c:"#eee",    t:"",            tc:"#aaa"   },
-        {w:"25%",  c:"#e74c3c", t:"Weak",        tc:"#e74c3c"},
-        {w:"50%",  c:"#e67e22", t:"Fair",        tc:"#e67e22"},
-        {w:"75%",  c:"#f1c40f", t:"Good",        tc:"#e0a800"},
-        {w:"90%",  c:"#27ae60", t:"Strong",      tc:"#27ae60"},
-        {w:"100%", c:"#1a7a45", t:"Very Strong", tc:"#1a7a45"},
+        { w:"0%",   c:"#eee",    t:"",            tc:"#aaa"    },
+        { w:"25%",  c:"#e74c3c", t:"Weak",        tc:"#e74c3c" },
+        { w:"50%",  c:"#e67e22", t:"Fair",        tc:"#e67e22" },
+        { w:"75%",  c:"#f1c40f", t:"Good",        tc:"#e0a800" },
+        { w:"90%",  c:"#27ae60", t:"Strong",      tc:"#27ae60" },
+        { w:"100%", c:"#1a7a45", t:"Very Strong", tc:"#1a7a45" },
       ][s];
-
       document.getElementById("str-bar").style.cssText = `width:${lvl.w};background:${lvl.c}`;
       const el = document.getElementById("str-text");
-      el.textContent = lvl.t;
-      el.style.color = lvl.tc;
+      el.textContent = lvl.t; el.style.color = lvl.tc;
     }
 
     // =============================================
@@ -1170,29 +911,30 @@
       const cur = document.getElementById("cur-pwd").value.trim();
       const nw  = document.getElementById("new-pwd").value.trim();
       const con = document.getElementById("con-pwd").value.trim();
-      if (!cur||!nw||!con) { showToast("Please fill all fields!","error"); return; }
-      if (nw !== con)       { showToast("Passwords do not match!","error"); return; }
-      if (nw.length < 6)    { showToast("Min 6 characters required!","error"); return; }
-      showToast("Password updated successfully! ✓","success");
-      document.getElementById("cur-pwd").value="";
-      document.getElementById("new-pwd").value="";
-      document.getElementById("con-pwd").value="";
+      if (!cur || !nw || !con) { showToast("Please fill all fields!", "error"); return; }
+      if (nw !== con)           { showToast("Passwords do not match!", "error"); return; }
+      if (nw.length < 6)        { showToast("Min 6 characters required!", "error"); return; }
+      showToast("Password updated successfully! ✓", "success");
+      document.getElementById("cur-pwd").value = "";
+      document.getElementById("new-pwd").value = "";
+      document.getElementById("con-pwd").value = "";
       checkStrength("");
     }
 
     // =============================================
     //  TOAST
     // =============================================
-    function showToast(msg, type="success") {
+    function showToast(msg, type = "success") {
       const t = document.getElementById("toast");
       t.textContent = msg;
       t.className   = "toast-msg " + type + " show";
       setTimeout(() => t.classList.remove("show"), 3000);
     }
   </script>
-          <script src="./assets/js/config.js"></script>
-   <script src="./assets/js/navbar-auth.js"></script>
- <script src="./assets/js/cart.js"></script>
- <script src="./assets/js/wishlist.js"></script>
+
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/navbar-auth.js"></script>
+  <script src="./assets/js/cart.js"></script>
+  <script src="./assets/js/wishlist.js"></script>
 </body>
 </html>

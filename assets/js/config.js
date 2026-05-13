@@ -1,3 +1,3 @@
 const CONFIG = {
-  BASE_URL: "https://thetraditionaltouch-dashboard.vercel.app/api",
+  BASE_URL: "http://172.25.192.1:3000/api",
 };
