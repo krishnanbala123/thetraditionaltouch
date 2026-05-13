@@ -13,7 +13,8 @@ const WishlistManager = (() => {
   // Navbar Wishlist Badge Update
   // -------------------------------------------------------
   function updateWishlistBadge(count) {
-    const wishlistBadge = document.querySelector(".wishlist-count");
+    const allBadges = document.querySelectorAll(".nav-notification");
+    const wishlistBadge = allBadges[1]; // ✅ Second one = wishlist badge
     if (!wishlistBadge) return;
 
     if (count > 0) {
@@ -65,8 +66,8 @@ const WishlistManager = (() => {
   // Mark already wishlisted heart icons
   // -------------------------------------------------------
   function markWishlistedProducts(productIds) {
-    const normalizedIds = productIds.map(id =>
-      typeof id === "object" ? id._id : id
+    const normalizedIds = productIds.map((id) =>
+      typeof id === "object" ? id._id : id,
     );
 
     document.querySelectorAll("[data-wishlist-id]").forEach((btn) => {
@@ -329,7 +330,7 @@ const WishlistManager = (() => {
       loadWishlistCount(); // refresh badge
 
       const remaining = document.querySelectorAll(
-        ".wishlistBody tr[data-product-id]"
+        ".wishlistBody tr[data-product-id]",
       );
 
       if (remaining.length === 0) {
@@ -341,7 +342,6 @@ const WishlistManager = (() => {
             </td>
           </tr>`;
       }
-
     } catch (err) {
       console.error(err);
       showWishlistToast("Failed to remove item", "error");
