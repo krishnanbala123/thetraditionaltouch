@@ -112,7 +112,7 @@ const CartManager = (() => {
         0,
       );
       updateBadge(totalQty);
-      showToast("Item added to cart! 🛒", "success");
+      showToast("Item added to cart!", "success");
     } catch (err) {
       console.error("[Cart] Add error:", err);
       showToast("Network error. Please try again.", "error");

@@ -16,8 +16,9 @@ const WishlistManager = (() => {
   // Navbar Wishlist Badge
   // -------------------------------------------------------
   function updateWishlistBadge(count) {
-    const wishlistBadge = document.querySelector(".wishlist-count");
-
+    const wishlistLink = document.querySelector("a[href='wishlist.html']");
+    if (!wishlistLink) return;
+    const wishlistBadge = wishlistLink.querySelector(".nav-notification");
     if (!wishlistBadge) return;
 
     if (count > 0) {
@@ -164,7 +165,7 @@ const WishlistManager = (() => {
         });
 
       showWishlistToast(
-        isAdded ? "Added to wishlist! ❤️" : "Removed from wishlist.",
+        isAdded ? "Added to wishlist!" : "Removed from wishlist.",
         isAdded ? "success" : "warn",
       );
     } catch (err) {

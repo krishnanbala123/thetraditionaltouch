@@ -7,13 +7,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Real-time validation
   // ========================
   const nameInput = form.querySelector('input[type="text"]');
-  const phoneInput = document.getElementById("phone"); // 👈 phone input
+  const phoneInput = document.getElementById("phone");
   const emailInput = form.querySelector('input[type="email"]');
   const passwordInput = form.querySelector('input[type="password"]');
   const agreeCheckbox = document.getElementById("agree");
 
   nameInput.addEventListener("input", () => validateName(nameInput));
-  phoneInput.addEventListener("input", () => validatePhone(phoneInput)); // 👈 real-time validation
+  phoneInput.addEventListener("input", () => validatePhone(phoneInput));
   emailInput.addEventListener("input", () => validateEmail(emailInput));
   passwordInput.addEventListener("input", () =>
     validatePassword(passwordInput),
@@ -26,13 +26,13 @@ document.addEventListener("DOMContentLoaded", function () {
     e.preventDefault();
 
     const name = nameInput.value.trim();
-    const phone = phoneInput.value.trim(); // 👈
+    const phone = phoneInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
     // All validations
     const isNameValid = validateName(nameInput);
-    const isPhoneValid = validatePhone(phoneInput); // 👈
+    const isPhoneValid = validatePhone(phoneInput);
     const isEmailValid = validateEmail(emailInput);
     const isPasswordValid = validatePassword(passwordInput);
 
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (!isNameValid || !isPhoneValid || !isEmailValid || !isPasswordValid)
-      return; // 👈 phone check add
+      return;
 
     // Button disable
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -57,13 +57,13 @@ document.addEventListener("DOMContentLoaded", function () {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, phone, email, password }), // 👈 phone add
+        body: JSON.stringify({ name, phone, email, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        showMessage(data.message || "Registered successfully! 🎉", "success");
+        showMessage(data.message || "Registered successfully!", "success");
         setTimeout(() => {
           window.location.href = "login.html";
         }, 2000);

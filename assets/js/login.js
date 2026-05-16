@@ -117,7 +117,7 @@ function validatePassword(input) {
 }
 
 // ========================
-// Error UI Functions  ← register.js la iruntha exact same style
+// Error UI Functions  ← register.js
 // ========================
 
 function showFieldError(input, message) {

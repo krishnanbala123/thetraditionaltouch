@@ -35,6 +35,13 @@ async function fetchProductById(productId) {
       if (product) {
         currentProduct = product;
         renderProductDetail(product);
+
+        const otherProducts = (data.products || [])
+          .filter((p) => p._id !== productId)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 8);
+
+        renderRelatedSlider(otherProducts);
       } else {
         alert("Product not found!");
         window.location.href = "shop.html";
@@ -89,8 +96,9 @@ function renderProductDetail(product) {
 
   document.querySelector(".new-price").textContent = `₹${discountedPrice}`;
 
-  document.querySelector(".old-price del").textContent =
-    product.discount ? `₹${product.price}` : "";
+  document.querySelector(".old-price del").textContent = product.discount
+    ? `₹${product.price}`
+    : "";
 
   const badge = document.querySelector(".ofr-price .badge");
   if (badge) {
@@ -114,11 +122,7 @@ function renderProductDetail(product) {
           style="${isOut ? "opacity:0.4;cursor:not-allowed;" : "cursor:pointer;"}"
           onclick="${!isOut ? `selectSize(this, '${s.size}')` : ""}">
           <a href="javascript:void(0);">${s.size}</a>
-          ${
-            isOut
-              ? '<small style="color:red;font-size:10px;">Out</small>'
-              : ""
-          }
+          ${isOut ? '<small style="color:red;font-size:10px;">Out</small>' : ""}
         </li>
       `;
       })
@@ -127,7 +131,7 @@ function renderProductDetail(product) {
 
   // ================= WISHLIST =================
   const wishlistBtn = document.querySelector(
-    ".cdxpro-detail a[href='wishlist.html']"
+    ".cdxpro-detail a[href='wishlist.html']",
   );
 
   if (wishlistBtn) {
@@ -161,7 +165,7 @@ function setupCartButton(product) {
 
         showDetailMessage(
           `Added to cart! Size: ${selectedSize}, Qty: ${qty}`,
-          "success"
+          "success",
         );
       };
     }
@@ -205,4 +209,108 @@ function showDetailMessage(msg, type) {
   document.body.appendChild(div);
 
   setTimeout(() => div.remove(), 3000);
+}
+
+// ========================
+// Related Products Slider
+// ========================
+let relatedSwiper = null;
+
+function renderRelatedSlider(products) {
+  const container = document.querySelector(".productslide4");
+  if (!container) return;
+
+  // ✅ Old swiper destroy
+  if (relatedSwiper) {
+    relatedSwiper.destroy(true, true);
+    relatedSwiper = null;
+  }
+  container.innerHTML = "";
+
+  if (!products || products.length === 0) {
+    container.innerHTML = `<div class="swiper-wrapper">
+      <div class="swiper-slide">
+        <p style="text-align:center;padding:40px;">No related products found!</p>
+      </div>
+    </div>`;
+    return;
+  }
+
+  const slidesHTML = products
+    .map((product) => {
+      const discountedPrice = product.discount
+        ? Math.round(product.price - (product.price * product.discount) / 100)
+        : product.price;
+
+      const discountLabel = product.discount
+        ? `<span class="product-discount-label">${product.discount}%</span>`
+        : "";
+
+      return `
+      <div class="swiper-slide">
+        <div class="product-boxwrap" data-product-id="${product._id}">
+          <div class="product-imgwrap">
+            <img class="img-fluid" src="${product.images[0]}" alt="${product.name}"
+                onerror="this.src='./assets/images/dress/shop_1.jpeg'">
+            ${discountLabel}
+            <ul class="social">
+              <li>
+                <a href="javascript:void(0);"
+                  onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")})">
+                  <i data-feather="shopping-cart"></i>
+                </a>
+              </li>
+              <li>
+                <a href="product-details.html?id=${product._id}">
+                  <i data-feather="eye"></i>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:void(0);"
+                   data-wishlist-id="${product._id}"
+                   onclick="WishlistManager.toggleWishlist('${product._id}', this)">
+                  <i data-feather="heart"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="product-detailwrap">
+            <div>
+              <a href="product-details.html?id=${product._id}">
+                <h5>${product.name}</h5>
+              </a>
+              <div class="pro-price">
+                ₹${discountedPrice}
+                ${product.discount ? `<span class="old-price">₹${product.price}</span>` : ""}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    })
+    .join("");
+
+  container.innerHTML = `<div class="swiper-wrapper">${slidesHTML}</div>`;
+
+  const count = products.length;
+  const shouldLoop = count > 4;
+
+  relatedSwiper = new Swiper(".productslide4", {
+    slidesPerView: "auto",
+    spaceBetween: 24,
+    loop: shouldLoop,
+    speed: 1200,
+    centeredSlides: true,
+    autoplay: count > 1 ? { delay: 2000 } : false,
+    breakpoints: {
+      1400: { slidesPerView: Math.min(4, count), centeredSlides: false },
+      1024: { slidesPerView: Math.min(3, count), centeredSlides: false },
+      768: { slidesPerView: Math.min(2, count), centeredSlides: false },
+      480: { slidesPerView: Math.min(2, count), centeredSlides: false },
+    },
+  });
+
+  // ✅ Feather icons refresh
+  if (typeof feather !== "undefined") feather.replace();
 }
