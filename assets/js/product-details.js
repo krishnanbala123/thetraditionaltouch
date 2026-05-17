@@ -226,14 +226,20 @@ function renderSizes(product) {
       return `
       <li
         class="size-item${isOut ? " size-out" : ""}"
-        data-size="${s.size}"
-        onclick="${!isOut ? `selectSize(this, '${s.size}')` : ""}">
+        data-size="${s.size}">
         <span class="size-label">${s.size}</span>
         ${extraLabel}
         ${isOut ? `<span class="size-out-tag">Out</span>` : ""}
       </li>`;
     })
     .join("");
+
+  // Event listener — mobile + desktop both work
+  sizeList.querySelectorAll(".size-item:not(.size-out)").forEach((li) => {
+    li.addEventListener("click", function () {
+      selectSize(this, this.dataset.size);
+    });
+  });
 }
 
 // ========================
