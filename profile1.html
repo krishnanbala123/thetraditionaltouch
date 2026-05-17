@@ -283,9 +283,22 @@
             </div>
             <div class="profile-sidebar" id="profileSidebar">
               <div class="sidebar-top">
-                <div class="avatar-circle" id="avatar-init">U</div>
-                <p class="sidebar-name"  id="sb-name">User</p>
-                <p class="sidebar-email" id="sb-email">user@email.com</p>
+              <div class="profile-avatar-wrap">
+               <div class="avatar-circle" id="avatar-init"></div>
+
+                <label for="profile-image-input" class="camera-icon">
+                  <i class="fa fa-camera"></i>
+                </label>
+
+                <input
+                  type="file"
+                  id="profile-image-input"
+                  accept="image/*"
+                  style="display:none;"
+                >
+              </div>
+               <p class="sidebar-name" id="sb-name"></p>
+                <p class="sidebar-email" id="sb-email"></p>
               </div>
               <ul class="sidebar-nav">
                 <li><a href="#" class="active" data-tab="overview"><i class="fa fa-th-large"></i> Overview</a></li>

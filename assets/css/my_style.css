@@ -492,3 +492,31 @@ li.dropdownmenu .dropdownitem-list li a,
 .productslide5 .swiper-slide {
   max-width: 280px !important;
 }
+
+.profile-avatar-wrap {
+  position: relative;
+  width: 70px;
+  margin: 0 auto 12px;
+}
+
+.camera-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background: #3a9fd8;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 11px;
+  border: 2px solid #fff;
+  transition: 0.2s;
+}
+
+.camera-icon:hover {
+  background: #2d86bb;
+}
