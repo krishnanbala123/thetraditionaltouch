@@ -1,5 +1,33 @@
 let selectedSize = null;
+let selectedAddon = null;
 let currentProduct = null;
+
+// ========================
+// Size Extra Price Map
+// ========================
+const SIZE_EXTRA_PRICE = {
+  XS: 0,
+  S: 0,
+  M: 0,
+  L: 0,
+  XL: 0,
+  "2XL": 50,
+  "3XL": 50,
+  "4XL": 100,
+};
+
+// ========================
+// Addon Config
+// ========================
+const ADDONS = [
+  { id: "non_feeding", label: "Non Feeding", extra: 0 },
+  {
+    id: "center_feeding",
+    label: "Center Feeding",
+    sublabel: "(1 Invisible Zip)",
+    extra: 50,
+  },
+];
 
 document.addEventListener("DOMContentLoaded", function () {
   const urlParams = new URLSearchParams(window.location.search);
@@ -57,6 +85,60 @@ async function fetchProductById(productId) {
 }
 
 // ========================
+// Compute Final Price
+// ========================
+function computeFinalPrice(product) {
+  const baseDiscounted = product.discount
+    ? Math.round(product.price - (product.price * product.discount) / 100)
+    : product.price;
+
+  const sizeExtra = selectedSize ? SIZE_EXTRA_PRICE[selectedSize] || 0 : 0;
+
+  const addonObj = ADDONS.find((a) => a.id === selectedAddon);
+  const addonExtra = addonObj ? addonObj.extra : 0;
+
+  return baseDiscounted + sizeExtra + addonExtra;
+}
+
+// ========================
+// Update Price Display
+// ========================
+function updatePriceDisplay() {
+  const finalPrice = computeFinalPrice(currentProduct);
+  const priceEl = document.querySelector(".new-price");
+  if (priceEl) priceEl.textContent = `₹${finalPrice}`;
+
+  // Show breakdown if extra charges apply
+  const sizeExtra = selectedSize ? SIZE_EXTRA_PRICE[selectedSize] || 0 : 0;
+  const addonObj = ADDONS.find((a) => a.id === selectedAddon);
+  const addonExtra = addonObj ? addonObj.extra : 0;
+
+  const breakdownEl = document.getElementById("price-breakdown");
+  if (!breakdownEl) return;
+
+  const baseDiscounted = currentProduct.discount
+    ? Math.round(
+        currentProduct.price -
+          (currentProduct.price * currentProduct.discount) / 100
+      )
+    : currentProduct.price;
+
+  let lines = [`<span class="pb-base">Base: ₹${baseDiscounted}</span>`];
+  if (sizeExtra > 0)
+    lines.push(
+      `<span class="pb-extra">+ Size (${selectedSize}): ₹${sizeExtra}</span>`
+    );
+  if (addonExtra > 0)
+    lines.push(
+      `<span class="pb-extra">+ ${addonObj.label}: ₹${addonExtra}</span>`
+    );
+
+  breakdownEl.innerHTML = lines.join("");
+  breakdownEl.style.display =
+    sizeExtra > 0 || addonExtra > 0 ? "flex" : "none";
+}
+
+// ========================
 // Render Product
 // ========================
 function renderProductDetail(product) {
@@ -64,7 +146,7 @@ function renderProductDetail(product) {
     ? Math.round(product.price - (product.price * product.discount) / 100)
     : product.price;
 
-  // ================= IMAGE FIX =================
+  // ── Images ──
   const mainWrapper = document.querySelector(".forslider .swiper-wrapper");
   const thumbWrapper = document.querySelector(".toslider .swiper-wrapper");
 
@@ -78,24 +160,20 @@ function renderProductDetail(product) {
           <div class="product-imgwrap">
             <img class="img-fluid" src="${imgUrl}" alt="${product.name}">
           </div>
-        </div>
-      `;
+        </div>`;
 
       thumbWrapper.innerHTML += `
         <div class="swiper-slide">
           <div class="product-imgwrap">
             <img class="img-fluid" src="${imgUrl}" alt="${product.name}">
           </div>
-        </div>
-      `;
+        </div>`;
     });
   }
 
-  // ================= TEXT =================
+  // ── Text ──
   document.querySelector(".cdxpro-detail h2").textContent = product.name;
-
   document.querySelector(".new-price").textContent = `₹${discountedPrice}`;
-
   document.querySelector(".old-price del").textContent = product.discount
     ? `₹${product.price}`
     : "";
@@ -106,34 +184,19 @@ function renderProductDetail(product) {
     badge.style.display = product.discount ? "inline-block" : "none";
   }
 
-  // ================= DESCRIPTION FIX =================
   const descEl = document.getElementById("product-description");
   if (descEl) descEl.textContent = product.description;
 
-  // ================= SIZE =================
-  const sizeList = document.querySelector(".product-size");
-  if (sizeList) {
-    sizeList.innerHTML = product.sizes
-      .map((s) => {
-        const isOut = s.stock === 0;
-        return `
-        <li 
-          data-size="${s.size}"
-          style="${isOut ? "opacity:0.4;cursor:not-allowed;" : "cursor:pointer;"}"
-          onclick="${!isOut ? `selectSize(this, '${s.size}')` : ""}">
-          <a href="javascript:void(0);">${s.size}</a>
-          ${isOut ? '<small style="color:red;font-size:10px;">Out</small>' : ""}
-        </li>
-      `;
-      })
-      .join("");
-  }
+  // ── Sizes ──
+  renderSizes(product);
 
-  // ================= WISHLIST =================
+  // ── Addons ──
+  renderAddons();
+
+  // ── Wishlist ──
   const wishlistBtn = document.querySelector(
-    ".cdxpro-detail a[href='wishlist.html']",
+    ".cdxpro-detail a[href='wishlist.html']"
   );
-
   if (wishlistBtn) {
     wishlistBtn.href = "javascript:void(0)";
     wishlistBtn.onclick = () =>
@@ -143,6 +206,80 @@ function renderProductDetail(product) {
   document.title = `${product.name} - The Traditional Touch`;
 
   setupCartButton(product);
+}
+
+// ========================
+// Render Sizes
+// ========================
+function renderSizes(product) {
+  const sizeList = document.querySelector(".product-size");
+  if (!sizeList) return;
+
+  sizeList.innerHTML = product.sizes
+    .map((s) => {
+      const isOut = s.stock === 0;
+      const extraPrice = SIZE_EXTRA_PRICE[s.size] || 0;
+      const extraLabel =
+        extraPrice > 0
+          ? `<span class="size-extra-badge">+₹${extraPrice}</span>`
+          : "";
+
+      return `
+      <li
+        class="size-item${isOut ? " size-out" : ""}"
+        data-size="${s.size}"
+        onclick="${!isOut ? `selectSize(this, '${s.size}')` : ""}">
+        <span class="size-label">${s.size}</span>
+        ${extraLabel}
+        ${isOut ? `<span class="size-out-tag">Out</span>` : ""}
+      </li>`;
+    })
+    .join("");
+}
+
+// ========================
+// Render Addons
+// ========================
+function renderAddons() {
+  const addonSection = document.getElementById("addon-section");
+  if (!addonSection) return;
+
+  addonSection.innerHTML = ADDONS.map(
+    (addon) => `
+    <li
+      class="addon-item"
+      id="addon-${addon.id}"
+      onclick="selectAddon('${addon.id}')">
+      <span class="addon-check"><i class="fa fa-check"></i></span>
+      <span class="addon-name">${addon.label}${addon.sublabel ? ` <small>${addon.sublabel}</small>` : ""}</span>
+      ${addon.extra > 0 ? `<span class="addon-price-badge">+₹${addon.extra}</span>` : `<span class="addon-price-badge free">Free</span>`}
+    </li>`
+  ).join("");
+}
+
+// ========================
+// Size Select
+// ========================
+function selectSize(el, size) {
+  document.querySelectorAll(".product-size .size-item").forEach((li) => {
+    li.classList.remove("active");
+  });
+  el.classList.add("active");
+  selectedSize = size;
+  updatePriceDisplay();
+}
+
+// ========================
+// Addon Select
+// ========================
+function selectAddon(addonId) {
+  document.querySelectorAll(".addon-item").forEach((el) => {
+    el.classList.remove("active");
+  });
+  const el = document.getElementById(`addon-${addonId}`);
+  if (el) el.classList.add("active");
+  selectedAddon = addonId;
+  updatePriceDisplay();
 }
 
 // ========================
@@ -158,30 +295,26 @@ function setupCartButton(product) {
           showDetailMessage("Please select a size!", "error");
           return;
         }
+        if (!selectedAddon) {
+          showDetailMessage("Please select an add-on type!", "error");
+          return;
+        }
 
-        const qty = parseInt(document.querySelector(".pro-qty")?.value || 1);
+        const qty = parseInt(
+          document.querySelector(".pro-qty")?.value || 1
+        );
+        const finalPrice = computeFinalPrice(product);
+        const addonObj = ADDONS.find((a) => a.id === selectedAddon);
 
         CartManager.addToCart(product._id, qty, btn, selectedSize);
 
         showDetailMessage(
-          `Added to cart! Size: ${selectedSize}, Qty: ${qty}`,
-          "success",
+          `Added! Size: ${selectedSize} | ${addonObj.label} | ₹${finalPrice}`,
+          "success"
         );
       };
     }
   });
-}
-
-// ========================
-// Size Select
-// ========================
-function selectSize(el, size) {
-  document.querySelectorAll(".product-size li").forEach((li) => {
-    li.classList.remove("active");
-  });
-
-  el.classList.add("active");
-  selectedSize = size;
 }
 
 // ========================
@@ -193,22 +326,16 @@ function showDetailMessage(msg, type) {
 
   const div = document.createElement("div");
   div.id = "detail-toast";
-
   div.style.cssText = `
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    padding: 12px 20px;
-    border-radius: 8px;
-    z-index: 9999;
-    background: ${type === "success" ? "#d4edda" : "#f8d7da"};
-    color: ${type === "success" ? "#155724" : "#721c24"};
+    position:fixed;bottom:30px;right:30px;padding:14px 22px;
+    border-radius:10px;z-index:9999;font-size:14px;font-weight:500;
+    box-shadow:0 4px 20px rgba(0,0,0,0.15);
+    background:${type === "success" ? "#d4edda" : "#f8d7da"};
+    color:${type === "success" ? "#155724" : "#721c24"};
   `;
-
   div.innerText = msg;
   document.body.appendChild(div);
-
-  setTimeout(() => div.remove(), 3000);
+  setTimeout(() => div.remove(), 3500);
 }
 
 // ========================
@@ -220,7 +347,6 @@ function renderRelatedSlider(products) {
   const container = document.querySelector(".productslide4");
   if (!container) return;
 
-  // ✅ Old swiper destroy
   if (relatedSwiper) {
     relatedSwiper.destroy(true, true);
     relatedSwiper = null;
@@ -286,8 +412,7 @@ function renderRelatedSlider(products) {
             </div>
           </div>
         </div>
-      </div>
-    `;
+      </div>`;
     })
     .join("");
 
@@ -311,6 +436,5 @@ function renderRelatedSlider(products) {
     },
   });
 
-  // ✅ Feather icons refresh
   if (typeof feather !== "undefined") feather.replace();
 }
