@@ -22,14 +22,14 @@ async function fetchHomeProducts() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
 
     if (response.ok) {
       const sorted = (data.products || []).sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
       renderHomeSlider(sorted.slice(0, 8));
     }
@@ -127,8 +127,8 @@ function renderHomeSlider(products) {
     centeredSlides: false,
     autoplay: count > 1 ? { delay: 2500, disableOnInteraction: false } : false,
     breakpoints: {
-      480:  { slidesPerView: Math.min(2, count) },
-      768:  { slidesPerView: Math.min(3, count) },
+      480: { slidesPerView: Math.min(2, count) },
+      768: { slidesPerView: Math.min(3, count) },
       1024: { slidesPerView: Math.min(4, count) },
       1400: { slidesPerView: Math.min(5, count) },
     },
@@ -143,7 +143,9 @@ function renderHomeSlider(products) {
 
 async function fetchAndStartDeal() {
   // Hide the banner immediately — only show it once we confirm an active deal
-  const dealSection = document.querySelector(".counter-banner")?.closest("section");
+  const dealSection = document
+    .querySelector(".counter-banner")
+    ?.closest("section");
   if (dealSection) dealSection.style.display = "none";
 
   try {
@@ -178,22 +180,28 @@ async function fetchAndStartDeal() {
     }
 
     // Start the countdown
-    const dayEl    = document.getElementById("day");
-    const hourEl   = document.getElementById("hour");
+    const dayEl = document.getElementById("day");
+    const hourEl = document.getElementById("hour");
     const minuteEl = document.getElementById("minute");
     const secondEl = document.getElementById("second");
 
     if (!dayEl || !hourEl || !minuteEl || !secondEl) return;
 
     startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl, dealSection);
-
   } catch (err) {
     console.error("Deal fetch error:", err);
     // stay hidden on error
   }
 }
 
-function startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl, dealSection) {
+function startCountdown(
+  endDate,
+  dayEl,
+  hourEl,
+  minuteEl,
+  secondEl,
+  dealSection,
+) {
   if (timerInterval) clearInterval(timerInterval);
 
   function pad(n) {
@@ -204,8 +212,8 @@ function startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl, dealSection)
     const diff = endDate.getTime() - Date.now();
 
     if (diff <= 0) {
-      dayEl.textContent    = "00";
-      hourEl.textContent   = "00";
+      dayEl.textContent = "00";
+      hourEl.textContent = "00";
       minuteEl.textContent = "00";
       secondEl.textContent = "00";
       clearInterval(timerInterval);
@@ -213,8 +221,8 @@ function startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl, dealSection)
       return;
     }
 
-    dayEl.textContent    = pad(Math.floor(diff / 86400000));
-    hourEl.textContent   = pad(Math.floor((diff % 86400000) / 3600000));
+    dayEl.textContent = pad(Math.floor(diff / 86400000));
+    hourEl.textContent = pad(Math.floor((diff % 86400000) / 3600000));
     minuteEl.textContent = pad(Math.floor((diff % 3600000) / 60000));
     secondEl.textContent = pad(Math.floor((diff % 60000) / 1000));
   }

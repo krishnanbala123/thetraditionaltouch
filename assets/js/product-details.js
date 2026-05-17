@@ -119,23 +119,22 @@ function updatePriceDisplay() {
   const baseDiscounted = currentProduct.discount
     ? Math.round(
         currentProduct.price -
-          (currentProduct.price * currentProduct.discount) / 100
+          (currentProduct.price * currentProduct.discount) / 100,
       )
     : currentProduct.price;
 
   let lines = [`<span class="pb-base">Base: ₹${baseDiscounted}</span>`];
   if (sizeExtra > 0)
     lines.push(
-      `<span class="pb-extra">+ Size (${selectedSize}): ₹${sizeExtra}</span>`
+      `<span class="pb-extra">+ Size (${selectedSize}): ₹${sizeExtra}</span>`,
     );
   if (addonExtra > 0)
     lines.push(
-      `<span class="pb-extra">+ ${addonObj.label}: ₹${addonExtra}</span>`
+      `<span class="pb-extra">+ ${addonObj.label}: ₹${addonExtra}</span>`,
     );
 
   breakdownEl.innerHTML = lines.join("");
-  breakdownEl.style.display =
-    sizeExtra > 0 || addonExtra > 0 ? "flex" : "none";
+  breakdownEl.style.display = sizeExtra > 0 || addonExtra > 0 ? "flex" : "none";
 }
 
 // ========================
@@ -195,7 +194,7 @@ function renderProductDetail(product) {
 
   // ── Wishlist ──
   const wishlistBtn = document.querySelector(
-    ".cdxpro-detail a[href='wishlist.html']"
+    ".cdxpro-detail a[href='wishlist.html']",
   );
   if (wishlistBtn) {
     wishlistBtn.href = "javascript:void(0)";
@@ -253,7 +252,7 @@ function renderAddons() {
       <span class="addon-check"><i class="fa fa-check"></i></span>
       <span class="addon-name">${addon.label}${addon.sublabel ? ` <small>${addon.sublabel}</small>` : ""}</span>
       ${addon.extra > 0 ? `<span class="addon-price-badge">+₹${addon.extra}</span>` : `<span class="addon-price-badge free">Free</span>`}
-    </li>`
+    </li>`,
   ).join("");
 }
 
@@ -300,9 +299,7 @@ function setupCartButton(product) {
           return;
         }
 
-        const qty = parseInt(
-          document.querySelector(".pro-qty")?.value || 1
-        );
+        const qty = parseInt(document.querySelector(".pro-qty")?.value || 1);
         const finalPrice = computeFinalPrice(product);
         const addonObj = ADDONS.find((a) => a.id === selectedAddon);
 
@@ -310,7 +307,7 @@ function setupCartButton(product) {
 
         showDetailMessage(
           `Added! Size: ${selectedSize} | ${addonObj.label} | ₹${finalPrice}`,
-          "success"
+          "success",
         );
       };
     }
