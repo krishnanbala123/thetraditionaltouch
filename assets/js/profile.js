@@ -129,100 +129,79 @@ const STATUS_MAP = {
 };
 
 async function loadOrders() {
-  // Show loading in both tables
-  document.getElementById("ov-tbody").innerHTML =
-    `<tr><td colspan="4" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>`;
-  document.getElementById("all-tbody").innerHTML =
-    `<tr><td colspan="6" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>`;
+  const spin4 = `<tr><td colspan="4" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>`;
+  const spin7 = `<tr><td colspan="7" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>`;
+  document.getElementById("ov-tbody").innerHTML  = spin4;
+  document.getElementById("all-tbody").innerHTML = spin7;
 
   try {
-    const res = await fetch(`${CONFIG.BASE_URL}/orders`, {
+    const res    = await fetch(`${CONFIG.BASE_URL}/orders`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const orders = await res.json();
-
     if (!res.ok) throw new Error(orders.message || "Failed to fetch orders");
 
-    // Update order count card
     document.getElementById("ov-orders").textContent = orders.length;
 
     if (orders.length === 0) {
-      const empty = `<tr><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">No orders yet. <a href="shop.html" style="color:var(--blue);">Start shopping!</a></td></tr>`;
-      document.getElementById("ov-tbody").innerHTML = empty.replace(
-        'colspan="6"',
-        'colspan="4"',
-      );
-      document.getElementById("all-tbody").innerHTML = empty;
+      const emptyLink = `<a href="shop.html" style="color:var(--blue);">Start shopping!</a>`;
+      document.getElementById("ov-tbody").innerHTML =
+        `<tr><td colspan="4" style="text-align:center;padding:30px;color:#aaa;">No orders yet. ${emptyLink}</td></tr>`;
+      document.getElementById("all-tbody").innerHTML =
+        `<tr><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">No orders yet. ${emptyLink}</td></tr>`;
       return;
     }
 
-    // Overview table — latest 3
-    document.getElementById("ov-tbody").innerHTML = orders
-      .slice(0, 3)
-      .map((o) => {
-        const s = STATUS_MAP[o.status] || {
-          cls: "badge-processing",
-          label: o.status,
-        };
-        const date = new Date(o.createdAt).toLocaleDateString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        });
-        const id = o._id.toString().slice(-8).toUpperCase();
-        return `
+    // ── Overview: latest 3 (4 cols) ──────────────────────────────────────────
+    document.getElementById("ov-tbody").innerHTML = orders.slice(0, 3).map(o => {
+      const s    = STATUS_MAP[o.status] || { cls: "badge-pending", label: o.status };
+      const date = new Date(o.createdAt).toLocaleDateString("en-IN",
+        { day: "2-digit", month: "short", year: "numeric" });
+      const id   = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
+      return `
         <tr>
-          <td><strong style="color:#333;">#TTT-${id}</strong></td>
+          <td><strong style="color:#333;">${id}</strong></td>
           <td>${date}</td>
-          <td><strong>₹${o.totalPrice?.toLocaleString("en-IN") || 0}</strong></td>
+          <td><strong>₹${(o.totalPrice || 0).toLocaleString("en-IN")}</strong></td>
           <td><span class="badge ${s.cls}">${s.label}</span></td>
         </tr>`;
-      })
-      .join("");
+    }).join("");
 
-    // Full orders table
-    document.getElementById("all-tbody").innerHTML = orders
-      .map((o) => {
-        const s = STATUS_MAP[o.status] || {
-          cls: "badge-processing",
-          label: o.status,
-        };
-        const date = new Date(o.createdAt).toLocaleDateString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        });
-        const id = o._id.toString().slice(-8).toUpperCase();
-        // Extract city from address (first comma-separated segment after number)
-        const addrParts = (o.address || "").split(",");
-        const city =
-          addrParts.length > 1
-            ? addrParts[1].trim()
-            : addrParts[0].trim() || "—";
-
-        return `
+    // ── Full orders: 7 cols ───────────────────────────────────────────────────
+    document.getElementById("all-tbody").innerHTML = orders.map(o => {
+      const s     = STATUS_MAP[o.status] || { cls: "badge-pending", label: o.status };
+      const date  = new Date(o.createdAt).toLocaleDateString("en-IN",
+        { day: "2-digit", month: "short", year: "numeric" });
+      const id    = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
+      const items = Array.isArray(o.items) ? o.items.length : 0;
+      const pay   = o.paymentMethod || "—";
+      return `
         <tr>
-          <td><strong style="color:#333;">#TTT-${id}</strong></td>
+          <td><strong style="color:#333;">${id}</strong></td>
           <td>${date}</td>
-          <td>${city}</td>
-          <td><strong>₹${o.totalPrice?.toLocaleString("en-IN") || 0}</strong></td>
+          <td>${items} item${items !== 1 ? "s" : ""}</td>
+          <td><strong>₹${(o.totalPrice || 0).toLocaleString("en-IN")}</strong></td>
+          <td>
+            <span style="font-size:11px;background:#f0f4f8;
+              padding:3px 8px;border-radius:4px;">${pay}</span>
+          </td>
           <td><span class="badge ${s.cls}">${s.label}</span></td>
           <td>
-            <a href="track-order.html?id=${o._id}" style="color:var(--blue);font-size:12px;text-decoration:none;font-weight:600;">
+            <a href="track-order.html?id=${o._id}"
+               style="color:var(--blue);font-size:12px;
+                      text-decoration:none;font-weight:600;">
               <i class="fa fa-map-marker-alt"></i> Track
             </a>
           </td>
         </tr>`;
-      })
-      .join("");
+    }).join("");
+
   } catch (err) {
     console.error("Orders fetch error:", err);
-    const errRow = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#e74c3c;">Failed to load orders.</td></tr>`;
-    document.getElementById("ov-tbody").innerHTML = errRow.replace(
-      'colspan="6"',
-      'colspan="4"',
-    );
-    document.getElementById("all-tbody").innerHTML = errRow;
+    document.getElementById("ov-tbody").innerHTML =
+      `<tr><td colspan="4" style="text-align:center;padding:20px;color:#e74c3c;">Failed to load orders.</td></tr>`;
+    document.getElementById("all-tbody").innerHTML =
+      `<tr><td colspan="7" style="text-align:center;padding:20px;color:#e74c3c;">Failed to load orders.</td></tr>`;
   }
 }
 

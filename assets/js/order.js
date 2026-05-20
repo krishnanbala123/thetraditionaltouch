@@ -1,182 +1,376 @@
 const OrderManager = (() => {
-  const API = CONFIG.BASE_URL;
-
+  const API      = CONFIG.BASE_URL;
   const getToken = () => localStorage.getItem("token") || "";
 
-  // -----------------------------------------
-  // Load Profile
-  // -----------------------------------------
-  async function loadUserProfile() {
+  // ── Price constants (mirrors backend) ──────────────────────────────────────
+  const SIZE_EXTRA   = { "2XL": 50, "3XL": 50, "4XL": 100 };
+  const ADDON_EXTRA  = { center_feeding: 50 };
+  const LENGTH_EXTRA = { "52": 30, "54": 50 };
+
+  function calcDeliveryFee(totalQty, isInsideTamilNadu) {
+    const pairs = Math.ceil(totalQty / 2);
+    return isInsideTamilNadu ? pairs * 70 : pairs * 100;
+  }
+
+  function computeUnitPrice(item) {
+    if (item.unitPrice) return item.unitPrice;
+    const p           = item.productId;
+    const base        = p.discount
+      ? Math.round(p.price - (p.price * p.discount) / 100)
+      : p.price;
+    const sizeExtra   = SIZE_EXTRA[item.size]                      || 0;
+    const addonExtra  = ADDON_EXTRA[item.customisation?.addonType] || 0;
+    const lengthExtra = LENGTH_EXTRA[item.customisation?.length]   || 0;
+    return base + sizeExtra + addonExtra + lengthExtra;
+  }
+
+  // ── Fetch cart from API ─────────────────────────────────────────────────────
+  async function fetchCart() {
+    const res  = await fetch(`${API}/cart`, {
+      headers: {
+        Authorization:  `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await res.json();
+    return data?.items || data?.cart?.items || [];
+  }
+
+  // ── Read state dropdown ─────────────────────────────────────────────────────
+  function getIsInsideTamilNadu() {
+    const stateEl = document.getElementById("state");
+    if (!stateEl || !stateEl.value.trim()) return true;
+    return stateEl.value.trim().toLowerCase() === "tamil nadu";
+  }
+
+  // ── Render price breakdown ──────────────────────────────────────────────────
+  function updatePriceSummary(items, isInsideTamilNadu = true) {
+    let subtotal = 0;
+    let totalQty = 0;
+    items.forEach(item => {
+      subtotal += computeUnitPrice(item) * (item.quantity || 1);
+      totalQty += item.quantity || 1;
+    });
+    const deliveryFee = totalQty > 0
+      ? calcDeliveryFee(totalQty, isInsideTamilNadu) : 0;
+    const grandTotal  = subtotal + deliveryFee;
+
+    const el = id => document.getElementById(id);
+    if (el("summary-subtotal"))  el("summary-subtotal").textContent  = `₹${subtotal.toFixed(2)}`;
+    if (el("summary-delivery"))  el("summary-delivery").textContent  = deliveryFee > 0 ? `₹${deliveryFee}` : "FREE";
+    if (el("summary-total"))     el("summary-total").textContent     = `₹${grandTotal.toFixed(2)}`;
+
+    window._checkoutSubtotal   = subtotal;
+    window._checkoutDelivery   = deliveryFee;
+    window._checkoutGrandTotal = grandTotal;
+  }
+
+  // ── Load & render order summary ─────────────────────────────────────────────
+  async function loadSummary() {
+    const listEl  = document.getElementById("summary-items");
+    const countEl = document.getElementById("summary-item-count");
+    const payBtn  = document.getElementById("pay-btn");
+    if (!listEl) return;
+
+    const token = getToken();
+    if (!token) {
+      listEl.innerHTML = `<div class="empty-cart"><i class="fa fa-cart-shopping"></i>
+        <p>Please <a href="login.html">login</a> to continue.</p></div>`;
+      if (countEl) countEl.textContent = "0 items";
+      updatePriceSummary([]);
+      return;
+    }
+
     try {
-      const res = await fetch(`${API}/user/profile`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      const items = await fetchCart();
 
-      const user = await res.json();
+      if (items.length === 0) {
+        listEl.innerHTML = `<div class="empty-cart"><i class="fa fa-cart-shopping"></i>
+          <p>Your cart is empty.</p><a href="shop.html">← Continue Shopping</a></div>`;
+        if (countEl) countEl.textContent = "0 items";
+        updatePriceSummary([]);
+        return;
+      }
 
-      document.getElementById("fname").value =
-        user.name?.split(" ")[0] || "";
-      document.getElementById("lname").value =
-        user.name?.split(" ").slice(1).join(" ") || "";
+      if (countEl)
+        countEl.textContent = `${items.length} item${items.length > 1 ? "s" : ""}`;
 
-      document.querySelector("textarea").value = user.address || "";
-      document.body.dataset.phone = user.phone || "";
+      listEl.innerHTML = items.map(item => {
+        const p         = item.productId;
+        const unitPrice = computeUnitPrice(item);
+        const qty       = item.quantity || 1;
+        const img       = p?.images?.[0] || "";
+        const name      = p?.name || "Product";
+        const size      = item.size || "";
+        return `
+          <div class="cart-item-row">
+            ${img
+              ? `<img class="cart-item-img" src="${img}" alt="${name}"
+                      onerror="this.style.display='none'">`
+              : `<div class="cart-item-img-placeholder">
+                   <i class="fa fa-shirt"></i>
+                 </div>`}
+            <div class="cart-item-info">
+              <div class="cart-item-name">${name}</div>
+              <div class="cart-item-meta">
+                Size: ${size}
+                ${item.customisation?.addonType && item.customisation.addonType !== "non_feeding"
+                  ? ` | ${item.customisation.addonType.replace(/_/g, " ")}` : ""}
+                ${item.customisation?.length
+                  ? ` | ${item.customisation.length}"` : ""}
+              </div>
+              <div class="cart-item-qty">
+                <i class="fa fa-xmark" style="font-size:9px;"></i> ${qty}
+              </div>
+            </div>
+            <div class="cart-item-price">₹${unitPrice * qty}</div>
+          </div>`;
+      }).join("");
+
+      updatePriceSummary(items, getIsInsideTamilNadu());
+      if (payBtn) payBtn.disabled = false;
+
     } catch (err) {
-      console.error(err);
+      console.error("[OrderManager] loadSummary:", err);
+      listEl.innerHTML = `<div class="empty-cart"><p>Failed to load cart.</p></div>`;
     }
   }
 
-  // -----------------------------------------
-  // Update Profile
-  // -----------------------------------------
-  async function updateUserProfile(name, address) {
+  // ── Load user profile into form fields ─────────────────────────────────────
+  async function loadUserProfile() {
+    try {
+      const res  = await fetch(`${API}/user/profile`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const user = await res.json();
+      const parts = (user.name || "").split(" ");
+      const el    = id => document.getElementById(id);
+      if (el("fname"))   el("fname").value   = parts[0] || "";
+      if (el("lname"))   el("lname").value   = parts.slice(1).join(" ") || "";
+      if (el("phone"))   el("phone").value   = user.phone   || "";
+      if (el("address")) el("address").value = user.address || "";
+    } catch (err) {
+      console.error("[OrderManager] loadUserProfile:", err);
+    }
+  }
+
+  // ── Save profile ────────────────────────────────────────────────────────────
+  async function updateUserProfile(name, address, phone) {
     await fetch(`${API}/user/profile`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`,
+        Authorization:  `Bearer ${getToken()}`,
       },
-      body: JSON.stringify({ name, address }),
+      body: JSON.stringify({ name, address, phone }),
     });
   }
 
-  // -----------------------------------------
-  // 🔥 MAIN PAYMENT FLOW
-  // -----------------------------------------
+  // ── Reset pay button ────────────────────────────────────────────────────────
+  function resetPayBtn() {
+    const btn = document.getElementById("pay-btn");
+    const txt = document.getElementById("pay-btn-text");
+    if (btn) btn.disabled = false;
+    if (txt) txt.textContent = "Place Order & Pay";
+  }
+
+  // ── Toast helper ────────────────────────────────────────────────────────────
+  function showCoToast(msg, type = "success") {
+    if (typeof showToast === "function") { showToast(msg, type); return; }
+    const t = document.getElementById("co-toast");
+    if (!t) return;
+    const icons = { success: "✓", error: "✕", warn: "⚠" };
+    t.innerHTML  = `<span>${icons[type]}</span> ${msg}`;
+    t.className  = `show ${type}`;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.className = ""; }, 3200);
+  }
+
+  // ── Main payment flow ───────────────────────────────────────────────────────
   async function startPayment() {
+    if (typeof validate === "function" && !validate()) {
+      showCoToast("Please fill required fields correctly.", "warn");
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      showCoToast("Please login to continue.", "warn");
+      setTimeout(() => (window.location.href = "login.html"), 1500);
+      return;
+    }
+
+    const el       = id => document.getElementById(id);
+    const fname    = el("fname")?.value.trim()   || "";
+    const lname    = el("lname")?.value.trim()   || "";
+    const phone    = el("phone")?.value.trim()   || "";
+    const address  = el("address")?.value.trim() || "";
+    const fullName = `${fname} ${lname}`.trim();
+    const isInsideTamilNadu = getIsInsideTamilNadu();
+
+    const payBtn    = el("pay-btn");
+    const payBtnTxt = el("pay-btn-text");
+    if (payBtn) payBtn.disabled = true;
+    if (payBtnTxt) payBtnTxt.innerHTML =
+      '<span class="spin"><i class="fa fa-spinner"></i></span> Processing…';
+
     try {
-      const fname = document.getElementById("fname").value.trim();
-      const lname = document.getElementById("lname").value.trim();
-      const address = document.querySelector("textarea").value.trim();
+      await updateUserProfile(fullName, address, phone);
 
-      if (!fname || !address) {
-        alert("Fill required fields");
-        return;
+      // Ensure grand total is calculated
+      const items = await fetchCart();
+      if (!items.length) {
+        showCoToast("Your cart is empty!", "error");
+        resetPayBtn(); return;
       }
 
-      const fullName = `${fname} ${lname}`;
+      let grandTotal = window._checkoutGrandTotal;
+      if (!grandTotal) {
+        let subtotal = 0, qty = 0;
+        items.forEach(item => {
+          subtotal += computeUnitPrice(item) * (item.quantity || 1);
+          qty      += item.quantity || 1;
+        });
+        grandTotal = subtotal + calcDeliveryFee(qty, isInsideTamilNadu);
+      }
 
-      await updateUserProfile(fullName, address);
+      // ── Step 1: Create order in DB (paymentStatus: Pending) ───────────────
+      if (payBtnTxt) payBtnTxt.innerHTML =
+        '<span class="spin"><i class="fa fa-spinner"></i></span> Creating order…';
 
-      // 👉 Calculate amount from cart UI instead of localStorage
-      let amount = 0;
-      document.querySelectorAll(".item-total").forEach((el) => {
-        amount += parseFloat(el.textContent.replace("₹", "")) || 0;
+      const orderRes  = await fetch(`${API}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:  `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          paymentMethod: "Razorpay",
+          address,
+          phone,
+          isInsideTamilNadu,
+          // paymentId intentionally omitted — set after verify
+        }),
       });
-
-      if (!amount) {
-        alert("Cart is empty");
-        return;
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) {
+        showCoToast(orderData.message || "Order creation failed.", "error");
+        resetPayBtn(); return;
       }
 
-      // -----------------------------------
-      // 1. Create Razorpay Order
-      // -----------------------------------
-      const res = await fetch(`${API}/create-order`, {
+      const mongoOrderId = orderData.order._id;   // ✅ keep for verify step
+
+      // ── Step 2: Create Razorpay payment order ─────────────────────────────
+      if (payBtnTxt) payBtnTxt.innerHTML =
+        '<span class="spin"><i class="fa fa-spinner"></i></span> Opening payment…';
+
+      const rzpRes   = await fetch(`${API}/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify({ amount: grandTotal }),
       });
+      const rzpOrder = await rzpRes.json();
 
-      const order = await res.json();
-
-      if (!order.id) {
-        alert("Payment init failed");
-        return;
+      if (!rzpOrder.id) {
+        showCoToast("Payment initialisation failed. Try again.", "error");
+        resetPayBtn(); return;
       }
 
-      // -----------------------------------
-      // 2. Razorpay
-      // -----------------------------------
+      // ── Step 3: Open Razorpay modal ───────────────────────────────────────
       const options = {
-        key: "rzp_test_Skvus1wnQRpKJr",
-        amount: order.amount,
-        currency: "INR",
-        name: "The Traditional Touch",
-        order_id: order.id,
+        key:         "rzp_test_Skvus1wnQRpKJr",
+        amount:      rzpOrder.amount,
+        currency:    "INR",
+        name:        "The Traditional Touch",
+        description: "Anarkali Collection",
+        image:       "./assets/images/dress/logo_1.png",
+        order_id:    rzpOrder.id,
 
         handler: async function (response) {
           try {
-            // -----------------------------------
-            // 3. Verify Payment
-            // -----------------------------------
-            const verifyRes = await fetch(`${API}/verify-payment`, {
+            if (payBtnTxt) payBtnTxt.innerHTML =
+              '<span class="spin"><i class="fa fa-spinner"></i></span> Verifying payment…';
+
+            // ── Step 4: Verify + update paymentId & paymentStatus ─────────
+            const verifyRes  = await fetch(`${API}/verify-payment`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(response),
+              body: JSON.stringify({
+                ...response,
+                mongoOrderId,   // ✅ backend uses this to update the order
+              }),
             });
-
             const verifyData = await verifyRes.json();
 
             if (!verifyData.success) {
-              alert("Payment verification failed");
-              return;
+              showCoToast("Payment verification failed. Contact support.", "error");
+              resetPayBtn(); return;
             }
 
-            // -----------------------------------
-            // 4. Place Order
-            // -----------------------------------
-            const finalRes = await fetch(`${API}/orders`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${getToken()}`,
-              },
-              body: JSON.stringify({
-                paymentMethod: "Razorpay",
-                paymentId: response.razorpay_payment_id,
-                address,
-                phone: document.body.dataset.phone,
-              }),
-            });
-
-            const data = await finalRes.json();
-
-            if (!finalRes.ok) throw new Error(data.message);
-
-            alert("✅ Order placed!");
-
+            // ✅ Order complete — paymentId saved, paymentStatus: Paid
+            showCoToast("🎉 Order placed successfully!", "success");
             localStorage.removeItem("cart");
+            setTimeout(
+              () => (window.location.href = "profile1.html?tab=orders"),
+              1500
+            );
 
-            window.location.href = "orders.html";
           } catch (err) {
-            console.error(err);
-            alert("Order failed");
+            showCoToast(err.message || "Order failed. Contact support.", "error");
+            resetPayBtn();
           }
         },
 
-        prefill: {
-          name: fullName,
-          contact: document.body.dataset.phone || "",
+        modal: {
+          ondismiss: function () {
+            // Payment cancelled — cancel the pending order & restore stock
+            fetch(`${API}/orders/${mongoOrderId}`, {
+              method:  "PATCH",
+              headers: { Authorization: `Bearer ${token}` },
+            }).catch(() => {});
+            showCoToast("Payment cancelled.", "warn");
+            resetPayBtn();
+          },
         },
 
-        theme: { color: "#3399cc" },
+        prefill: { name: fullName, contact: phone },
+        theme:   { color: "#3498db" },
       };
 
       new Razorpay(options).open();
+
     } catch (err) {
-      console.error(err);
-      alert("Payment error");
+      console.error("[OrderManager] startPayment:", err);
+      showCoToast("Something went wrong. Please try again.", "error");
+      resetPayBtn();
     }
   }
 
-  // -----------------------------------------
-  // INIT
-  // -----------------------------------------
+  // ── Init ────────────────────────────────────────────────────────────────────
   function init() {
     loadUserProfile();
+    loadSummary();
 
+    // Recalculate delivery when state changes
+    const stateEl = document.getElementById("state");
+    if (stateEl) {
+      stateEl.addEventListener("change", async () => {
+        const items = await fetchCart();
+        updatePriceSummary(items, getIsInsideTamilNadu());
+      });
+    }
+
+    // Attach pay button listener
     const btn = document.getElementById("pay-btn");
-
     if (btn) {
-      btn.addEventListener("click", (e) => {
+      btn.addEventListener("click", e => {
         e.preventDefault();
-        startPayment(); // ✅ FIXED
+        startPayment();
       });
     }
   }
 
-  return { init };
+  return { init, loadSummary, updatePriceSummary };
 })();
 
 document.addEventListener("DOMContentLoaded", OrderManager.init);

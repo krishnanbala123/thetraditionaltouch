@@ -66,28 +66,20 @@ const CartManager = (() => {
   // -------------------------------------------------------
   // POST /api/cart → Add item ✅ size added
   // -------------------------------------------------------
-  async function addToCart(
-    productId,
-    quantity = 1,
-    buttonEl = null,
-    size = "M",
-  ) {
+  // In CartManager — update addToCart to accept customisation
+  async function addToCart(productId, quantity = 1, buttonEl = null, size = "M", customisation = {}) {
     const token = getToken();
-
     if (!token) {
       showToast("Please login to add items to cart.", "warn");
-      setTimeout(() => {
-        window.location.href = "login.html";
-      }, 1500);
+      setTimeout(() => { window.location.href = "login.html"; }, 1500);
       return;
     }
 
     if (buttonEl) {
-      buttonEl.disabled = true;
-      buttonEl._origHTML = buttonEl.innerHTML;
-      buttonEl.innerHTML = `<i class="fa fa-spinner fa-spin"></i>`;
+      buttonEl.disabled   = true;
+      buttonEl._origHTML  = buttonEl.innerHTML;
+      buttonEl.innerHTML  = `<i class="fa fa-spinner fa-spin"></i>`;
     }
-    console.log(productId, size, quantity, "cart");
 
     try {
       const res = await fetch(getEndpoint(), {
@@ -96,21 +88,22 @@ const CartManager = (() => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ productId, size, quantity }),
+        body: JSON.stringify({
+          productId,
+          size,
+          quantity,
+          unitPrice: customisation.unitPrice || null,   // ✅ send computed price
+          sleeve:    customisation.sleeve    || "full_gathering",
+          length:    customisation.length    || "48",
+          addonType: customisation.addonType || "non_feeding",
+        }),
       });
 
       const data = await res.json();
+      if (!res.ok) { showToast(data?.message || "Could not add item.", "error"); return; }
 
-      if (!res.ok) {
-        showToast(data?.message || "Could not add item.", "error");
-        return;
-      }
-
-      const items = data?.cart?.items || data?.items || [];
-      const totalQty = items.reduce(
-        (sum, item) => sum + (item.quantity || 1),
-        0,
-      );
+      const items    = data?.cart?.items || data?.items || [];
+      const totalQty = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
       updateBadge(totalQty);
       showToast("Item added to cart!", "success");
     } catch (err) {
@@ -118,9 +111,8 @@ const CartManager = (() => {
       showToast("Network error. Please try again.", "error");
     } finally {
       if (buttonEl) {
-        buttonEl.disabled = false;
-        buttonEl.innerHTML =
-          buttonEl._origHTML || `<i data-feather="shopping-cart"></i>`;
+        buttonEl.disabled  = false;
+        buttonEl.innerHTML = buttonEl._origHTML || `<i data-feather="shopping-cart"></i>`;
         if (window.feather) feather.replace();
       }
     }
@@ -299,14 +291,15 @@ const CartManager = (() => {
           const name = product?.name || "Product";
           const price = product?.price || 0;
           const discount = product?.discount || 0;
-          const discountedPrice = discount
+          const basePrice = discount
             ? Math.round(price - (price * discount) / 100)
             : price;
+          const unitPrice = item.unitPrice || basePrice;
           const image =
             product?.images[0] || "./assets/images/fashion/product/1.jpg";
           const qty = item.quantity || 1;
           const size = item.size || "";
-          const total = discountedPrice * qty;
+          const total = unitPrice * qty;
 
           const imgSrc = image.startsWith("http")
             ? image
@@ -323,10 +316,15 @@ const CartManager = (() => {
               </a>
             </div>
           </td>
-            <td>
-              <strong>${name}</strong><br>
-              <small class="text-muted">Size: ${size}</small>
-            </td>
+          <td>
+            <strong>${name}</strong><br>
+            <small class="text-muted">
+              Size: ${size}
+              ${item.customisation?.sleeve    ? ` | Sleeve: ${item.customisation.sleeve.replace(/_/g," ")}` : ""}
+              ${item.customisation?.length    ? ` | Length: ${item.customisation.length}"` : ""}
+              ${item.customisation?.addonType ? ` | ${item.customisation.addonType.replace(/_/g," ")}` : ""}
+            </small>
+          </td>
             <td>
               <div class="input-group pro-quantity">
                 <span class="input-group-text count-minus"
@@ -342,7 +340,7 @@ const CartManager = (() => {
                 </span>
               </div>
             </td>
-            <td>₹${discountedPrice}</td>
+            <td>₹${unitPrice}</td>
             <td>-</td>
             <td class="item-total">₹${total}</td>
             <td>
@@ -379,13 +377,14 @@ const CartManager = (() => {
 
     let subtotal = 0;
     items.forEach((item) => {
-      const price = item.productId?.price || 0;
+      const price    = item.productId?.price    || 0;
       const discount = item.productId?.discount || 0;
-      const discountedPrice = discount
+      const basePrice = discount
         ? Math.round(price - (price * discount) / 100)
         : price;
+      const unitPrice = item.unitPrice || basePrice;   // ✅ use saved price
       const qty = item.quantity || 1;
-      subtotal += discountedPrice * qty;
+      subtotal += unitPrice * qty;
     });
 
     const grand = subtotal.toFixed(2);
