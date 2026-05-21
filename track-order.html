@@ -140,35 +140,70 @@
                   <div class="cdx-layer"></div>
                 </div>
                 <div class="nav-iconlist">
-                  <ul>
-                    <!-- <li><a class="search-toggle" href="javascript:void(0);">  
-                        <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M20.9999 21L16.6499 16.65" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg></a></li> -->
-                    <li><a href="cart.html"> 
-                        <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 22C9.55228 22 10 21.5523 10 21C10 20.4477 9.55228 20 9 20C8.44772 20 8 20.4477 8 21C8 21.5523 8.44772 22 9 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20C19.4477 20 19 20.4477 19 21C19 21.5523 19.4477 22 20 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
-                        <div class="nav-notification" style="display:none;">0</div></a></li>
-                    <li><a href="wishlist.html">
-                        <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M20.4201 4.57996C19.9184 4.07653 19.3223 3.67709 18.6659 3.40455C18.0095 3.132 17.3058 2.9917 16.5951 2.9917C15.8844 2.9917 15.1806 3.132 14.5243 3.40455C13.8679 3.67709 13.2718 4.07653 12.7701 4.57996L12.0001 5.35996L11.2301 4.57996C10.7284 4.07653 10.1323 3.67709 9.47591 3.40455C8.81953 3.132 8.1158 2.9917 7.40509 2.9917C6.69437 2.9917 5.99065 3.132 5.33427 3.40455C4.67789 3.67709 4.08176 4.07653 3.58009 4.57996C1.46009 6.69996 1.33009 10.28 4.00009 13L12.0001 21L20.0001 13C22.6701 10.28 22.5401 6.69996 20.4201 4.57996Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
-                        <div class="nav-notification" style="display:none;">0</div></a></li>
-                    <li class="dropdownmenu" id="user-dropdown-wrap"><a class="dropdown-action" href="javascript:void(0);">
-                        <svg viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg></a>
-                      <ul class="dropdownitem-list">
-                        <li><a href="login.html">login</a></li>
-                        <li><a href="register.html">register</a></li>
-                      </ul>
-                    </li>
-                  </ul><a class="menu-action" href="javascript:void(0);"><span></span></a>
+                                  <ul style="display:flex; align-items:center; gap:4px;">
+
+  <!-- Home — mobile only -->
+  <li class="mobile-only-icon">
+    <a href="index.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+        <path d="M3 9.5L12 3L21 9.5V20C21 20.5523 20.5523 21 20 21H15V15H9V21H4C3.44772 21 3 20.5523 3 20V9.5Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="font-size:10px;color:#333;font-family:'Jost',sans-serif;">Home</span>
+    </a>
+  </li>
+
+  <!-- Cart -->
+  <li>
+    <a href="cart.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+        <path d="M9 22C9.55228 22 10 21.5523 10 21C10 20.4477 9.55228 20 9 20C8.44772 20 8 20.4477 8 21C8 21.5523 8.44772 22 9 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M20 22C20.5523 22 21 21.5523 21 21C21 20.4477 20.5523 20 20 20C19.4477 20 19 20.4477 19 21C19 21.5523 19.4477 22 20 22Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.264 8.38755 15.5583C8.75318 15.8526 9.2107 16.009 9.68 16H19.4C19.8693 16.009 20.3268 15.8526 20.6925 15.5583C21.0581 15.264 21.3086 14.8504 21.4 14.39L23 6H6" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <div class="nav-notification" style="display:none;">0</div>
+      <span style="font-size:10px;color:#333;font-family:'Jost',sans-serif;">Cart</span>
+    </a>
+  </li>
+
+  <!-- Wishlist -->
+  <li>
+    <a href="wishlist.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+        <path d="M20.4201 4.57996C19.9184 4.07653 19.3223 3.67709 18.6659 3.40455C18.0095 3.132 17.3058 2.9917 16.5951 2.9917C15.8844 2.9917 15.1806 3.132 14.5243 3.40455C13.8679 3.67709 13.2718 4.07653 12.7701 4.57996L12.0001 5.35996L11.2301 4.57996C10.7284 4.07653 10.1323 3.67709 9.47591 3.40455C8.81953 3.132 8.1158 2.9917 7.40509 2.9917C6.69437 2.9917 5.99065 3.132 5.33427 3.40455C4.67789 3.67709 4.08176 4.07653 3.58009 4.57996C1.46009 6.69996 1.33009 10.28 4.00009 13L12.0001 21L20.0001 13C22.6701 10.28 22.5401 6.69996 20.4201 4.57996Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <div class="nav-notification" style="display:none;">0</div>
+      <span style="font-size:10px;color:#333;font-family:'Jost',sans-serif;">Wishlist</span>
+    </a>
+  </li>
+
+  <!-- My Orders — mobile only (Box/Package icon) -->
+  <li class="mobile-only-icon">
+    <a href="profile1.html?tab=orders" id="mobile-orders-link" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+        <path d="M21 16V8C20.9996 7.64927 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64927 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3.27 7L12 12L20.73 7" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 22V12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="font-size:10px;color:#333;font-family:'Jost',sans-serif;">My Orders</span>
+    </a>
+  </li>
+
+  <!-- Profile -->
+<li class="dropdownmenu" id="user-dropdown-wrap" style="display:flex;flex-direction:column;align-items:center;">
+    <a class="dropdown-action" href="javascript:void(0);" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+        <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <span class="mobile-label" style="font-size:10px;color:#333;font-family:'Jost',sans-serif;display:none;">Profile</span>
+    </a>
+    <ul class="dropdownitem-list">
+      <li><a href="login.html">login</a></li>
+      <li><a href="register.html">register</a></li>
+    </ul>
+  </li>
+
+</ul><a class="menu-action" href="javascript:void(0);"><span></span></a>
                 </div>
               </div>
             </div>

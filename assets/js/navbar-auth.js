@@ -90,7 +90,12 @@
             this.style.display = "none";
             if (svg) svg.style.display = "";
           };
-          actionBtn.appendChild(img);
+          const mobileLabel = actionBtn.querySelector(".mobile-label");
+          if (mobileLabel) {
+            actionBtn.insertBefore(img, mobileLabel);
+          } else {
+            actionBtn.appendChild(img);
+          }
         }
       }
 
@@ -126,3 +131,14 @@
       }
     });
 })();
+
+// Mobile My Orders — token check
+const ordersLink = document.getElementById("mobile-orders-link");
+if (ordersLink) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    ordersLink.href = "login.html";
+  } else {
+    ordersLink.href = "profile1.html?tab=orders";
+  }
+}
