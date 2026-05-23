@@ -112,6 +112,7 @@ function initProfile() {
 
   loadAddresses();
   loadOrders(); // ← real API
+  loadWishlistOverview();
 
   // Open tab from URL after everything is set up
   openTabFromURL();
@@ -131,11 +132,11 @@ const STATUS_MAP = {
 async function loadOrders() {
   const spin4 = `<tr><td colspan="4" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>`;
   const spin7 = `<tr><td colspan="7" class="loading-text"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>`;
-  document.getElementById("ov-tbody").innerHTML  = spin4;
+  document.getElementById("ov-tbody").innerHTML = spin4;
   document.getElementById("all-tbody").innerHTML = spin7;
 
   try {
-    const res    = await fetch(`${CONFIG.BASE_URL}/orders`, {
+    const res = await fetch(`${CONFIG.BASE_URL}/orders`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const orders = await res.json();
@@ -153,29 +154,45 @@ async function loadOrders() {
     }
 
     // ── Overview: latest 3 (4 cols) ──────────────────────────────────────────
-    document.getElementById("ov-tbody").innerHTML = orders.slice(0, 3).map(o => {
-      const s    = STATUS_MAP[o.status] || { cls: "badge-pending", label: o.status };
-      const date = new Date(o.createdAt).toLocaleDateString("en-IN",
-        { day: "2-digit", month: "short", year: "numeric" });
-      const id   = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
-      return `
+    document.getElementById("ov-tbody").innerHTML = orders
+      .slice(0, 3)
+      .map((o) => {
+        const s = STATUS_MAP[o.status] || {
+          cls: "badge-pending",
+          label: o.status,
+        };
+        const date = new Date(o.createdAt).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+        const id = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
+        return `
         <tr>
           <td><strong style="color:#333;">${id}</strong></td>
           <td>${date}</td>
           <td><strong>₹${(o.totalPrice || 0).toLocaleString("en-IN")}</strong></td>
           <td><span class="badge ${s.cls}">${s.label}</span></td>
         </tr>`;
-    }).join("");
+      })
+      .join("");
 
     // ── Full orders: 7 cols ───────────────────────────────────────────────────
-    document.getElementById("all-tbody").innerHTML = orders.map(o => {
-      const s     = STATUS_MAP[o.status] || { cls: "badge-pending", label: o.status };
-      const date  = new Date(o.createdAt).toLocaleDateString("en-IN",
-        { day: "2-digit", month: "short", year: "numeric" });
-      const id    = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
-      const items = Array.isArray(o.items) ? o.items.length : 0;
-      const pay   = o.paymentMethod || "—";
-      return `
+    document.getElementById("all-tbody").innerHTML = orders
+      .map((o) => {
+        const s = STATUS_MAP[o.status] || {
+          cls: "badge-pending",
+          label: o.status,
+        };
+        const date = new Date(o.createdAt).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+        const id = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
+        const items = Array.isArray(o.items) ? o.items.length : 0;
+        const pay = o.paymentMethod || "—";
+        return `
         <tr>
           <td><strong style="color:#333;">${id}</strong></td>
           <td>${date}</td>
@@ -194,14 +211,47 @@ async function loadOrders() {
             </a>
           </td>
         </tr>`;
-    }).join("");
-
+      })
+      .join("");
   } catch (err) {
     console.error("Orders fetch error:", err);
     document.getElementById("ov-tbody").innerHTML =
       `<tr><td colspan="4" style="text-align:center;padding:20px;color:#e74c3c;">Failed to load orders.</td></tr>`;
     document.getElementById("all-tbody").innerHTML =
       `<tr><td colspan="7" style="text-align:center;padding:20px;color:#e74c3c;">Failed to load orders.</td></tr>`;
+  }
+}
+
+async function loadWishlistOverview() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    document.getElementById("ov-wishlist").textContent = "0";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${CONFIG.BASE_URL}/wishlist`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      document.getElementById("ov-wishlist").textContent = "0";
+      return;
+    }
+
+    const data = await res.json();
+
+    const products = data?.products || [];
+
+    document.getElementById("ov-wishlist").textContent = products.length;
+  } catch (err) {
+    console.error("Wishlist overview error:", err);
+
+    document.getElementById("ov-wishlist").textContent = "0";
   }
 }
 

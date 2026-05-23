@@ -4,10 +4,14 @@ let currentPage = 1;
 const limit = 8;
 let searchQuery = "";
 let allProducts = [];
+let selectedDiscount = null;
+let selectedArrival = null;
 
 document.addEventListener("DOMContentLoaded", function () {
   fetchProducts();
   setupSearch();
+  setupDiscountFilter();
+  setupArrivalFilter();
 });
 
 // ========================
@@ -232,6 +236,106 @@ function setupSearch() {
       }
     });
   }
+}
+
+function setupDiscountFilter() {
+  const discountMap = {
+    discount1: 10,
+    discount2: 20,
+    discount3: 30,
+    discount4: 40,
+    discount5: 50,
+  };
+
+  Object.keys(discountMap).forEach((id) => {
+    const checkbox = document.getElementById(id);
+
+    if (checkbox) {
+      checkbox.addEventListener("change", function () {
+        // only one checkbox select
+        Object.keys(discountMap).forEach((otherId) => {
+          if (otherId !== id) {
+            document.getElementById(otherId).checked = false;
+          }
+        });
+
+        if (this.checked) {
+          selectedDiscount = discountMap[id];
+        } else {
+          selectedDiscount = null;
+        }
+
+        applyDiscountFilter();
+      });
+    }
+  });
+}
+
+function applyDiscountFilter() {
+  if (!selectedDiscount) {
+    renderProducts(allProducts);
+    return;
+  }
+
+  const filteredProducts = allProducts.filter((product) => {
+    return (product.discount || 0) >= selectedDiscount;
+  });
+
+  renderProducts(filteredProducts);
+}
+
+function setupArrivalFilter() {
+  const arrivalMap = {
+    ratinglist1: 7,
+    ratinglist2: 30,
+    ratinglist3: 60,
+    ratinglist4: 180,
+    ratinglist5: 365,
+  };
+
+  Object.keys(arrivalMap).forEach((id) => {
+    const checkbox = document.getElementById(id);
+
+    if (checkbox) {
+      checkbox.addEventListener("change", function () {
+        // one checkbox only
+        Object.keys(arrivalMap).forEach((otherId) => {
+          if (otherId !== id) {
+            document.getElementById(otherId).checked = false;
+          }
+        });
+
+        if (this.checked) {
+          selectedArrival = arrivalMap[id];
+        } else {
+          selectedArrival = null;
+        }
+
+        applyArrivalFilter();
+      });
+    }
+  });
+}
+
+function applyArrivalFilter() {
+  if (!selectedArrival) {
+    renderProducts(allProducts);
+    return;
+  }
+
+  const now = new Date();
+
+  const filteredProducts = allProducts.filter((product) => {
+    const createdDate = new Date(product.createdAt);
+
+    const diffTime = now - createdDate;
+
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+    return diffDays <= selectedArrival;
+  });
+
+  renderProducts(filteredProducts);
 }
 
 // ========================
