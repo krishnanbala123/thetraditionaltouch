@@ -73,6 +73,7 @@
       <script src="./assets/js/vendors/sal.js"></script>
       <!-- Custom script-->
       <script src="./assets/js/script.js"></script>
+      <script src="./assets/js/config.js"></script>
     <script>
       const inputElements = [...document.querySelectorAll('input.code-input')]
           inputElements.forEach((ele,index)=>{
@@ -91,6 +92,29 @@
               }
             })
           })
+    </script>
+
+    <script>
+      async function onSubmit(e) {
+        e.preventDefault();
+        const otp = [...document.querySelectorAll('input.code-input')]
+          .map(i => i.value).join('');
+        const email = sessionStorage.getItem('reset_email');
+
+        const res = await fetch(`${CONFIG.BASE_URL}/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          sessionStorage.setItem('reset_otp', otp); // keep for reset step
+          window.location.href = './new-password.html';
+        } else {
+          alert(data.message || 'Invalid OTP');
+        }
+      }
     </script>
   </body>
 </html>
