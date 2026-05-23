@@ -7558,6 +7558,13 @@ svg {
   color: #ffffff;
 }
 
+@media screen and (max-width: 576px) {
+  .scroll-top {
+    bottom: 65px;
+    right: 10px;
+  }
+}
+
 /* loader css*/
 .codex-loader {
   position: fixed;
