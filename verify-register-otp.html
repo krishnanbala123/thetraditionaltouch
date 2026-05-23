@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Traditional Touch | Verify OTP</title>
+  <link rel="shortcut icon" href="./assets/images/dress/logo_1.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="./assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="./assets/css/vendor/animate.css" rel="stylesheet">
+  <link href="./assets/css/style.css" rel="stylesheet">
+  <link href="./assets/css/my_style.css" rel="stylesheet">
+</head>
+<body class="authentication-wrap">
+
+  <div class="auth-main">
+    <div class="codex-authbox">
+      <div class="auth-header">
+        <div class="codex-brand">
+          <a href="index.html"><img class="img-fluid light-logo" src="./assets/images/dress/logo_1.png" style="width:85px;" alt=""></a>
+        </div>
+        <div class="auth-icon"><i class="fa fa-envelope-open"></i></div>
+        <h3>Verify your email</h3>
+        <p>Please enter the 6-digit code we sent to <br><strong id="show-email"></strong></p>
+      </div>
+
+      <form onsubmit="onSubmit(event)">
+        <div class="form-group">
+          <div class="group-small auth-pin">
+            <input class="form-control code-input" type="text" maxlength="1" required>
+            <input class="form-control code-input" type="text" maxlength="1" required>
+            <input class="form-control code-input" type="text" maxlength="1" required>
+            <input class="form-control code-input" type="text" maxlength="1" required>
+            <input class="form-control code-input" type="text" maxlength="1" required>
+            <input class="form-control code-input" type="text" maxlength="1" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary mt-0" type="submit">Verify & Create Account</button>
+        </div>
+      </form>
+
+      <div class="auth-footer text-center">
+        <p>Didn't receive the code? <a class="text-primary" href="#" id="resend-link">Resend OTP</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="./assets/js/jquery-3.6.0.min.js"></script>
+  <script src="./assets/js/script.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script>
+    const email = sessionStorage.getItem('register_email');
+    if (!email) window.location.href = './register.html';
+
+    document.getElementById('show-email').textContent = email;
+
+    // OTP input auto-focus
+    const inputElements = [...document.querySelectorAll('input.code-input')];
+    inputElements.forEach((ele, index) => {
+      ele.addEventListener('keydown', (e) => {
+        if (e.keyCode === 8 && e.target.value === '')
+          inputElements[Math.max(0, index - 1)].focus();
+      });
+      ele.addEventListener('input', (e) => {
+        const [first, ...rest] = e.target.value;
+        e.target.value = first ?? '';
+        if (first !== undefined && index < inputElements.length - 1) {
+          inputElements[index + 1].focus();
+          inputElements[index + 1].value = rest.join('');
+          inputElements[index + 1].dispatchEvent(new Event('input'));
+        }
+      });
+    });
+
+    // Submit
+    function onSubmit(e) {
+      e.preventDefault();
+      const btn = document.querySelector('button[type="submit"]');
+      const otp = inputElements.map(i => i.value).join('');
+
+      if (otp.length < 6) return alert('Please enter the full 6-digit code');
+
+      btn.disabled    = true;
+      btn.textContent = 'Verifying...';
+
+      fetch(`${CONFIG.BASE_URL}/auth/verify-email`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, otp }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          sessionStorage.removeItem('register_email');
+          sessionStorage.removeItem('register_data');
+          alert('Account created! Please log in.');
+          window.location.href = './login.html';
+        } else {
+          alert(data.message || 'Invalid OTP');
+          btn.disabled    = false;
+          btn.textContent = 'Verify & Create Account';
+        }
+      });
+    }
+
+    // Resend
+    document.getElementById('resend-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      const link = e.target;
+      const data = JSON.parse(sessionStorage.getItem('register_data') || '{}');
+
+      link.textContent = 'Sending...';
+
+      fetch(`${CONFIG.BASE_URL}/auth/register`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(data),
+      })
+      .then(res => res.json())
+      .then(d => {
+        link.textContent = d.success ? 'Sent!' : 'Try again';
+        setTimeout(() => link.textContent = 'Resend OTP', 3000);
+      });
+    });
+  </script>
+</body>
+</html>
