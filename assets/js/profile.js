@@ -582,13 +582,85 @@ function checkStrength(val) {
   el.style.color = lvl.tc;
 }
 
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast-msg " + type + " show";
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
 // =============================================
-//  CHANGE PASSWORD
+//  PROFILE PHOTO UPLOAD
 // =============================================
-function changePwd() {
+document.getElementById("profile-image-input").addEventListener("change", async function () {
+  const file = this.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    showToast("Please select an image file!", "error");
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast("Image must be under 5MB!", "error");
+    return;
+  }
+
+  const avatarEl = document.getElementById("avatar-init");
+  avatarEl.innerHTML = `<i class="fa fa-spinner fa-spin" style="color:#fff;font-size:22px;"></i>`;
+
+  try {
+    // Step 1 — Upload to Cloudinary
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const uploadRes = await fetch(`${CONFIG.BASE_URL}/upload`, {
+      method:  "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body:    formData,
+    });
+
+    const uploadData = await uploadRes.json();
+    if (!uploadRes.ok || !uploadData.url) throw new Error(uploadData.error || "Upload failed");
+
+    // Step 2 — ✅ Save image URL to user profile
+    const profileRes = await fetch(`${CONFIG.BASE_URL}/user/profile`, {
+      method:  "PUT",
+      headers: {
+        Authorization:  `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ image: uploadData.url }),
+    });
+
+    const profileData = await profileRes.json();
+    if (!profileRes.ok) throw new Error(profileData.message || "Failed to save image");
+
+    // Step 3 — Update UI and cache
+    currentUser.image = uploadData.url;
+    localStorage.setItem("user", JSON.stringify(currentUser));
+    avatarEl.innerHTML = `<img src="${uploadData.url}" alt="Profile">`;
+
+    showToast("Profile photo updated! ✓", "success");
+
+  } catch (err) {
+    console.error("Photo upload error:", err);
+    const init = (currentUser.name || "U")
+      .split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+    avatarEl.textContent = init;
+    showToast(err.message || "Failed to upload photo. Try again!", "error");
+  }
+
+  this.value = "";
+});
+
+// =============================================
+//  CHANGE PASSWORD  (replaces old changePwd)
+// =============================================
+async function changePwd() {
   const cur = document.getElementById("cur-pwd").value.trim();
-  const nw = document.getElementById("new-pwd").value.trim();
+  const nw  = document.getElementById("new-pwd").value.trim();
   const con = document.getElementById("con-pwd").value.trim();
+
   if (!cur || !nw || !con) {
     showToast("Please fill all fields!", "error");
     return;
@@ -601,19 +673,49 @@ function changePwd() {
     showToast("Min 6 characters required!", "error");
     return;
   }
-  showToast("Password updated successfully! ✓", "success");
-  document.getElementById("cur-pwd").value = "";
-  document.getElementById("new-pwd").value = "";
-  document.getElementById("con-pwd").value = "";
-  checkStrength("");
-}
+  if (!/[A-Z]/.test(nw)) {
+    showToast("Password needs at least one uppercase letter!", "error");
+    return;
+  }
+  if (!/[0-9]/.test(nw)) {
+    showToast("Password needs at least one number!", "error");
+    return;
+  }
+  if (!/[!@#$%^&*]/.test(nw)) {
+    showToast("Password needs at least one special character!", "error");
+    return;
+  }
 
-// =============================================
-//  TOAST
-// =============================================
-function showToast(msg, type = "success") {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast-msg " + type + " show";
-  setTimeout(() => t.classList.remove("show"), 3000);
+  const btn = document.querySelector("#tab-password .blue-btn");
+  btn.disabled    = true;
+  btn.innerHTML   = '<i class="fa fa-spinner fa-spin"></i> Updating...';
+
+  try {
+    const res  = await fetch(`${CONFIG.BASE_URL}/user/change-password`, {
+      method:  "POST",
+      headers: {
+        Authorization:  `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ currentPassword: cur, newPassword: nw }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showToast("Password updated successfully! ✓", "success");
+      document.getElementById("cur-pwd").value = "";
+      document.getElementById("new-pwd").value = "";
+      document.getElementById("con-pwd").value = "";
+      checkStrength("");
+    } else {
+      showToast(data.message || "Update failed. Try again!", "error");
+    }
+  } catch (err) {
+    console.error("Change password error:", err);
+    showToast("Network error! Check connection.", "error");
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = '<i class="fa fa-lock"></i> &nbsp;Update Password';
+  }
 }
