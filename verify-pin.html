@@ -72,49 +72,85 @@
       <!-- sal js-->
       <script src="./assets/js/vendors/sal.js"></script>
       <!-- Custom script-->
+      <!-- Custom script-->
       <script src="./assets/js/script.js"></script>
       <script src="./assets/js/config.js"></script>
-    <script>
-      const inputElements = [...document.querySelectorAll('input.code-input')]
-          inputElements.forEach((ele,index)=>{
-            ele.addEventListener('keydown',(e)=>{              
-              if(e.keyCode === 8 && e.target.value==='') inputElements[Math.max(0,index-1)].focus()
-            })
-            ele.addEventListener('input',(e)=>{             
-              const [first,...rest] = e.target.value
-              e.target.value = first ?? ''
-              const lastInputBox = index===inputElements.length-1
-              const insertedContent = first!==undefined
-              if(insertedContent && !lastInputBox) {               
-                inputElements[index+1].focus()
-                inputElements[index+1].value = rest.join('')
-                inputElements[index+1].dispatchEvent(new Event('input'))
-              }
-            })
-          })
-    </script>
 
-    <script>
-      async function onSubmit(e) {
-        e.preventDefault();
-        const otp = [...document.querySelectorAll('input.code-input')]
-          .map(i => i.value).join('');
+      <script>
+        // Guard
         const email = sessionStorage.getItem('reset_email');
+        if (!email) window.location.href = './forgot-password.html';
 
-        const res = await fetch(`${CONFIG.BASE_URL}/verify-otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp }),
+        // Show email in subtitle
+        document.querySelector('.auth-header p').innerHTML =
+          `Please enter the verification code we sent to <br><strong>${email}</strong>`;
+
+        // OTP box auto-focus logic
+        const inputElements = [...document.querySelectorAll('input.code-input')];
+        inputElements.forEach((ele, index) => {
+          ele.addEventListener('keydown', (e) => {
+            if (e.keyCode === 8 && e.target.value === '')
+              inputElements[Math.max(0, index - 1)].focus();
+          });
+          ele.addEventListener('input', (e) => {
+            const [first, ...rest] = e.target.value;
+            e.target.value = first ?? '';
+            const lastInputBox    = index === inputElements.length - 1;
+            const insertedContent = first !== undefined;
+            if (insertedContent && !lastInputBox) {
+              inputElements[index + 1].focus();
+              inputElements[index + 1].value = rest.join('');
+              inputElements[index + 1].dispatchEvent(new Event('input'));
+            }
+          });
         });
 
-        const data = await res.json();
-        if (data.success) {
-          sessionStorage.setItem('reset_otp', otp); // keep for reset step
-          window.location.href = './new-password.html';
-        } else {
-          alert(data.message || 'Invalid OTP');
+        // Submit OTP
+        function onSubmit(e) {
+          e.preventDefault();
+          const btn = document.querySelector('button[type="submit"]');
+          const otp = inputElements.map(i => i.value).join('');
+
+          if (otp.length < 6) return alert('Please enter the full 6-digit code');
+
+          btn.disabled    = true;
+          btn.textContent = 'Verifying...';
+
+          fetch(`${CONFIG.BASE_URL}/verify-otp`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ email, otp }),
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              sessionStorage.setItem('reset_otp', otp);
+              window.location.href = './new-password.html';
+            } else {
+              alert(data.message || 'Invalid OTP');
+              btn.disabled    = false;
+              btn.textContent = 'Confirm';
+            }
+          });
         }
-      }
-    </script>
+
+        // Resend OTP
+        document.querySelector('.auth-footer a').addEventListener('click', (e) => {
+          e.preventDefault();
+          const link = e.target;
+          link.textContent = 'Sending...';
+
+          fetch(`${CONFIG.BASE_URL}/forgot-password`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ email }),
+          })
+          .then(res => res.json())
+          .then(data => {
+            link.textContent = data.success ? 'Sent!' : 'Try again';
+            setTimeout(() => link.textContent = 'Resend Email', 3000);
+          });
+        });
+      </script>
   </body>
 </html>

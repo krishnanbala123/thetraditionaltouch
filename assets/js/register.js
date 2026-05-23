@@ -51,30 +51,33 @@ document.addEventListener("DOMContentLoaded", function () {
     submitBtn.innerHTML =
       '<i class="fa fa-spinner fa-spin"></i> Registering...';
 
+    // Replace only the fetch block inside form submit:
     try {
       const response = await fetch(`${CONFIG.BASE_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, phone, email, password }),
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ name, phone, email, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        showMessage(data.message || "Registered successfully!", "success");
+        // Store for OTP step
+        sessionStorage.setItem('register_email', email);
+        sessionStorage.setItem('register_data', JSON.stringify({ name, phone, email, password }));
+
+        showMessage('OTP sent to your email!', 'success');
         setTimeout(() => {
-          window.location.href = "login.html";
-        }, 2000);
+          window.location.href = './verify-register-otp.html';
+        }, 1500);
       } else {
-        showMessage(data.message || "Registration failed. Try again!", "error");
+        showMessage(data.message || 'Registration failed. Try again!', 'error');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fa fa-paper-plane"></i> Register';
       }
     } catch (error) {
-      console.error("Register Error:", error);
-      showMessage("Network error! Check your connection.", "error");
+      console.error('Register Error:', error);
+      showMessage('Network error! Check your connection.', 'error');
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="fa fa-paper-plane"></i> Register';
     }

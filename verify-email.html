@@ -58,5 +58,19 @@
       <script src="./assets/js/vendors/sal.js"></script>
       <!-- Custom script-->
       <script src="./assets/js/script.js"></script>
+      <script src="./assets/js/config.js"></script>
+      <script>
+        // Guard
+        const email = sessionStorage.getItem('register_email');
+        if (!email) window.location.href = './register.html';
+
+        // Show email in text
+        document.querySelector('.auth-header p b').textContent = email;
+
+        // On verify button click → go to OTP page
+        document.querySelector('button').addEventListener('click', () => {
+          window.location.href = './verify-register-otp.html';
+        });
+      </script>
   </body>
 </html>
