@@ -31,11 +31,11 @@ const FEEDING_ADDONS = [
 
 // ── Sleeve options ───────────────────────────────────────────────────────────
 const SLEEVE_OPTIONS = [
-  { id: "full_gathering",        label: "Full Gathering Sleeves", extra: 0  },
-  { id: "elbow",                 label: "Elbow Sleeves",          extra: 50 },
-  { id: "elbow_puff",            label: "Elbow Puff Sleeve",      extra: 50 },
-  { id: "three_quarter_scallop", label: "3/4 Scallop Sleeve",     extra: 20 },
-  { id: "three_quarter",         label: "3/4 Sleeve",             extra: 50 },
+  { id: "full_gathering", label: "Full Gathering Sleeves", extra: 0 },
+  { id: "elbow", label: "Elbow Sleeves", extra: 50 },
+  { id: "elbow_puff", label: "Elbow Puff Sleeve", extra: 50 },
+  { id: "three_quarter_scallop", label: "3/4 Scallop Sleeve", extra: 20 },
+  { id: "three_quarter", label: "3/4 Sleeve", extra: 50 },
 ];
 
 // ── Length options ───────────────────────────────────────────────────────────
@@ -109,8 +109,8 @@ function computeFinalPrice(product) {
   const addonExtra = addonObj ? addonObj.extra : 0;
   const lengthObj = LENGTH_OPTIONS.find((l) => l.id === selectedLength);
   const lengthExtra = lengthObj ? lengthObj.extra : 0;
-  const sleeveObj    = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve); // ✅
-  const sleeveExtra  = sleeveObj ? sleeveObj.extra : 0; 
+  const sleeveObj = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve); // ✅
+  const sleeveExtra = sleeveObj ? sleeveObj.extra : 0;
   const dupattaExtra = selectedDupatta ? DUPATTA_EXTRA : 0;
 
   return base + sizeExtra + addonExtra + lengthExtra + dupattaExtra;
@@ -134,8 +134,8 @@ function updatePriceDisplay() {
   const addonExtra = addonObj ? addonObj.extra : 0;
   const lengthObj = LENGTH_OPTIONS.find((l) => l.id === selectedLength);
   const lengthExtra = lengthObj ? lengthObj.extra : 0;
-  const sleeveObj    = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve); // ✅
-  const sleeveExtra  = sleeveObj ? sleeveObj.extra : 0;                     // ✅
+  const sleeveObj = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve); // ✅
+  const sleeveExtra = sleeveObj ? sleeveObj.extra : 0; // ✅
   const dupattaExtra = selectedDupatta ? DUPATTA_EXTRA : 0;
 
   const breakdownEl = document.getElementById("price-breakdown");
@@ -209,7 +209,7 @@ function renderProductDetail(product) {
   renderFeedingAddons();
   renderSleeveOptions();
   renderLengthOptions();
-  renderDupattaOption()
+  renderDupattaOption();
 
   // default length
   selectedLength = "48";
@@ -292,7 +292,9 @@ function renderFeedingAddons() {
 function renderSleeveOptions() {
   let sleeveGroup = document.getElementById("sleeve-group");
   if (!sleeveGroup) {
-    const addonGroup = document.getElementById("addon-section")?.closest(".detail-group");
+    const addonGroup = document
+      .getElementById("addon-section")
+      ?.closest(".detail-group");
     if (!addonGroup) return;
     sleeveGroup = document.createElement("div");
     sleeveGroup.className = "detail-group";
@@ -304,17 +306,20 @@ function renderSleeveOptions() {
     <ul id="sleeve-section" style="
       display:flex; flex-wrap:wrap; gap:8px;
       list-style:none; padding:0; margin:10px 0 18px;">
-      ${SLEEVE_OPTIONS.map((s) => `
+      ${SLEEVE_OPTIONS.map(
+        (s) => `
         <li class="addon-item" id="sleeve-${s.id}"
             onclick="selectSleeve('${s.id}')"
             style="flex:unset; min-width:unset; padding:10px 16px;">
           <span class="addon-check"><i class="fa fa-check"></i></span>
           <span class="addon-name" style="white-space:nowrap;">${s.label}</span>
-          ${s.extra > 0
-            ? `<span class="addon-price-badge">+₹${s.extra}</span>`
-            : `<span class="addon-price-badge free">Free</span>`
+          ${
+            s.extra > 0
+              ? `<span class="addon-price-badge">+₹${s.extra}</span>`
+              : `<span class="addon-price-badge free">Free</span>`
           }
-        </li>`).join("")}
+        </li>`,
+      ).join("")}
     </ul>`;
 }
 
@@ -430,8 +435,12 @@ function selectLength(lengthId) {
 }
 function selectDupatta(withDupatta) {
   selectedDupatta = withDupatta;
-  document.getElementById("dupatta-yes").classList.toggle("active", withDupatta);
-  document.getElementById("dupatta-no").classList.toggle("active", !withDupatta);
+  document
+    .getElementById("dupatta-yes")
+    .classList.toggle("active", withDupatta);
+  document
+    .getElementById("dupatta-no")
+    .classList.toggle("active", !withDupatta);
   updatePriceDisplay();
 }
 
@@ -468,7 +477,7 @@ function setupCartButton(product) {
         sleeve: selectedSleeve,
         length: selectedLength,
         addonType: selectedAddon,
-        dupatta:   selectedDupatta,
+        dupatta: selectedDupatta,
         unitPrice: computeFinalPrice(product), // ✅ pass the correct price
       });
 
@@ -525,12 +534,18 @@ function renderRelatedSlider(products) {
             <img class="img-fluid" src="${product.images[0]}" alt="${product.name}"
                 onerror="this.src='./assets/images/dress/shop_1.jpeg'">
             ${product.discount ? `<span class="product-discount-label">${product.discount}%</span>` : ""}
-            <ul class="social">
-              <li><a href="product-details.html?id=${product._id}"><i data-feather="eye"></i></a></li>
-              <li><a href="javascript:void(0);" data-wishlist-id="${product._id}"
-                     onclick="WishlistManager.toggleWishlist('${product._id}', this)">
-                <i data-feather="heart"></i></a></li>
-            </ul>
+           <ul class="social">
+            <li>
+              <a href="javascript:void(0);"
+                onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")})">
+                <i data-feather="shopping-cart"></i>
+              </a>
+            </li>
+            <li><a href="product-details.html?id=${product._id}"><i data-feather="eye"></i></a></li>
+            <li><a href="javascript:void(0);" data-wishlist-id="${product._id}"
+                  onclick="WishlistManager.toggleWishlist('${product._id}', this)">
+              <i data-feather="heart"></i></a></li>
+          </ul>
           </div>
           <div class="product-detailwrap">
             <div>

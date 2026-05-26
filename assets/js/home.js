@@ -120,7 +120,7 @@ function renderHomeSlider(products) {
   const count = products.length;
 
   homeSwiper = new Swiper("#home-product-slider", {
-    slidesPerView: 2,
+    slidesPerView: 1,
     spaceBetween: 24,
     loop: count > 5,
     speed: 1200,
