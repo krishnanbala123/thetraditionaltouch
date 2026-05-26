@@ -84,7 +84,7 @@ function renderProducts(products) {
         ? `<span class="product-discount-label">${product.discount}%</span>`
         : "";
 
-      const hasStock = product.sizes.some((s) => s.stock > 0);
+      const hasStock = (product.stock ?? 0) > 0;
 
       return `
       <div class="col-span-12 lg:col-span-3 md:col-span-4 sm:col-span-6">
@@ -149,14 +149,13 @@ function quickAddToCart(event, id, btnEl) {
     return;
   }
 
-  const availableSizes = product.sizes.filter((s) => s.stock > 0);
-  if (availableSizes.length === 0) {
+  if ((product.stock ?? 0) <= 0) {
     CartManager.showToast("Out of stock!", "error");
     return;
   }
 
-  const defaultSize = availableSizes[0].size;
-  CartManager.addToCart(id, 1, btnEl, defaultSize); // ✅ btnEl pass
+  // redirect to product page so customer can pick size + customisation
+  window.location.href = `product-details.html?id=${id}`;
 }
 
 // ========================
