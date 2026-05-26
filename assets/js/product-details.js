@@ -4,6 +4,7 @@ let selectedAddon = null; // feeding type
 let selectedSleeve = null;
 let selectedLength = "48"; // default standard
 let currentProduct = null;
+let selectedDupatta = false;
 
 // ── Size extra ──────────────────────────────────────────────────────────────
 const SIZE_EXTRA_PRICE = {
@@ -30,11 +31,11 @@ const FEEDING_ADDONS = [
 
 // ── Sleeve options ───────────────────────────────────────────────────────────
 const SLEEVE_OPTIONS = [
-  { id: "full_gathering", label: "Full Gathering Sleeves", extra: 0 },
-  { id: "elbow", label: "Elbow Sleeves", extra: 0 },
-  { id: "elbow_puff", label: "Elbow Puff Sleeve", extra: 0 },
-  { id: "three_quarter_scallop", label: "3/4 Scallop Sleeve", extra: 0 },
-  { id: "three_quarter", label: "3/4 Sleeve", extra: 0 },
+  { id: "full_gathering",        label: "Full Gathering Sleeves", extra: 0  },
+  { id: "elbow",                 label: "Elbow Sleeves",          extra: 50 },
+  { id: "elbow_puff",            label: "Elbow Puff Sleeve",      extra: 50 },
+  { id: "three_quarter_scallop", label: "3/4 Scallop Sleeve",     extra: 20 },
+  { id: "three_quarter",         label: "3/4 Sleeve",             extra: 50 },
 ];
 
 // ── Length options ───────────────────────────────────────────────────────────
@@ -46,6 +47,8 @@ const LENGTH_OPTIONS = [
   { id: "52", label: '52"', extra: 30 },
   { id: "54", label: '54"', extra: 50 },
 ];
+
+const DUPATTA_EXTRA = 200;
 
 // ─────────────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", function () {
@@ -106,8 +109,11 @@ function computeFinalPrice(product) {
   const addonExtra = addonObj ? addonObj.extra : 0;
   const lengthObj = LENGTH_OPTIONS.find((l) => l.id === selectedLength);
   const lengthExtra = lengthObj ? lengthObj.extra : 0;
+  const sleeveObj    = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve); // ✅
+  const sleeveExtra  = sleeveObj ? sleeveObj.extra : 0; 
+  const dupattaExtra = selectedDupatta ? DUPATTA_EXTRA : 0;
 
-  return base + sizeExtra + addonExtra + lengthExtra;
+  return base + sizeExtra + addonExtra + lengthExtra + dupattaExtra;
 }
 
 function updatePriceDisplay() {
@@ -128,6 +134,9 @@ function updatePriceDisplay() {
   const addonExtra = addonObj ? addonObj.extra : 0;
   const lengthObj = LENGTH_OPTIONS.find((l) => l.id === selectedLength);
   const lengthExtra = lengthObj ? lengthObj.extra : 0;
+  const sleeveObj    = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve); // ✅
+  const sleeveExtra  = sleeveObj ? sleeveObj.extra : 0;                     // ✅
+  const dupattaExtra = selectedDupatta ? DUPATTA_EXTRA : 0;
 
   const breakdownEl = document.getElementById("price-breakdown");
   if (!breakdownEl) return;
@@ -145,10 +154,12 @@ function updatePriceDisplay() {
     lines.push(
       `<span class="pb-extra">+ Length (${selectedLength}"): ₹${lengthExtra}</span>`,
     );
+  if (selectedDupatta)
+    lines.push(`<span class="pb-extra">+ Dupatta: ₹${DUPATTA_EXTRA}</span>`);
 
   breakdownEl.innerHTML = lines.join("");
   breakdownEl.style.display =
-    sizeExtra + addonExtra + lengthExtra > 0 ? "flex" : "none";
+    sizeExtra + addonExtra + lengthExtra + dupattaExtra > 0 ? "flex" : "none";
 }
 
 // ── Render product ────────────────────────────────────────────────────────────
@@ -198,6 +209,7 @@ function renderProductDetail(product) {
   renderFeedingAddons();
   renderSleeveOptions();
   renderLengthOptions();
+  renderDupattaOption()
 
   // default length
   selectedLength = "48";
@@ -278,13 +290,9 @@ function renderFeedingAddons() {
 
 // ── Sleeve ──────────────────────────────────────────────────────────────────
 function renderSleeveOptions() {
-  // Find or create sleeve section
   let sleeveGroup = document.getElementById("sleeve-group");
   if (!sleeveGroup) {
-    // Insert after addon group
-    const addonGroup = document
-      .getElementById("addon-section")
-      ?.closest(".detail-group");
+    const addonGroup = document.getElementById("addon-section")?.closest(".detail-group");
     if (!addonGroup) return;
     sleeveGroup = document.createElement("div");
     sleeveGroup.className = "detail-group";
@@ -296,16 +304,17 @@ function renderSleeveOptions() {
     <ul id="sleeve-section" style="
       display:flex; flex-wrap:wrap; gap:8px;
       list-style:none; padding:0; margin:10px 0 18px;">
-      ${SLEEVE_OPTIONS.map(
-        (s) => `
+      ${SLEEVE_OPTIONS.map((s) => `
         <li class="addon-item" id="sleeve-${s.id}"
             onclick="selectSleeve('${s.id}')"
             style="flex:unset; min-width:unset; padding:10px 16px;">
           <span class="addon-check"><i class="fa fa-check"></i></span>
           <span class="addon-name" style="white-space:nowrap;">${s.label}</span>
-          <span class="addon-price-badge free">Free</span>
-        </li>`,
-      ).join("")}
+          ${s.extra > 0
+            ? `<span class="addon-price-badge">+₹${s.extra}</span>`
+            : `<span class="addon-price-badge free">Free</span>`
+          }
+        </li>`).join("")}
     </ul>`;
 }
 
@@ -338,6 +347,42 @@ function renderLengthOptions() {
     </ul>`;
 }
 
+function renderDupattaOption() {
+  let dupattaGroup = document.getElementById("dupatta-group");
+  if (!dupattaGroup) {
+    const lengthGroup = document.getElementById("length-group");
+    if (!lengthGroup) return;
+    dupattaGroup = document.createElement("div");
+    dupattaGroup.className = "detail-group";
+    dupattaGroup.id = "dupatta-group";
+    lengthGroup.insertAdjacentElement("afterend", dupattaGroup);
+  }
+  dupattaGroup.innerHTML = `
+    <h6>Dupatta Add-on</h6>
+    <ul id="dupatta-section" style="
+      display:flex; flex-wrap:wrap; gap:10px;
+      list-style:none; padding:0; margin:10px 0 18px;">
+      <li class="addon-item" id="dupatta-no" onclick="selectDupatta(false)"
+          style="flex:1; min-width:180px;">
+        <span class="addon-check"><i class="fa fa-check"></i></span>
+        <span class="addon-name">No Dupatta</span>
+        <span class="addon-price-badge free">Free</span>
+      </li>
+      <li class="addon-item" id="dupatta-yes" onclick="selectDupatta(true)"
+          style="flex:1; min-width:180px;">
+        <span class="addon-check"><i class="fa fa-check"></i></span>
+        <span class="addon-name">
+          Dupatta
+          <small>(Chiffon with 2 Side Borders)</small>
+        </span>
+        <span class="addon-price-badge">+₹200</span>
+      </li>
+    </ul>`;
+
+  // default: No Dupatta selected
+  document.getElementById("dupatta-no").classList.add("active");
+}
+
 // ── Selection handlers ────────────────────────────────────────────────────────
 function selectSize(el, size) {
   document
@@ -364,7 +409,6 @@ function selectAddon(addonId) {
 }
 
 function selectSleeve(sleeveId) {
-  // Only deselect other sleeve items
   SLEEVE_OPTIONS.forEach((s) => {
     const el = document.getElementById(`sleeve-${s.id}`);
     if (el) el.classList.remove("active");
@@ -372,6 +416,7 @@ function selectSleeve(sleeveId) {
   const el = document.getElementById(`sleeve-${sleeveId}`);
   if (el) el.classList.add("active");
   selectedSleeve = sleeveId;
+  updatePriceDisplay(); // ✅ add this
 }
 
 function selectLength(lengthId) {
@@ -381,6 +426,12 @@ function selectLength(lengthId) {
   });
   highlightLength(lengthId);
   selectedLength = lengthId;
+  updatePriceDisplay();
+}
+function selectDupatta(withDupatta) {
+  selectedDupatta = withDupatta;
+  document.getElementById("dupatta-yes").classList.toggle("active", withDupatta);
+  document.getElementById("dupatta-no").classList.toggle("active", !withDupatta);
   updatePriceDisplay();
 }
 
@@ -417,11 +468,12 @@ function setupCartButton(product) {
         sleeve: selectedSleeve,
         length: selectedLength,
         addonType: selectedAddon,
+        dupatta:   selectedDupatta,
         unitPrice: computeFinalPrice(product), // ✅ pass the correct price
       });
 
       showDetailMessage(
-        `Added! Size: ${selectedSize} | ${sleeveObj.label} | ${lengthObj.label} | ${addonObj.label} | ₹${finalPrice}`,
+        `Added! Size: ${selectedSize} | ${sleeveObj.label} | ${lengthObj.label} | ${addonObj.label}${selectedDupatta ? " | Dupatta" : ""} | ₹${finalPrice}`,
         "success",
       );
     };
@@ -510,4 +562,26 @@ function renderRelatedSlider(products) {
     },
   });
   if (typeof feather !== "undefined") feather.replace();
+}
+
+// ── Size Guide Modal ─────────────────────────────────────────────────────────
+function openSizeGuide() {
+  const modal = document.getElementById("size-guide-modal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  // Close on backdrop click
+  modal.onclick = function (e) {
+    if (e.target === modal) closeSizeGuide();
+  };
+  // Close on Escape
+  document._sizeGuideEsc = (e) => {
+    if (e.key === "Escape") closeSizeGuide();
+  };
+  document.addEventListener("keydown", document._sizeGuideEsc);
+}
+
+function closeSizeGuide() {
+  const modal = document.getElementById("size-guide-modal");
+  if (modal) modal.style.display = "none";
+  document.removeEventListener("keydown", document._sizeGuideEsc);
 }

@@ -96,6 +96,7 @@ const CartManager = (() => {
           sleeve:    customisation.sleeve    || "full_gathering",
           length:    customisation.length    || "48",
           addonType: customisation.addonType || "non_feeding",
+          dupatta:   customisation.dupatta   ?? false,
         }),
       });
 
@@ -323,6 +324,7 @@ const CartManager = (() => {
               ${item.customisation?.sleeve    ? ` | Sleeve: ${item.customisation.sleeve.replace(/_/g," ")}` : ""}
               ${item.customisation?.length    ? ` | Length: ${item.customisation.length}"` : ""}
               ${item.customisation?.addonType ? ` | ${item.customisation.addonType.replace(/_/g," ")}` : ""}
+              ${item.customisation?.dupatta   ? ` | Dupatta` : ""}
             </small>
           </td>
             <td>
