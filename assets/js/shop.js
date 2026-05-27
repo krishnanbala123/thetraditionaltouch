@@ -84,14 +84,19 @@ function renderProducts(products) {
         ? `<span class="product-discount-label">${product.discount}%</span>`
         : "";
 
-      const hasStock = (product.stock ?? 0) > 0;
+      // stock is product-level (single number on the product document)
+      const stock    = product.stock ?? 0;
+      const hasStock = stock > 0;
+
+      // Safely encode sizes array for inline onclick (sizes only have { size: "M" } — no stock field)
+      const sizesJson = JSON.stringify(product.sizes || []).replace(/"/g, "&quot;");
 
       return `
       <div class="col-span-12 lg:col-span-3 md:col-span-4 sm:col-span-6">
         <div class="product-boxwrap">
           <div class="product-imgwrap">
             <a href="product-details.html?id=${product._id}">
-              <img class="img-fluid" src="${product.images[0]}" 
+              <img class="img-fluid" src="${product.images[0]}"
                    alt="${product.name}"
                    onerror="this.src='./assets/images/fashion/product/1.jpg'">
             </a>
@@ -99,7 +104,8 @@ function renderProducts(products) {
             ${!hasStock ? `<span class="product-sale-label" style="background:gray;">Out of Stock</span>` : ""}
             <ul class="social">
               <li>
-                <a href="javascript:void(0);" onclick="quickAddToCart(event, '${product._id}', this)">
+                <a href="javascript:void(0);"
+                   onclick="quickAddToCart(event, '${product._id}', this, ${stock}, ${sizesJson})">
                   <i data-feather="shopping-cart"></i>
                 </a>
               </li>
@@ -108,7 +114,7 @@ function renderProducts(products) {
                   <i data-feather="eye"></i>
                 </a>
               </li>
-               <li>
+              <li>
                 <a href="javascript:void(0);"
                   data-wishlist-id="${product._id}"
                   onclick="WishlistManager.toggleWishlist('${product._id}', this)">
@@ -139,23 +145,33 @@ function renderProducts(products) {
 
 // ========================
 // Quick Add to Cart (Shop page)
+// stock is product-level — sizes array only has { size: "M" } etc.
 // ========================
-function quickAddToCart(event, id, btnEl) {
+function quickAddToCart(event, id, btnEl, stock, sizes) {
   event.preventDefault();
 
+  // Guard: product must exist in local cache
   const product = allProducts.find((p) => p._id === id);
   if (!product) {
     CartManager.showToast("Product not found!", "error");
     return;
   }
 
-  if ((product.stock ?? 0) <= 0) {
+  // Product-level stock check
+  if ((stock ?? 0) <= 0) {
     CartManager.showToast("Out of stock!", "error");
     return;
   }
 
-  // redirect to product page so customer can pick size + customisation
-  window.location.href = `product-details.html?id=${id}`;
+  // If sizes are configured, auto-add with first size;
+  // otherwise redirect to product page so customer can pick size + customisation
+  const hasSizes = Array.isArray(sizes) && sizes.length > 0;
+  if (!hasSizes) {
+    window.location.href = `product-details.html?id=${id}`;
+    return;
+  }
+
+  CartManager.addToCartAuto(id, 1, btnEl, sizes, stock);
 }
 
 // ========================
@@ -212,15 +228,13 @@ function changePage(page) {
 // ========================
 function setupSearch() {
   const searchInput = document.querySelector(".search-bar input");
-  const searchBtn = document.querySelector(".search-bar .btn-primary");
+  const searchBtn   = document.querySelector(".search-bar .btn-primary");
 
   if (searchBtn) {
     searchBtn.addEventListener("click", function () {
       searchQuery = searchInput.value.trim();
       currentPage = 1;
       fetchProducts(currentPage, searchQuery);
-
-      // Search bar close
       document.querySelector(".search-bar").classList.remove("show");
     });
   }
@@ -237,6 +251,9 @@ function setupSearch() {
   }
 }
 
+// ========================
+// Discount Filter
+// ========================
 function setupDiscountFilter() {
   const discountMap = {
     discount1: 10,
@@ -248,22 +265,14 @@ function setupDiscountFilter() {
 
   Object.keys(discountMap).forEach((id) => {
     const checkbox = document.getElementById(id);
-
     if (checkbox) {
       checkbox.addEventListener("change", function () {
-        // only one checkbox select
+        // Only one checkbox active at a time
         Object.keys(discountMap).forEach((otherId) => {
-          if (otherId !== id) {
-            document.getElementById(otherId).checked = false;
-          }
+          if (otherId !== id) document.getElementById(otherId).checked = false;
         });
 
-        if (this.checked) {
-          selectedDiscount = discountMap[id];
-        } else {
-          selectedDiscount = null;
-        }
-
+        selectedDiscount = this.checked ? discountMap[id] : null;
         applyDiscountFilter();
       });
     }
@@ -276,13 +285,15 @@ function applyDiscountFilter() {
     return;
   }
 
-  const filteredProducts = allProducts.filter((product) => {
-    return (product.discount || 0) >= selectedDiscount;
-  });
-
+  const filteredProducts = allProducts.filter(
+    (product) => (product.discount || 0) >= selectedDiscount,
+  );
   renderProducts(filteredProducts);
 }
 
+// ========================
+// Arrival Filter
+// ========================
 function setupArrivalFilter() {
   const arrivalMap = {
     ratinglist1: 7,
@@ -294,22 +305,14 @@ function setupArrivalFilter() {
 
   Object.keys(arrivalMap).forEach((id) => {
     const checkbox = document.getElementById(id);
-
     if (checkbox) {
       checkbox.addEventListener("change", function () {
-        // one checkbox only
+        // Only one checkbox active at a time
         Object.keys(arrivalMap).forEach((otherId) => {
-          if (otherId !== id) {
-            document.getElementById(otherId).checked = false;
-          }
+          if (otherId !== id) document.getElementById(otherId).checked = false;
         });
 
-        if (this.checked) {
-          selectedArrival = arrivalMap[id];
-        } else {
-          selectedArrival = null;
-        }
-
+        selectedArrival = this.checked ? arrivalMap[id] : null;
         applyArrivalFilter();
       });
     }
@@ -323,14 +326,8 @@ function applyArrivalFilter() {
   }
 
   const now = new Date();
-
   const filteredProducts = allProducts.filter((product) => {
-    const createdDate = new Date(product.createdAt);
-
-    const diffTime = now - createdDate;
-
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-
+    const diffDays = (now - new Date(product.createdAt)) / (1000 * 60 * 60 * 24);
     return diffDays <= selectedArrival;
   });
 

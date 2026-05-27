@@ -249,7 +249,6 @@ const OrderManager = (() => {
           address,
           phone,
           isInsideTamilNadu,
-          // paymentId intentionally omitted — set after verify
         }),
       });
       const orderData = await orderRes.json();
@@ -258,7 +257,7 @@ const OrderManager = (() => {
         resetPayBtn(); return;
       }
 
-      const mongoOrderId = orderData.order._id;   // ✅ keep for verify step
+      const mongoOrderId = orderData.order._id;
 
       // ── Step 2: Create Razorpay payment order ─────────────────────────────
       if (payBtnTxt) payBtnTxt.innerHTML =
@@ -297,7 +296,7 @@ const OrderManager = (() => {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ...response,
-                mongoOrderId,   // ✅ backend uses this to update the order
+                mongoOrderId,
               }),
             });
             const verifyData = await verifyRes.json();
@@ -307,13 +306,15 @@ const OrderManager = (() => {
               resetPayBtn(); return;
             }
 
-            // ✅ Order complete — paymentId saved, paymentStatus: Paid
+            // ✅ Order complete — redirect to invoice with orderId in URL only
+            // Nothing sensitive is stored in localStorage
             showCoToast("🎉 Order placed successfully!", "success");
             localStorage.removeItem("cart");
-            setTimeout(
-              () => (window.location.href = "profile1.html?tab=orders"),
-              1500
-            );
+
+            setTimeout(() => {
+              // orderId in URL is safe — backend verifies JWT token ownership
+              window.location.href = `invoice.html?orderId=${mongoOrderId}`;
+            }, 1500);
 
           } catch (err) {
             showCoToast(err.message || "Order failed. Contact support.", "error");

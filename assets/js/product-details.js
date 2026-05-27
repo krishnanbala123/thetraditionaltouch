@@ -226,9 +226,66 @@ function renderProductDetail(product) {
   }
 
   document.title = `${product.name} - The Traditional Touch`;
+  setupShareButtons(product); 
   setupCartButton(product);
 }
+// ── Share buttons ─────────────────────────────────────────────────────────
+function setupShareButtons(product) {
+  const pageUrl   = encodeURIComponent(window.location.href);
+  const pageTitle = encodeURIComponent(product.name || "Check out this product");
+  const pageDesc  = encodeURIComponent(
+    product.description
+      ? product.description.substring(0, 100) + "..."
+      : "Beautiful traditional wear from The Traditional Touch"
+  );
 
+  const shares = {
+    facebook : `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`,
+    twitter  : `https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`,
+    instagram: null, // Instagram has no web share URL — open profile instead
+    whatsapp : `https://api.whatsapp.com/send?text=${pageTitle}%20${pageUrl}`,
+  };
+
+  const fbBtn    = document.querySelector(".share-iconlist .bg-fb a");
+  const twtBtn   = document.querySelector(".share-iconlist .bg-twt a");
+  const instaBtn = document.querySelector(".share-iconlist .bg-insta a");
+  const whpBtn   = document.querySelector(".share-iconlist .bg-whp a");
+
+  if (fbBtn) {
+    fbBtn.href = shares.facebook;
+    fbBtn.target = "_blank";
+    fbBtn.rel = "noopener noreferrer";
+  }
+  if (twtBtn) {
+    twtBtn.href = shares.twitter;
+    twtBtn.target = "_blank";
+    twtBtn.rel = "noopener noreferrer";
+  }
+  if (instaBtn) {
+    // Instagram has no direct share URL — use Web Share API if available,
+    // otherwise copy link to clipboard
+    instaBtn.href = "javascript:void(0);";
+    instaBtn.onclick = (e) => {
+      e.preventDefault();
+      if (navigator.share) {
+        navigator.share({
+          title : product.name,
+          text  : pageDesc,
+          url   : window.location.href,
+        }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          showDetailMessage("Link copied! Paste it on Instagram.", "success");
+        });
+      }
+    };
+  }
+  if (whpBtn) {
+    whpBtn.href = shares.whatsapp;
+    whpBtn.target = "_blank";
+    whpBtn.rel = "noopener noreferrer";
+  }
+}
 // ── Global stock notice ──────────────────────────────────────────────────────
 function renderStockNotice(globalStock) {
   const stockEl = document.querySelector(".product-detailright h5");

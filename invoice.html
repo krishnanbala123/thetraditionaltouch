@@ -1,152 +1,383 @@
 <!DOCTYPE html>
 <html lang="en"> 
     <head>
-      <!-- Required meta tags-->
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="author" content="">
       <meta name="keywords" content="Rocs, tailwind ecommerce template, responsive template, fashion, cosmetic">
-      <title>
-         The Traditional Touch | Invoice
-      </title>
-      <!-- shortcut icon-->
+      <title>The Traditional Touch | Invoice</title>
       <link rel="shortcut icon" href="./assets/images/dress/logo_1.png" type="image/x-icon">
-      <!-- Fonts css-->
       <link rel="preconnect" href="https://fonts.googleapis.com/">
       <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-      <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&amp;display=swap" rel="stylesheet">
-      <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
-      <!--icons css-->
+      <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
       <link href="./assets/css/vendor/font-awesome.css" rel="stylesheet">
       <link href="./assets/css/vendor/themify-icons.css" rel="stylesheet">
-      <!--animate css-->
       <link href="./assets/css/vendor/animate.css" rel="stylesheet">
-      <!-- sal animation-->
       <link href="./assets/css/vendor/sal.css" rel="stylesheet">
-      <!-- swiper slider-->
       <link href="./assets/css/vendor/swiper-bundle.min.css" rel="stylesheet">
-      <!-- simplebar slider-->
       <link href="./assets/css/vendor/simplebar.css" rel="stylesheet">
-      <!-- Custom css-->
       <link href="./assets/css/style.css" rel="stylesheet">
-
-      
-       <link href="./assets/css/my_style.css" rel="stylesheet">
-
-        <!-- Font Awesome -->
+      <link href="./assets/css/my_style.css" rel="stylesheet">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+      <style>
+        /* ── Invoice loading / error states ── */
+        #invoice-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 60px 20px;
+          gap: 16px;
+          color: #666;
+          font-family: 'Jost', sans-serif;
+        }
+        #invoice-loading i {
+          font-size: 36px;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #invoice-error {
+          display: none;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 60px 20px;
+          gap: 12px;
+          color: #c0392b;
+          font-family: 'Jost', sans-serif;
+          text-align: center;
+        }
+        #invoice-error i { font-size: 40px; }
+
+        /* ── Invoice action buttons ── */
+        .invoice-action {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin-top: 32px;
+          justify-content: center;
+        }
+        .invoice-action .btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        /* Custom Modern Invoice Layout Enhancements */
+        .inv-card-wrapper {
+          background: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+          padding: 40px;
+          font-family: 'Jost', sans-serif;
+        }
+        .inv-header-flex {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 24px;
+          border-bottom: 2px solid #f5f5f7;
+          padding-bottom: 24px;
+          margin-bottom: 30px;
+        }
+        .inv-grid-details {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 30px;
+          margin-bottom: 40px;
+        }
+        @media(max-width: 768px) {
+          .inv-grid-details { grid-template-columns: 1fr; gap: 20px; }
+          .inv-header-flex { flex-direction: column; align-items: stretch; }
+          .inv-card-wrapper { padding: 20px; }
+        }
+        .inv-block-title {
+          font-size: 14px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: #888;
+          margin-bottom: 12px;
+          font-weight: 600;
+        }
+        .inv-info-card {
+          background: #fafafa;
+          border-radius: 8px;
+          padding: 20px;
+          border: 1px solid #f0f0f2;
+        }
+        
+        /* Modern Table Adjustments */
+        .custom-inv-table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+          margin-bottom: 30px;
+        }
+        .custom-inv-table th {
+          background-color: #f8f9fa;
+          color: #333333;
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 12px;
+          letter-spacing: 0.5px;
+          padding: 14px 16px;
+          border-bottom: 2px solid #eaeaea;
+        }
+        .custom-inv-table td {
+          padding: 18px 16px;
+          border-bottom: 1px solid #efefef;
+          vertical-align: top;
+          color: #444;
+          font-size: 14px;
+        }
+        .custom-inv-table tr:last-child td {
+          border-bottom: 2px solid #eaeaea;
+        }
+        
+        /* Customization Tags */
+        .addon-tag-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 8px;
+        }
+        .addon-badge {
+          background-color: #f0f3f6;
+          color: #4a5568;
+          font-size: 11px;
+          padding: 3px 10px;
+          border-radius: 50px;
+          font-weight: 500;
+          display: inline-flex;
+          align-items: center;
+          border: 1px solid #e2e8f0;
+        }
+        .addon-badge-premium {
+          background-color: #fef3c7;
+          color: #92400e;
+          border: 1px solid #fde68a;
+        }
+        .addon-badge-base {
+          background-color: #f3e8ff;
+          color: #6b21a8;
+          border: 1px solid #e9d5ff;
+        }
+
+        /* Summary Area */
+        .inv-summary-wrapper {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 20px;
+        }
+        .inv-summary-table {
+          width: 320px;
+          max-width: 100%;
+        }
+        .inv-summary-table td {
+          padding: 10px 0;
+          font-size: 14px;
+          color: #555;
+        }
+        .inv-summary-table tr.grand-total-row td {
+          border-top: 1px solid #e5e7eb;
+          padding-top: 15px;
+          font-size: 18px;
+          color: #000;
+        }
+
+        /* ══════════════════════════════════════════
+           PRINT STYLES — single page
+        ══════════════════════════════════════════ */
+        @media print {
+
+          /* ── Hide all non-invoice elements ── */
+          header, .cdx-breadcrumb, footer, .subfooter,
+          .scroll-top, .codex-loader, .invoice-action,
+          #invoice-loading, #invoice-error {
+            display: none !important;
+          }
+
+          /* ── Page setup: A4, tight margins ── */
+          @page {
+            size: A4 portrait;
+            margin: 8mm 10mm;
+          }
+
+          /* ── Reset body ── */
+          body {
+            font-size: 11px !important;
+            background: #fff !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          /* ── Remove screen-only decoration ── */
+          section.space-py-100 {
+            padding: 0 !important;
+            background: transparent !important;
+          }
+
+          .container {
+            max-width: 100% !important;
+            padding: 0 !important;
+          }
+
+          .inv-card-wrapper {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+          }
+
+          /* ── Header ── */
+          .inv-header-flex {
+            padding-bottom: 10px !important;
+            margin-bottom: 14px !important;
+            gap: 12px !important;
+          }
+
+          .merchant-meta h4 {
+            font-size: 13px !important;
+            margin-bottom: 3px !important;
+          }
+
+          .merchant-meta p {
+            font-size: 10px !important;
+            margin-bottom: 2px !important;
+          }
+
+          /* ── Info cards grid ── */
+          .inv-grid-details {
+            gap: 14px !important;
+            margin-bottom: 14px !important;
+          }
+
+          .inv-block-title {
+            font-size: 10px !important;
+            margin-bottom: 5px !important;
+          }
+
+          .inv-info-card {
+            padding: 10px 12px !important;
+            background: #fff !important;
+            border: 1px solid #ddd !important;
+            font-size: 11px !important;
+            line-height: 1.6 !important;
+          }
+
+          /* ── Table ── */
+          .custom-inv-table {
+            margin-bottom: 14px !important;
+          }
+
+          .custom-inv-table th {
+            padding: 7px 10px !important;
+            font-size: 10px !important;
+            background-color: #f5f5f5 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          .custom-inv-table td {
+            padding: 7px 10px !important;
+            font-size: 11px !important;
+          }
+
+          /* ── Addon badges ── */
+          .addon-tag-container {
+            gap: 3px !important;
+            margin-top: 3px !important;
+          }
+
+          .addon-badge {
+            font-size: 9px !important;
+            padding: 1px 6px !important;
+            background-color: #fff !important;
+            border: 1px solid #ccc !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          .addon-badge-premium {
+            background-color: #fef9e7 !important;
+            border-color: #f0d080 !important;
+          }
+
+          .addon-badge-base {
+            background-color: #f5f0ff !important;
+            border-color: #d8b4fe !important;
+          }
+
+          /* ── Summary ── */
+          .inv-summary-wrapper {
+            margin-top: 8px !important;
+          }
+
+          .inv-summary-table {
+            width: 260px !important;
+          }
+
+          .inv-summary-table td {
+            padding: 5px 0 !important;
+            font-size: 11px !important;
+          }
+
+          .inv-summary-table tr.grand-total-row td {
+            padding-top: 8px !important;
+            font-size: 13px !important;
+          }
+
+          /* ── Prevent page breaks inside sections ── */
+          .inv-header-flex,
+          .inv-grid-details,
+          .body-invoice,
+          .inv-summary-wrapper,
+          .custom-inv-table tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          /* ── Logo size for print ── */
+          .codex-brand img {
+            width: 80px !important;
+          }
+
+          #cdx-invoice {
+            display: block !important;
+          }
+        }
+      </style>
     </head>
   <body>  
-    <!-- header start    -->
-      <!-- <div class="cdxtop-header header-dark">
-        <div class="container">
-          <div class="grid grid-cols-12">
-            <div class="col-span-12 md:col-span-6">
-              <div class="header-left">
-                <ul class="header-list">
-                  <li><a href="tel:12325848595"><i class="fa fa-phone"></i>+12325848595</a></li>
-                  <li><a href="mailto:shop@Example.Com"><i class="fa fa-envelope"></i>Rocs@Example.Com </a></li>
-                </ul>
-              </div>
-            </div>
-            <div class="col-span-12 md:col-span-6">
-              <div class="header-right">
-                <ul class="header-list">
-                  <li class="dropdownmenu"><a class="dropdown-action" href="javascript:void(0);"><i class="fa fa-flag"></i>english</a>
-                    <ul class="dropdownitem-list">
-                      <li><a href="javascript:void(0);">english</a></li>
-                      <li><a href="javascript:void(0);">french</a></li>
-                      <li><a href="javascript:void(0);">spanish</a></li>
-                      <li><a href="javascript:void(0);">turkish</a></li>
-                    </ul>
+    <!-- header start -->
+    <header class="cdx-header">
+      <div class="container">
+        <div class="grid grid-cols-12">
+          <div class="col-span-12">
+            <div class="header-contian">          
+              <div class="brand-logo"><a href="index.html"><img class="img-fluid" src="./assets/images/dress/logo_1.png" alt="fashion.png" style="width: 85px;"></a></div>
+              <div class="menu-block">
+                <ul class="menu-list">  
+                  <li class="close-menu">    
+                    <div class="menu-brand"><img class="img-fluid" src="./assets/images/dress/logo_1.png" alt="" style="width: 85px;">
+                      <svg class="feather feather-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </div>
                   </li>
-                  <li><a href="track-order.html"><i class="fa fa-truck"></i> track your order</a></li>
+                  <li class="menu-item"><a href="index.html">home</a></li>
+                  <li class="menu-item"><a href="about.html">About</a></li>
+                  <li class="menu-item"><a href="shop.html">Shop</a></li>
+                  <li class="menu-item"><a href="contact.html">Contact</a></li>
                 </ul>
+                <div class="cdx-layer"></div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div> -->
-         <header class="cdx-header">
-        <div class="container">
-          <div class="grid grid-cols-12">
-            <div class="col-span-12">
-              <div class="header-contian">          
-                <div class="brand-logo"><a href="index.html"><img class="img-fluid" src="./assets/images/dress/logo_1.png" alt="fashion.png" style="width: 85px;"></a></div>
-                <div class="menu-block">
-                    <ul class="menu-list">  
-                      <li class="close-menu">    
-                        <div class="menu-brand"><img class="img-fluid" src="./assets/images/dress/logo_1.png" alt="" style="width: 85px;">
-                          <svg class="feather feather-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </div>
-                      </li>
-                      <li class="menu-item"><a href="index.html">home</a>
-                        <!-- <ul class="submenu-list">
-                          <li><a href="index.html">fashion</a></li>
-                          <li><a href="cosmetic.html">cosmetic</a></li>
-                        </ul> -->
-                      </li>
-                      <li class="menu-item"><a href="about.html">About</a>
-                        <!-- <ul class="submenu-list">
-                          <li><a href="shopleft-filter.html">left filter</a></li>
-                          <li><a href="shopright-filter.html">right filter</a></li>
-                          <li><a href="shoptop-filter.html">top filter</a></li>
-                          <li><a href="shoplist-view.html">list view</a></li>
-                        </ul> -->
-                      </li>
-                      <!-- <li class="menu-item"><a href="javascript:void(0);">product<i class="fa fa-angle-down"></i></a>
-                        <ul class="submenu-list">
-                          <li><a href="productleft-filter.html">left filter</a></li>
-                          <li><a href="productright-filter.html">right filter</a></li>
-                          <li><a href="productno-filter.html">no filter</a></li>
-                        </ul>
-                      </li> -->
-                      <li class="menu-item"><a href="shop.html">Shop</a>
-                        <!-- <ul class="submenu-list">
-                          <li><a href="about.html">about us</a></li>
-                          <li><a href="wishlist.html">wishlist</a></li>
-                          <li><a href="cart.html">cart</a></li>
-                          <li><a href="checkout.html">checkout</a></li>
-                          <li><a href="compare.html">compare</a></li>
-                          <li><a href="track-order.html">track order</a></li>
-                          <li><a href="contact.html">contact</a></li>
-                          <li><a href="faq.html">faq</a></li>
-                          <li class="sub-menu-item"><a href="invoice.html">invoice</a></li>
-                          <li class="sub-menu-item"><a href="javascript:void(0);"> Authentication<i class="fa fa-angle-right"> </i></a>
-                            <ul class="secodnmenu-list">
-                              <li><a href="login.html">login</a></li>
-                              <li><a href="register.html">register</a></li>
-                              <li><a href="forgot-password.html">forgot password</a></li>
-                              <li><a href="new-password.html">new password</a></li>
-                              <li><a href="verify-email.html">verify email</a></li>
-                              <li><a href="verify-pin.html">verify pin</a></li>
-                            </ul>
-                          </li>
-                          <li><a href="error.html">404</a></li>
-                          <li><a href="coming-soon.html">coming soon</a></li>
-                          <li><a href="terms.html">Terms Of Service</a></li>
-                          <li><a href="privacy-policy.html">Privacy Policy</a></li>
-                        </ul> -->
-                      </li>
-                      <li class="menu-item"><a href="contact.html">Contact</a>
-                        <!-- <ul class="submenu-list">
-                          <li><a href="blogleft-sidebar.html">blog left sidebar</a></li>
-                          <li><a href="blogright-sidebar.html">blog right sidebar</a></li>
-                          <li><a href="blogno-sidebar.html">blog no sidebar</a></li>
-                          <li><a href="blog-detail.html">blog detail   </a></li>
-                        </ul> -->
-                      </li>
-                    </ul>
-                  <div class="cdx-layer"></div>
-                </div>
-                <div class="nav-iconlist">
-                                  <ul style="display:flex; align-items:center; gap:4px;">
-
-                  <!-- Home — mobile only -->
+              <div class="nav-iconlist">
+                <ul style="display:flex; align-items:center; gap:4px;">
                   <li class="mobile-only-icon">
                     <a href="index.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
@@ -155,8 +386,6 @@
                       <span style="font-size:10px;color:#333;font-family:'Jost',sans-serif;">Home</span>
                     </a>
                   </li>
-
-                  <!-- Cart -->
                   <li>
                     <a href="cart.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
@@ -168,8 +397,6 @@
                       <span style="font-size:10px;color:#333;font-family:'Jost',sans-serif;">Cart</span>
                     </a>
                   </li>
-
-                  <!-- Wishlist -->
                   <li>
                     <a href="wishlist.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
@@ -179,10 +406,8 @@
                       <span style="font-size:10px;color:#333;font-family:'Jost',sans-serif;">Wishlist</span>
                     </a>
                   </li>
-
-                  <!-- My Orders — mobile only (Box/Package icon) -->
                   <li class="mobile-only-icon">
-                    <a href="profile1.html?tab=orders" id="mobile-orders-link" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
+                    <a href="profile1.html?tab=orders" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
                         <path d="M21 16V8C20.9996 7.64927 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64927 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M3.27 7L12 12L20.73 7" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -191,9 +416,7 @@
                       <span style="font-size:10px;color:#333;font-family:'Jost',sans-serif;">My Orders</span>
                     </a>
                   </li>
-
-                  <!-- Profile -->
-                <li class="dropdownmenu" id="user-dropdown-wrap" style="display:flex;flex-direction:column;align-items:center;">
+                  <li class="dropdownmenu" id="user-dropdown-wrap" style="display:flex;flex-direction:column;align-items:center;">
                     <a class="dropdown-action" href="javascript:void(0);" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
                         <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -206,289 +429,392 @@
                       <li><a href="register.html">register</a></li>
                     </ul>
                   </li>
-
-                </ul><a class="menu-action" href="javascript:void(0);"><span></span></a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-      <div class="search-bar">  
-        <div class="input-group">    
-          <input class="form-control" type="text" placeholder="Finde Your product">
-          <div class="input-group-text"><a class="btn btn-primary" href="javascript:void(0);">search now</a></div>
-        </div>
-        <div class="clsoe-search"><i class="fa-solid fa-close"></i></div>
-      </div>
-    <!-- header end-->
-    <!-- breadcrumb start-->
-      <section class="cdx-breadcrumb">
-        <div class="container">
-          <div class="row">
-            <div class="col-12">
-              <div class="breadcrumb-contian">
-                <h1>invoice</h1>
-                <ul class="breadcrumb-list">
-                  <li><a href="index.html">
-                                      Home<i class="fa fa-angle-double-right">                </i></a></li>
-                  <li><a href="javascript:void(0)">invoice</a></li>
                 </ul>
+                <a class="menu-action" href="javascript:void(0);"><span></span></a>
               </div>
             </div>
           </div>
         </div>
-      </section>
-    <!-- breadcrumb end-->
-    <!-- invoice start-->
-    <section class="space-py-100">
+      </div>
+    </header>
+    <!-- header end -->
+
+    <!-- breadcrumb start -->
+    <section class="cdx-breadcrumb">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <div class="breadcrumb-contian">
+              <h1>Invoice</h1>
+              <ul class="breadcrumb-list">
+                <li><a href="index.html">Home<i class="fa fa-angle-double-right"></i></a></li>
+                <li><a href="javascript:void(0)">Invoice</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- breadcrumb end -->
+
+    <!-- invoice start -->
+    <section class="space-py-100" style="background-color: #fcfcfd;">
       <div class="container">
         <div class="grid grid-cols-12">
           <div class="col-span-12">
-            <div class="card">
-              <div class="card-body cdx-invoice">
-                <div id="cdx-invoice">
-                  <div class="head-invoice">                  
-                    <div class="codex-brand"><a class="codexbrand-logo" href="Javascript:void(0);"><img class="img-fluid" src="./assets/images/logo/icon-fashion.png" alt="invoice-logo"></a><a class="codexdark-logo" href="Javascript:void(0);"><img class="img-fluid" src="./assets/images/logo/fashion-light.png" alt="invoice-logo"></a></div>
-                    <ul class="contact-list">
-                      <li>                    
-                        <div class="icon-wrap"><i data-feather="phone"></i></div>+12345647859
-                      </li>
-                      <li>                    
-                        <div class="icon-wrap"><i data-feather="mail"></i></div>Rocs@Example.Com
-                      </li>
-                      <li>                    
-                        <div class="icon-wrap"><i data-feather="map-pin"></i></div>Rocs Store
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="invoice-user">
-                    <div class="left-user">
-                      <h5>inovice to:</h5>
-                      <ul class="detail-list">
-                        <li>
-                          <div class="icon-wrap"><i data-feather="user"></i></div>Mark Wongar
-                        </li>
-                        <li>
-                          <div class="icon-wrap"><i data-feather="phone"></i></div>+123585844859                    
-                        </li>
-                        <li>
-                          <div class="icon-wrap"><i data-feather="mail"></i></div>368 mega get , Rocs store
-                        </li>
-                      </ul>
+            <div class="inv-card-wrapper">
+              <div class="card-body" style="padding:0;">
+
+                <!-- Loading state -->
+                <div id="invoice-loading">
+                  <i class="fa fa-spinner"></i>
+                  <p>Loading your invoice…</p>
+                </div>
+
+                <!-- Error state -->
+                <div id="invoice-error">
+                  <i class="fa fa-circle-exclamation"></i>
+                  <p id="invoice-error-msg">Unable to load invoice.</p>
+                  <a href="profile1.html?tab=orders" class="btn btn-primary btn-md" style="margin-top:8px;">
+                    View My Orders
+                  </a>
+                </div>
+
+                <!-- Invoice content (hidden until data loads) -->
+                <div id="cdx-invoice" style="display:none;">
+                  
+                  <!-- Top Bar: Brand & Merchant Info -->
+                  <div class="inv-header-flex">                  
+                    <div class="codex-brand">
+                      <a href="javascript:void(0);">
+                        <img class="img-fluid" src="./assets/images/dress/logo_1.png" alt="invoice-logo" style="width:110px;">
+                      </a>
                     </div>
-                    <div class="right-user">
-                      <ul class="detail-list">
-                        <li>invoice date: <span> 21/3/2022</span></li>
-                        <li>invoice no: <span>21/3/2022</span></li>
-                        <li>account no: <span>5848598585 </span></li>
-                      </ul>
+                    <div style="text-align: right; min-width: 240px;" class="merchant-meta">
+                      <h4 style="font-weight: 700; font-size: 18px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">The Traditional Touch</h4>
+                      <p style="font-size: 13px; color: #666; margin-bottom: 4px;"><i class="fa fa-phone" style="width: 16px; color:#888;"></i> +91 99999 99999</p>
+                      <p style="font-size: 13px; color: #666; margin-bottom: 4px;"><i class="fa fa-envelope" style="width: 16px; color:#888;"></i> thetraditionaltouch308@gmail.com</p>
+                      <p style="font-size: 13px; color: #666; margin-bottom: 0;"><i class="fa fa-map-marker" style="width: 16px; color:#888;"></i> Maraimalai Nagar, Chengalpattu</p>
                     </div>
                   </div>
-                  <div class="body-invoice">                   
+
+                  <!-- Client Info and Invoice Metadata -->
+                  <div class="inv-grid-details">
+                    <div>
+                      <div class="inv-block-title">Invoice To</div>
+                      <div class="inv-info-card" id="invoice-customer-details" style="font-size: 14px; line-height: 1.8; color: #333;">
+                        <!-- Populated by JS -->
+                      </div>
+                    </div>
+                    <div>
+                      <div class="inv-block-title">Order Details</div>
+                      <div class="inv-info-card" id="invoice-meta" style="font-size: 14px; line-height: 1.8; color: #333;">
+                        <!-- Populated by JS -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Items Table Section -->
+                  <div class="body-invoice">
                     <div class="overflow-x-auto">
-                      <table class="table ml-1">
+                      <table class="custom-inv-table">
                         <thead>
                           <tr>
-                            <th>No</th>
-                            <th>Description</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Amout </th>
+                            <th style="width: 65px; text-align: center;">No</th>
+                            <th>Description &amp; Customizations</th>
+                            <th style="width: 120px; text-align: right;">Price</th>
+                            <th style="width: 80px; text-align: center;">Qty</th>
+                            <th style="width: 130px; text-align: right;">Amount</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          <tr>
-                            <td>01</td>
-                            <td>dark green jacket</td>
-                            <td>$90</td>
-                            <td>2</td>
-                            <td>$180</td>
-                          </tr>
-                          <tr>
-                            <td>02</td>
-                            <td> red jacket</td>
-                            <td>$80</td>
-                            <td>4</td>
-                            <td>$320</td>
-                          </tr>
-                          <tr>
-                            <td>03</td>
-                            <td>Short kurti</td>
-                            <td>$50</td>
-                            <td>3</td>
-                            <td>$150</td>
-                          </tr>
-                          <tr>
-                            <td>04</td>
-                            <td>printed yellow dress</td>
-                            <td>$150</td>
-                            <td>2</td>
-                            <td>$300</td>
-                          </tr>
-                          <tr>
-                            <td>05</td>
-                            <td>white T-shirt</td>
-                            <td>$120</td>
-                            <td>1</td>
-                            <td>$120</td>
-                          </tr>
-                          <tr>
-                            <td>06</td>
-                            <td>black  Sweater</td>
-                            <td>$85</td>
-                            <td>4</td>
-                            <td>$340</td>
-                          </tr>
+                        <tbody id="invoice-items">
+                          <!-- Populated by JS -->
                         </tbody>
                       </table>
                     </div>
                   </div>
-                  <div class="footer-invoice">                
-                    <table class="table">
-                      <tr>
-                        <td>sub total</td>
-                        <td>$1410</td>
-                      </tr>
-                      <tr>
-                        <td>tax</td>
-                        <td>$250</td>
-                      </tr>
-                      <tr>
-                        <td>total</td>
-                        <td>$1670               </td>
-                      </tr>
-                    </table>
+
+                  <!-- Billing and Breakdown Area -->
+                  <div class="inv-summary-wrapper">
+                    <div class="inv-summary-table">
+                      <table style="width: 100%;">
+                        <tr>
+                          <td style="text-align: left; color:#777;">Subtotal</td>
+                          <td id="inv-subtotal" style="text-align: right; font-weight: 500; color:#333;">—</td>
+                        </tr>
+                        <tr>
+                          <td style="text-align: left; color:#777;">Delivery Fee</td>
+                          <td id="inv-delivery" style="text-align: right; font-weight: 500; color:#333;">—</td>
+                        </tr>
+                        <tr class="grand-total-row">
+                          <td style="text-align: left; font-weight: 700;">Grand Total</td>
+                          <td id="inv-total" style="text-align: right; font-weight: 700; color: #000;">—</td>
+                        </tr>
+                      </table>
+                    </div>
                   </div>
+                  
                 </div>
-                <div class="invoice-action"><a class="btn btn-primary btn-md" href="javascript:void(0);">print</a><a class="btn btn-primary btn-md ml-15" href="javascript:void(0);">download</a></div>
+                <!-- /invoice content -->
+
+                <!-- Action buttons (hidden until data loads) -->
+                <div class="invoice-action" id="invoice-actions" style="display:none;">
+                  <a class="btn btn-primary btn-md" href="javascript:void(0);" onclick="window.print()">
+                    <i class="fa fa-print"></i> Print
+                  </a>
+                  <a class="btn btn-primary btn-md" href="javascript:void(0);" id="download-btn">
+                    <i class="fa fa-download"></i> Download PDF
+                  </a>
+                  <a class="btn btn-outline btn-md ml-15" href="shop.html">
+                    <i class="fa fa-bag-shopping"></i> Continue Shopping
+                  </a>
+                  <a class="btn btn-outline btn-md" href="profile1.html?tab=orders">
+                    <i class="fa fa-box"></i> My Orders
+                  </a>
+                </div>
+
               </div>
             </div>
           </div>
         </div>
       </div>
     </section>
-    <!-- invoice end-->
-    <!-- footer start-->
-             <footer class="space-py-100">
-  <div class="container">
-    <div class="footer-row-grid">
+    <!-- invoice end -->
 
-      <div class="footer-grid">
-        <div class="codex-brand">
-          <a href="javascript:void(0)">
-            <img class="img-fluid" src="./assets/images/dress/logo.png" alt="logo" style="max-width: 85px;">
-          </a>
+    <!-- footer start -->
+    <footer class="space-py-100">
+      <div class="container">
+        <div class="footer-row-grid">
+          <div class="footer-grid">
+            <div class="codex-brand">
+              <a href="javascript:void(0)">
+                <img class="img-fluid" src="./assets/images/dress/logo.png" alt="logo" style="max-width: 85px;">
+              </a>
+            </div>
+            <p style="text-align: center; margin-top: 0px;">The Traditional Touch offers elegant Anarkali styles with quality, comfort, and timeless appeal for every occasion.</p>
+            <div class="follow-us">
+              <ul class="footer-social" style="display: flex; list-style: none; gap: 3px; padding: 0; justify-content: flex-start;">
+                <li><a href="https://www.facebook.com/share/1Cdy1AAmpi/?mibextid=wwXIfr" target="_blank"><i class="fa-brands fa-facebook-f"></i></a></li>
+                <li><a href="https://www.youtube.com/@thetraditionaltouch" target="_blank"><i class="fa-brands fa-youtube"></i></a></li>
+                <li><a href="https://www.instagram.com/the_traditional_touch_?igsh=MXR4bDZuYnIxMnVpdw%3D%3D&utm_source=qr" target="_blank"><i class="fa-brands fa-instagram"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer-grid">
+            <h4>Explore Us</h4>
+            <ul class="footer-list">
+              <li><a href="index.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Home</a></li>
+              <li><a href="about.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>About</a></li>
+              <li><a href="shop.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Shop</a></li>
+              <li><a href="contact.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Contact</a></li>
+            </ul>
+          </div>
+          <div class="footer-grid">
+            <h4>Contact Us</h4>
+            <ul class="footer-contact footer-list">
+              <li><a href="mailto:thetraditionaltouch308@gmail.com"><i class="fa fa-envelope" style="margin-right: 8px;"></i>thetraditionaltouch308@gmail.com</a></li>
+              <li><a href="https://maps.app.goo.gl/efacKC237PTsnMbh7" target="_blank"><i class="fa fa-map-marker" aria-hidden="true" style="margin-right: 8px;"></i>Maraimalai Nagar, Chengalpattu</a></li>
+            </ul>
+          </div>
         </div>
-        <p style="text-align: center; margin-top: 0px;">The Traditional Touch offers elegant Anarkali styles with quality, comfort, and timeless appeal for every occasion.</p>
-        <div class="follow-us">
-          <ul class="footer-social" style="display: flex; list-style: none; gap: 3px; padding: 0; justify-content: flex-start;">
-            <li><a href="https://www.facebook.com/share/1Cdy1AAmpi/?mibextid=wwXIfr" target="_blank"><i class="fa-brands fa-facebook-f"></i></a></li>
-            <li><a href="https://www.youtube.com/@thetraditionaltouch" target="_blank"><i class="fa-brands fa-youtube"></i></a></li>
-            <li><a href="https://www.instagram.com/the_traditional_touch_?igsh=MXR4bDZuYnIxMnVpdw%3D%3D&utm_source=qr" target="_blank"><i class="fa-brands fa-instagram"></i></a></li>
-          </ul>
+      </div>
+    </footer>
+
+    <div class="subfooter" style="padding: 10px 0; border-top: 1px solid #eee;">
+      <div class="container">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <p style="text-align: center; margin: 0;">&copy; <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">The Traditional Touch</a> <span id="current-year"></span>. All Rights Reserved. Developed by 
+            <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">Bala</a> &amp; <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">Selva</a></p>
         </div>
       </div>
-
-      <div class="footer-grid">
-        <h4>Explore Us</h4>
-        <ul class="footer-list">
-          <li><a href="index.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Home</a></li>
-          <li><a href="about.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>About</a></li>
-          <li><a href="shop.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Shop</a></li>
-          <li><a href="contact.html"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Contact</a></li>
-          <!-- <li><a href="javascript:void(0)"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Our Gallery</a></li>
-          <li><a href="javascript:void(0)"><i class="fa fa-angle-right" style="margin-right: 8px;"></i>Get In Touch</a></li> -->
-        </ul>
-      </div>
-
-      <div class="footer-grid">
-        <h4>Contact Us</h4>
-        <ul class="footer-contact footer-list">
-          <!-- <li><a href="tel:+917092735882"><i class="fa fa-phone" style="margin-right: 8px;"></i>+91 7092735882</a></li> -->
-          <li><a href="mailto:thetraditionaltouch308@gmail.com"><i class="fa fa-envelope" style="margin-right: 8px;"></i>thetraditionaltouch308@gmail.com</a></li>
-          <li><a href="https://maps.app.goo.gl/efacKC237PTsnMbh7" target="_blank"><i class="fa fa-map-marker" aria-hidden="true" style="margin-right: 8px;"></i>Maraimalai Nagar, Chengalpattu</a></li>
-        </ul>
-      </div>
-
     </div>
-  </div>
-</footer>
+    <!-- footer end -->
 
-<div class="subfooter" style="padding: 10px 0; border-top: 1px solid #eee;">
-  <div class="container">
-    <div style="display: flex; justify-content: center; align-items: center;">
-       <p style="text-align: center; margin: 0;">&copy; <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">The Traditional Touch</a> <span id="current-year"></span>. All Rights Reserved. Developed by 
-        <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">Bala</a> & <a href="javascript:void(0);" style="text-decoration: none; font-weight: bold; color: inherit;" class="footer-link">Selva</a></p>
+    <a class="scroll-top" href="javascript:void(0);"><i class="fa fa-angle-double-up"></i></a>
+
+    <div class="codex-loader d-none">
+      <div><div></div></div><div><div></div></div><div><div></div></div>
+      <div><div></div></div><div><div></div></div><div><div></div></div>
     </div>
-  </div>
-</div>
-    <!-- footer end-->
-    <!-- tap to top start--><a class="scroll-top" href="javascript:void(0);"><i class="fa fa-angle-double-up"></i></a>
-    <!-- tap to top end-->
-    <!-- theme loader start-->
-      <div class="codex-loader d-none">
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-        <div>
-          <div></div>
-        </div>
-      </div>
-    <!-- theme loader end-->
 
-         <script>
-        document.getElementById("current-year").textContent = new Date().getFullYear();
+    <script>document.getElementById("current-year").textContent = new Date().getFullYear();</script>
+
+    <script src="./assets/js/jquery-3.6.0.min.js"></script>
+    <script src="./assets/js/vendors/feather.min.js"></script>
+    <script src="./assets/js/vendors/swiper-bundle.min.js"></script>
+    <script src="./assets/js/vendors/swiper-custom.js"></script>
+    <script src="./assets/js/vendors/smooth-scroll.js"></script>
+    <script src="./assets/js/vendors/sal.js"></script>
+    <script src="./assets/js/script.js"></script>
+    <script src="./assets/js/config.js"></script>
+    <script src="./assets/js/navbar-auth.js"></script>
+    <script src="./assets/js/cart.js"></script>
+    <script src="./assets/js/wishlist.js"></script>
+
+    <!-- ── Invoice renderer ── -->
+    <script>
+    (async function () {
+      const loadingEl = document.getElementById("invoice-loading");
+      const errorEl   = document.getElementById("invoice-error");
+      const errorMsg  = document.getElementById("invoice-error-msg");
+      const invoiceEl = document.getElementById("cdx-invoice");
+      const actionsEl = document.getElementById("invoice-actions");
+
+      function showError(msg) {
+        loadingEl.style.display = "none";
+        errorMsg.textContent    = msg || "Unable to load invoice.";
+        errorEl.style.display   = "flex";
+      }
+
+      const orderId = new URLSearchParams(window.location.search).get("orderId");
+      if (!orderId) {
+        showError("No order found. Please check your orders page.");
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = `login.html?redirect=invoice.html%3ForderId%3D${orderId}`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`${CONFIG.BASE_URL}/orders/${orderId}`, {
+          headers: {
+            Authorization:  `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (res.status === 401) { window.location.href = "login.html"; return; }
+        if (res.status === 403) { showError("You don't have permission to view this invoice."); return; }
+        if (res.status === 404) { showError("Order not found."); return; }
+        if (!res.ok)            { showError("Failed to load invoice. Please try again."); return; }
+
+        const data  = await res.json();
+        const order = data.order || data.data || data;
+        renderInvoice(order);
+
+      } catch (err) {
+        console.error("[Invoice] fetch error:", err);
+        showError("Network error. Please check your connection.");
+      }
+
+      function renderInvoice(order) {
+
+        // ── Customer details ─────────────────────────────────────────────
+        const customerName = order.customerName || order.userId?.name || "—";
+        const customerPhone = order.phone || order.userId?.phone || "—";
+        const customerAddress = order.address || order.shippingAddress?.address || "—";
+
+        document.getElementById("invoice-customer-details").innerHTML = `
+          <div style="font-weight:600; font-size:15px; margin-bottom:6px; color:#000;">${customerName}</div>
+          <div style="margin-bottom: 2px;"><i class="fa-solid fa-phone" style="width:18px; color:#777; font-size:12px;"></i> ${customerPhone}</div>
+          <div style="line-height:1.5;"><i class="fa-solid fa-location-dot" style="width:18px; color:#777; font-size:12px;"></i> ${customerAddress}</div>
+        `;
+
+        // ── Order meta ───────────────────────────────────────────────────
+        const orderDate = order.createdAt
+          ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+          : "—";
+
+        document.getElementById("invoice-meta").innerHTML = `
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <strong>Invoice Date:</strong>
+            <span style="color:#555;">${orderDate}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <strong>Order ID:</strong>
+            <span style="font-family:monospace; color:#555; font-size:13px; word-break:break-all;">${order._id || "—"}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0;">
+            <strong>Payment:</strong>
+            <span class="badge" style="background:#e6f4ea; color:#137333; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; text-transform:uppercase;">
+              ${order.paymentStatus || order.paymentMethod || "—"}
+            </span>
+          </div>
+        `;
+
+        // ── Items table ──────────────────────────────────────────────────
+        const items  = order.items || order.products || [];
+        let subtotal = 0;
+
+        const SIZE_EXTRA   = { "2XL": 50, "3XL": 50, "4XL": 100 };
+        const ADDON_EXTRA  = { center_feeding: 50, dupatta: 150 };
+        const LENGTH_EXTRA = { "52": 30, "54": 50 };
+
+        document.getElementById("invoice-items").innerHTML = items.map((item, i) => {
+          const name      = item.productId?.name || item.name || "Product";
+          const qty       = item.quantity || 1;
+          const unitPrice = item.unitPrice || 0;
+          const amount    = unitPrice * qty;
+          subtotal       += amount;
+
+          const custom    = item.customisation || {};
+          const size      = item.size || custom.size || "";
+          const sleeve    = custom.sleeve    || "";
+          const length    = custom.length    || "";
+          const addonType = custom.addonType || "non_feeding";
+          const dupatta   = custom.dupatta   || false;
+
+          const sizeExtra   = SIZE_EXTRA[size]      || 0;
+          const addonExtra  = ADDON_EXTRA[addonType] || 0;
+          const lengthExtra = LENGTH_EXTRA[length]   || 0;
+          const dupattaExtra = dupatta ? 200 : 0;
+          const totalExtra  = sizeExtra + addonExtra + lengthExtra + dupattaExtra;
+          const basePrice   = unitPrice - totalExtra;
+
+          const prettyAddon  = addonType.replace(/_/g, " ").replace(/\b\w/g, s => s.toUpperCase());
+          const prettySleeve = sleeve.replace(/_/g, " ").replace(/\b\w/g, s => s.toUpperCase());
+
+          return `
+            <tr>
+              <td style="text-align:center; font-weight:500; color:#888;">${String(i + 1).padStart(2, "0")}</td>
+              <td>
+                <div style="font-weight:600; color:#111; font-size:15px; margin-bottom:6px;">${name}</div>
+                <div class="addon-tag-container">
+                  ${size        ? `<span class="addon-badge">Size: ${size}</span>` : ""}
+                  ${prettySleeve ? `<span class="addon-badge">Sleeve: ${prettySleeve}</span>` : ""}
+                  ${length      ? `<span class="addon-badge">Length: ${length}"${lengthExtra ? ` (+₹${lengthExtra})` : ""}</span>` : ""}
+                  ${addonType && addonType !== "non_feeding"
+                    ? `<span class="addon-badge addon-badge-premium">Addon: ${prettyAddon}${addonExtra ? ` (+₹${addonExtra})` : ""}</span>`
+                    : ""}
+                  ${dupatta     ? `<span class="addon-badge addon-badge-premium">Dupatta (+₹200)</span>` : ""}
+                  ${sizeExtra   ? `<span class="addon-badge addon-badge-premium">Plus Size: +₹${sizeExtra}</span>` : ""}
+                  <span class="addon-badge addon-badge-base">Base: ₹${basePrice}</span>
+                </div>
+              </td>
+              <td style="text-align:right; font-weight:500;">₹${unitPrice.toFixed(2)}</td>
+              <td style="text-align:center; font-weight:500;">${qty}</td>
+              <td style="text-align:right; font-weight:600; color:#111;">₹${amount.toFixed(2)}</td>
+            </tr>`;
+        }).join("");
+
+        // ── Totals ───────────────────────────────────────────────────────
+        const deliveryFee = order.deliveryFee ?? order.shippingCharge ?? 0;
+        const grandTotal  = order.totalAmount  ?? order.grandTotal    ?? (subtotal + deliveryFee);
+
+        document.getElementById("inv-subtotal").textContent = `₹${subtotal.toFixed(2)}`;
+        document.getElementById("inv-delivery").textContent = deliveryFee > 0 ? `₹${deliveryFee}` : "FREE";
+        document.getElementById("inv-total").innerHTML      = `<strong>₹${grandTotal.toFixed(2)}</strong>`;
+
+        // ── Show invoice ─────────────────────────────────────────────────
+        loadingEl.style.display = "none";
+        invoiceEl.style.display = "block";
+        actionsEl.style.display = "flex";
+
+        if (typeof feather !== "undefined") feather.replace();
+
+        // ── Download PDF (uses print dialog) ────────────────────────────
+        document.getElementById("download-btn").addEventListener("click", () => {
+          const originalTitle = document.title;
+          document.title      = `Invoice-${order._id}`;
+          window.print();
+          document.title      = originalTitle;
+        });
+      }
+    })();
     </script>
 
-      <!-- main jquery-->
-      <script src="./assets/js/jquery-3.6.0.min.js"></script>
-      <!-- feather js-->
-      <script src="./assets/js/vendors/feather.min.js"></script>
-      <!-- swiper js-->
-      <script src="./assets/js/vendors/swiper-bundle.min.js"></script>
-      <script src="./assets/js/vendors/swiper-custom.js"></script>
-      <!-- smooth scroll js-->
-      <script src="./assets/js/vendors/smooth-scroll.js"></script>
-      <!-- sal js-->
-      <script src="./assets/js/vendors/sal.js"></script>
-      <!-- Custom script-->
-      <script src="./assets/js/script.js"></script>
-
-
-              <script src="./assets/js/config.js"></script>
-   <script src="./assets/js/navbar-auth.js"></script>
- <script src="./assets/js/cart.js"></script>
- <script src="./assets/js/wishlist.js"></script>
   </body>
 </html>

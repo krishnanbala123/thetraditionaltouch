@@ -64,9 +64,8 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // POST /api/cart → Add item ✅ size added
+  // POST /api/cart → Add item
   // -------------------------------------------------------
-  // In CartManager — update addToCart to accept customisation
   async function addToCart(productId, quantity = 1, buttonEl = null, size = "M", customisation = {}) {
     const token = getToken();
     if (!token) {
@@ -76,9 +75,9 @@ const CartManager = (() => {
     }
 
     if (buttonEl) {
-      buttonEl.disabled   = true;
-      buttonEl._origHTML  = buttonEl.innerHTML;
-      buttonEl.innerHTML  = `<i class="fa fa-spinner fa-spin"></i>`;
+      buttonEl.disabled  = true;
+      buttonEl._origHTML = buttonEl.innerHTML;
+      buttonEl.innerHTML = `<i class="fa fa-spinner fa-spin"></i>`;
     }
 
     try {
@@ -92,7 +91,7 @@ const CartManager = (() => {
           productId,
           size,
           quantity,
-          unitPrice: customisation.unitPrice || null,   // ✅ send computed price
+          unitPrice: customisation.unitPrice || null,
           sleeve:    customisation.sleeve    || "full_gathering",
           length:    customisation.length    || "48",
           addonType: customisation.addonType || "non_feeding",
@@ -101,7 +100,10 @@ const CartManager = (() => {
       });
 
       const data = await res.json();
-      if (!res.ok) { showToast(data?.message || "Could not add item.", "error"); return; }
+      if (!res.ok) {
+        showToast(data?.message || "Could not add item.", "error");
+        return;
+      }
 
       const items    = data?.cart?.items || data?.items || [];
       const totalQty = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
@@ -119,37 +121,33 @@ const CartManager = (() => {
     }
   }
 
-  async function addToCartAuto(
-    productId,
-    quantity = 1,
-    buttonEl = null,
-    sizes = [],
-  ) {
-    const available = Array.isArray(sizes)
-      ? sizes.filter((s) => s.stock > 0)
-      : [];
-
-    if (available.length === 0) {
+  // -------------------------------------------------------
+  // Quick Add to Cart (Home / Shop listing pages)
+  // stock is product-level — sizes array only has { size: "M" } etc.
+  // -------------------------------------------------------
+  async function addToCartAuto(productId, quantity = 1, buttonEl = null, sizes = [], stock = 0) {
+    // 1. Product-level stock check
+    if ((stock ?? 0) <= 0) {
       showToast("Out of stock!", "error");
       return;
     }
 
+    // 2. Sizes must be defined to auto-pick one
+    const available = Array.isArray(sizes) && sizes.length > 0 ? sizes : [];
+
+    if (available.length === 0) {
+      // No sizes configured — send user to product page to pick manually
+      window.location.href = `product-details.html?id=${productId}`;
+      return;
+    }
+
+    // 3. Auto-pick the first size and add
     const size = available[0].size;
     await addToCart(productId, quantity, buttonEl, size);
   }
 
-  // return object:
-  return {
-    init,
-    addToCart,
-    addToCartAuto,
-    loadCartCount,
-    showToast,
-    changeQty,
-    removeItem,
-  };
   // -------------------------------------------------------
-  // PUT /api/cart → Update quantity ✅ size added
+  // PUT /api/cart → Update quantity
   // -------------------------------------------------------
   async function updateCartItem(productId, quantity, size) {
     const token = getToken();
@@ -179,7 +177,7 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // DELETE /api/cart → Remove item ✅ size added
+  // DELETE /api/cart → Remove item
   // -------------------------------------------------------
   async function removeCartItem(productId, size) {
     const token = getToken();
@@ -272,7 +270,7 @@ const CartManager = (() => {
         cartBody.innerHTML = `
           <tr>
             <td colspan="7" style="text-align:center; padding:50px;">
-              <i class="fa fa-shopping-cart" 
+              <i class="fa fa-shopping-cart"
                  style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
               <p style="font-size:16px; color:#888; margin-bottom:20px;">
                 Your cart is empty!
@@ -287,10 +285,10 @@ const CartManager = (() => {
       // Render rows
       cartBody.innerHTML = items
         .map((item) => {
-          const product = item.productId;
-          const pid = product?._id || "";
-          const name = product?.name || "Product";
-          const price = product?.price || 0;
+          const product  = item.productId;
+          const pid      = product?._id || "";
+          const name     = product?.name || "Product";
+          const price    = product?.price || 0;
           const discount = product?.discount || 0;
           const basePrice = discount
             ? Math.round(price - (price * discount) / 100)
@@ -298,7 +296,7 @@ const CartManager = (() => {
           const unitPrice = item.unitPrice || basePrice;
           const image =
             product?.images[0] || "./assets/images/fashion/product/1.jpg";
-          const qty = item.quantity || 1;
+          const qty  = item.quantity || 1;
           const size = item.size || "";
           const total = unitPrice * qty;
 
@@ -308,33 +306,33 @@ const CartManager = (() => {
 
           return `
           <tr data-product-id="${pid}" data-size="${size}">
-           <td>
-            <div class="product-imgwrap">
-              <a href="product-details.html?id=${pid}">
-                <img class="img-fluid" src="${imgSrc}" alt="${name}"
-                    style="width:70px; height:70px; object-fit:cover; border-radius:8px; cursor:pointer;"
-                    onerror="this.src='./assets/images/fashion/product/1.jpg'">
-              </a>
-            </div>
-          </td>
-          <td>
-            <strong>${name}</strong><br>
-            <small class="text-muted">
-              Size: ${size}
-              ${item.customisation?.sleeve    ? ` | Sleeve: ${item.customisation.sleeve.replace(/_/g," ")}` : ""}
-              ${item.customisation?.length    ? ` | Length: ${item.customisation.length}"` : ""}
-              ${item.customisation?.addonType ? ` | ${item.customisation.addonType.replace(/_/g," ")}` : ""}
-              ${item.customisation?.dupatta   ? ` | Dupatta` : ""}
-            </small>
-          </td>
+            <td>
+              <div class="product-imgwrap">
+                <a href="product-details.html?id=${pid}">
+                  <img class="img-fluid" src="${imgSrc}" alt="${name}"
+                      style="width:70px; height:70px; object-fit:cover; border-radius:8px; cursor:pointer;"
+                      onerror="this.src='./assets/images/fashion/product/1.jpg'">
+                </a>
+              </div>
+            </td>
+            <td>
+              <strong>${name}</strong><br>
+              <small class="text-muted">
+                Size: ${size}
+                ${item.customisation?.sleeve    ? ` | Sleeve: ${item.customisation.sleeve.replace(/_/g," ")}` : ""}
+                ${item.customisation?.length    ? ` | Length: ${item.customisation.length}"` : ""}
+                ${item.customisation?.addonType ? ` | ${item.customisation.addonType.replace(/_/g," ")}` : ""}
+                ${item.customisation?.dupatta   ? ` | Dupatta` : ""}
+              </small>
+            </td>
             <td>
               <div class="input-group pro-quantity">
                 <span class="input-group-text count-minus"
                       onclick="CartManager.changeQty(this, '${pid}', -1, '${size}')">
                   <i class="fa fa-minus"></i>
                 </span>
-                <input class="form-control pro-qty" type="text" 
-                       value="${qty}" readonly 
+                <input class="form-control pro-qty" type="text"
+                       value="${qty}" readonly
                        style="width:50px; text-align:center;">
                 <span class="input-group-text count-plus"
                       onclick="CartManager.changeQty(this, '${pid}', 1, '${size}')">
@@ -384,7 +382,7 @@ const CartManager = (() => {
       const basePrice = discount
         ? Math.round(price - (price * discount) / 100)
         : price;
-      const unitPrice = item.unitPrice || basePrice;   // ✅ use saved price
+      const unitPrice = item.unitPrice || basePrice;
       const qty = item.quantity || 1;
       subtotal += unitPrice * qty;
     });
@@ -410,10 +408,10 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // Change Qty ✅ size pass
+  // Change Qty
   // -------------------------------------------------------
   async function changeQty(btnEl, productId, delta, size) {
-    const row = btnEl.closest("tr");
+    const row   = btnEl.closest("tr");
     const qtyEl = row.querySelector(".pro-qty");
     let qty = parseInt(qtyEl.value) + delta;
     if (qty < 1) qty = 1;
@@ -429,20 +427,17 @@ const CartManager = (() => {
 
       const priceEl = row.querySelector("td:nth-child(4)");
       const totalEl = row.querySelector(".item-total");
-      const price = parseFloat(priceEl?.textContent?.replace("₹", "") || 0);
-      const total = price * qty;
+      const price   = parseFloat(priceEl?.textContent?.replace("₹", "") || 0);
+      const total   = price * qty;
       if (totalEl) totalEl.textContent = `₹${total}`;
 
-      // Recalculate summary
-      const allRows = document.querySelectorAll(
-        ".cartBody tr[data-product-id]",
-      );
+      // Recalculate summary from DOM
+      const allRows  = document.querySelectorAll(".cartBody tr[data-product-id]");
       const fakeitems = [];
       allRows.forEach((r) => {
         const q = parseInt(r.querySelector(".pro-qty")?.value || 1);
         const p = parseFloat(
-          r.querySelector("td:nth-child(4)")?.textContent?.replace("₹", "") ||
-            0,
+          r.querySelector("td:nth-child(4)")?.textContent?.replace("₹", "") || 0,
         );
         fakeitems.push({ productId: { price: p, discount: 0 }, quantity: q });
       });
@@ -459,11 +454,11 @@ const CartManager = (() => {
   }
 
   // -------------------------------------------------------
-  // Remove Item ✅ size pass
+  // Remove Item
   // -------------------------------------------------------
   async function removeItem(btnEl, productId, size) {
     const row = btnEl.closest("tr");
-    row.style.opacity = "0.4";
+    row.style.opacity       = "0.4";
     row.style.pointerEvents = "none";
 
     const data = await removeCartItem(productId, size);
@@ -471,18 +466,16 @@ const CartManager = (() => {
     if (data) {
       row.remove();
 
-      const items = data?.cart?.items || [];
+      const items    = data?.cart?.items || [];
       const totalQty = items.reduce((sum, i) => sum + (i.quantity || 1), 0);
       updateBadge(totalQty);
 
-      const remaining = document.querySelectorAll(
-        ".cartBody tr[data-product-id]",
-      );
+      const remaining = document.querySelectorAll(".cartBody tr[data-product-id]");
       if (remaining.length === 0) {
         document.querySelector(".cartBody").innerHTML = `
           <tr>
             <td colspan="7" style="text-align:center; padding:50px;">
-              <i class="fa fa-shopping-cart" 
+              <i class="fa fa-shopping-cart"
                  style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
               <p style="font-size:16px; color:#888; margin-bottom:20px;">
                 Your cart is empty!
@@ -492,15 +485,12 @@ const CartManager = (() => {
           </tr>`;
         updateSummary([]);
       } else {
-        const allRows = document.querySelectorAll(
-          ".cartBody tr[data-product-id]",
-        );
+        const allRows   = document.querySelectorAll(".cartBody tr[data-product-id]");
         const fakeitems = [];
         allRows.forEach((r) => {
           const q = parseInt(r.querySelector(".pro-qty")?.value || 1);
           const p = parseFloat(
-            r.querySelector("td:nth-child(4)")?.textContent?.replace("₹", "") ||
-              0,
+            r.querySelector("td:nth-child(4)")?.textContent?.replace("₹", "") || 0,
           );
           fakeitems.push({ productId: { price: p, discount: 0 }, quantity: q });
         });
@@ -508,7 +498,7 @@ const CartManager = (() => {
       }
       showToast("Item removed from cart.", "success");
     } else {
-      row.style.opacity = "1";
+      row.style.opacity       = "1";
       row.style.pointerEvents = "auto";
     }
   }
@@ -522,7 +512,7 @@ const CartManager = (() => {
     if (!confirm("Are you sure you want to clear the entire cart?")) return;
 
     for (const row of rows) {
-      const pid = row.dataset.productId;
+      const pid  = row.dataset.productId;
       const size = row.dataset.size;
       await removeCartItem(pid, size);
     }
@@ -530,7 +520,7 @@ const CartManager = (() => {
     document.querySelector(".cartBody").innerHTML = `
       <tr>
         <td colspan="7" style="text-align:center; padding:50px;">
-          <i class="fa fa-shopping-cart" 
+          <i class="fa fa-shopping-cart"
              style="font-size:48px; color:#ddd; display:block; margin-bottom:15px;"></i>
           <p style="font-size:16px; color:#888; margin-bottom:20px;">
             Your cart is empty!
@@ -551,8 +541,8 @@ const CartManager = (() => {
     const existing = document.getElementById("ttt-toast");
     if (existing) existing.remove();
 
-    const bg = { success: "#22c55e", error: "#ef4444", warn: "#f97316" };
-    const icon = { success: "✓", error: "✕", warn: "⚠" };
+    const bg   = { success: "#22c55e", error: "#ef4444", warn: "#f97316" };
+    const icon = { success: "✓",       error: "✕",       warn: "⚠" };
 
     const toast = document.createElement("div");
     toast.id = "ttt-toast";
@@ -570,13 +560,13 @@ const CartManager = (() => {
 
     setTimeout(() => {
       toast.style.transition = "opacity .3s";
-      toast.style.opacity = "0";
+      toast.style.opacity    = "0";
       setTimeout(() => toast.remove(), 320);
     }, 2800);
   }
 
   // -------------------------------------------------------
-  // Bind Detail Page Button ✅ size pass
+  // Bind Detail Page Button
   // -------------------------------------------------------
   function bindDetailButton() {
     const addBtn = document.querySelector(
@@ -602,7 +592,7 @@ const CartManager = (() => {
       }
 
       const qtyEl = document.querySelector(".pro-qty");
-      const qty = qtyEl ? parseInt(qtyEl.value) || 1 : 1;
+      const qty   = qtyEl ? parseInt(qtyEl.value) || 1 : 1;
 
       addToCart(productId, qty, this, size);
     });
@@ -625,6 +615,13 @@ const CartManager = (() => {
   // -------------------------------------------------------
   function init() {
     loadCartCount();
+
+    // Only bind the generic detail button on non-product-details pages
+    const isDetailPage = window.location.pathname.includes("product-details");
+    if (!isDetailPage) {
+      bindDetailButton();
+    }
+
     bindClearCart();
 
     if (document.querySelector(".cartBody")) {

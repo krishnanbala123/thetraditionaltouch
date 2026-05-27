@@ -68,6 +68,13 @@ function renderHomeSlider(products) {
         ? `<span class="product-discount-label">${product.discount}%</span>`
         : "";
 
+      // stock is product-level (single number on the product document)
+      const stock     = product.stock ?? 0;
+      const hasStock  = stock > 0;
+
+      // Safely encode sizes array for inline onclick (sizes only have { size: "M" } — no stock field)
+      const sizesJson = JSON.stringify(product.sizes || []).replace(/"/g, "&quot;");
+
       return `
         <div class="swiper-slide">
           <div class="product-boxwrap" data-product-id="${product._id}">
@@ -77,10 +84,11 @@ function renderHomeSlider(products) {
                   onerror="this.src='./assets/images/dress/shop_1.jpeg'">
               </a>
               ${discountLabel}
+              ${!hasStock ? `<span class="product-sale-label" style="background:gray;">Out of Stock</span>` : ""}
               <ul class="social">
                 <li>
                   <a href="javascript:void(0);"
-                    onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")})">
+                    onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${sizesJson}, ${stock})">
                     <i data-feather="shopping-cart"></i>
                   </a>
                 </li>
@@ -127,8 +135,8 @@ function renderHomeSlider(products) {
     centeredSlides: false,
     autoplay: count > 1 ? { delay: 2500, disableOnInteraction: false } : false,
     breakpoints: {
-      480: { slidesPerView: Math.min(2, count) },
-      768: { slidesPerView: Math.min(3, count) },
+      480:  { slidesPerView: Math.min(2, count) },
+      768:  { slidesPerView: Math.min(3, count) },
       1024: { slidesPerView: Math.min(4, count) },
       1400: { slidesPerView: Math.min(5, count) },
     },
@@ -149,7 +157,7 @@ async function fetchAndStartDeal() {
   if (dealSection) dealSection.style.display = "none";
 
   try {
-    const res = await fetch(`${CONFIG.BASE_URL}/deal`);
+    const res  = await fetch(`${CONFIG.BASE_URL}/deal`);
     const data = await res.json();
 
     if (!res.ok || !data.deal) return; // stay hidden
@@ -164,7 +172,7 @@ async function fetchAndStartDeal() {
     if (dealSection) dealSection.style.display = "";
 
     // Update banner text
-    const heading = document.querySelector(".counter-banner h3");
+    const heading    = document.querySelector(".counter-banner h3");
     const subheading = document.querySelector(".counter-banner h2");
     if (heading && deal.product?.name) {
       heading.textContent = `Hurry up! Get ${deal.discountPercent}% off on ${deal.product.name}`;
@@ -180,8 +188,8 @@ async function fetchAndStartDeal() {
     }
 
     // Start the countdown
-    const dayEl = document.getElementById("day");
-    const hourEl = document.getElementById("hour");
+    const dayEl    = document.getElementById("day");
+    const hourEl   = document.getElementById("hour");
     const minuteEl = document.getElementById("minute");
     const secondEl = document.getElementById("second");
 
@@ -194,14 +202,7 @@ async function fetchAndStartDeal() {
   }
 }
 
-function startCountdown(
-  endDate,
-  dayEl,
-  hourEl,
-  minuteEl,
-  secondEl,
-  dealSection,
-) {
+function startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl, dealSection) {
   if (timerInterval) clearInterval(timerInterval);
 
   function pad(n) {
@@ -212,8 +213,8 @@ function startCountdown(
     const diff = endDate.getTime() - Date.now();
 
     if (diff <= 0) {
-      dayEl.textContent = "00";
-      hourEl.textContent = "00";
+      dayEl.textContent    = "00";
+      hourEl.textContent   = "00";
       minuteEl.textContent = "00";
       secondEl.textContent = "00";
       clearInterval(timerInterval);
@@ -221,8 +222,8 @@ function startCountdown(
       return;
     }
 
-    dayEl.textContent = pad(Math.floor(diff / 86400000));
-    hourEl.textContent = pad(Math.floor((diff % 86400000) / 3600000));
+    dayEl.textContent    = pad(Math.floor(diff / 86400000));
+    hourEl.textContent   = pad(Math.floor((diff % 86400000) / 3600000));
     minuteEl.textContent = pad(Math.floor((diff % 3600000) / 60000));
     secondEl.textContent = pad(Math.floor((diff % 60000) / 1000));
   }
