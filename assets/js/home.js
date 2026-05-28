@@ -8,10 +8,53 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ─────────────────────────────────────────────
+// SKELETON LOADER
+// ─────────────────────────────────────────────
+
+function showSkeletonLoader() {
+  const container = document.querySelector("#home-product-slider");
+  if (!container) return;
+
+  // Build 5 skeleton slides
+  const skeletonSlides = Array.from({ length: 5 })
+    .map(
+      () => `
+      <div class="swiper-slide">
+        <div class="skeleton-card">
+          <div class="skeleton-img skeleton-shimmer"></div>
+          <div class="skeleton-body">
+            <div class="skeleton-title skeleton-shimmer"></div>
+            <div class="skeleton-price skeleton-shimmer"></div>
+          </div>
+        </div>
+      </div>
+    `
+    )
+    .join("");
+
+  container.innerHTML = `<div class="swiper-wrapper">${skeletonSlides}</div>`;
+
+  // Init a plain swiper just for the skeleton so it respects breakpoints
+  new Swiper("#home-product-slider", {
+    slidesPerView: 1,
+    spaceBetween: 16,
+    allowTouchMove: false,
+    breakpoints: {
+      480: { slidesPerView: 2, spaceBetween: 20 },
+      720: { slidesPerView: 4, spaceBetween: 24 },
+      1024: { slidesPerView: 4, spaceBetween: 24 },
+      1400: { slidesPerView: 5, spaceBetween: 24 },
+    },
+  });
+}
+
+// ─────────────────────────────────────────────
 // PRODUCT SLIDER
 // ─────────────────────────────────────────────
 
 async function fetchHomeProducts() {
+  showSkeletonLoader(); // ← show skeletons immediately
+
   const token = localStorage.getItem("token");
 
   try {
@@ -22,19 +65,28 @@ async function fetchHomeProducts() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     const data = await response.json();
 
     if (response.ok) {
       const sorted = (data.products || []).sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
       renderHomeSlider(sorted.slice(0, 8));
     }
   } catch (error) {
     console.error("Home products error:", error);
+    // On error, clear the skeleton gracefully
+    const container = document.querySelector("#home-product-slider");
+    if (container) {
+      container.innerHTML = `<div class="swiper-wrapper">
+        <div class="swiper-slide">
+          <p style="text-align:center;padding:40px;">Failed to load products.</p>
+        </div>
+      </div>`;
+    }
   }
 }
 
@@ -68,12 +120,13 @@ function renderHomeSlider(products) {
         ? `<span class="product-discount-label">${product.discount}%</span>`
         : "";
 
-      // stock is product-level (single number on the product document)
-      const stock     = product.stock ?? 0;
-      const hasStock  = stock > 0;
+      const stock = product.stock ?? 0;
+      const hasStock = stock > 0;
 
-      // Safely encode sizes array for inline onclick (sizes only have { size: "M" } — no stock field)
-      const sizesJson = JSON.stringify(product.sizes || []).replace(/"/g, "&quot;");
+      const sizesJson = JSON.stringify(product.sizes || []).replace(
+        /"/g,
+        "&quot;"
+      );
 
       return `
         <div class="swiper-slide">
@@ -129,16 +182,17 @@ function renderHomeSlider(products) {
 
   homeSwiper = new Swiper("#home-product-slider", {
     slidesPerView: 1,
-    spaceBetween: 24,
+    spaceBetween: 16,
     loop: count > 5,
     speed: 1200,
     centeredSlides: false,
-    autoplay: count > 1 ? { delay: 2500, disableOnInteraction: false } : false,
+    autoplay:
+      count > 1 ? { delay: 2500, disableOnInteraction: false } : false,
     breakpoints: {
-      480:  { slidesPerView: Math.min(2, count) },
-      768:  { slidesPerView: Math.min(3, count) },
-      1024: { slidesPerView: Math.min(4, count) },
-      1400: { slidesPerView: Math.min(5, count) },
+      480: { slidesPerView: Math.min(2, count), spaceBetween: 20 },
+      720: { slidesPerView: Math.min(4, count), spaceBetween: 24 },
+      1024: { slidesPerView: Math.min(4, count), spaceBetween: 24 },
+      1400: { slidesPerView: Math.min(5, count), spaceBetween: 24 },
     },
   });
 
@@ -150,29 +204,25 @@ function renderHomeSlider(products) {
 // ─────────────────────────────────────────────
 
 async function fetchAndStartDeal() {
-  // Hide the banner immediately — only show it once we confirm an active deal
   const dealSection = document
     .querySelector(".counter-banner")
     ?.closest("section");
   if (dealSection) dealSection.style.display = "none";
 
   try {
-    const res  = await fetch(`${CONFIG.BASE_URL}/deal`);
+    const res = await fetch(`${CONFIG.BASE_URL}/deal`);
     const data = await res.json();
 
-    if (!res.ok || !data.deal) return; // stay hidden
+    if (!res.ok || !data.deal) return;
 
     const deal = data.deal;
 
-    // Validate the end date is actually in the future
     const endDate = new Date(deal.endsAt);
-    if (endDate <= new Date()) return; // deal already expired, stay hidden
+    if (endDate <= new Date()) return;
 
-    // Show the section now that we have a valid deal
     if (dealSection) dealSection.style.display = "";
 
-    // Update banner text
-    const heading    = document.querySelector(".counter-banner h3");
+    const heading = document.querySelector(".counter-banner h3");
     const subheading = document.querySelector(".counter-banner h2");
     if (heading && deal.product?.name) {
       heading.textContent = `Hurry up! Get ${deal.discountPercent}% off on ${deal.product.name}`;
@@ -181,15 +231,13 @@ async function fetchAndStartDeal() {
       subheading.textContent = "Deals Of The Day";
     }
 
-    // Wire up the shop now button to the deal product
     const shopBtn = document.querySelector(".counter-banner .btn-white");
     if (shopBtn && deal.product?._id) {
       shopBtn.href = `product-details.html?id=${deal.product._id}`;
     }
 
-    // Start the countdown
-    const dayEl    = document.getElementById("day");
-    const hourEl   = document.getElementById("hour");
+    const dayEl = document.getElementById("day");
+    const hourEl = document.getElementById("hour");
     const minuteEl = document.getElementById("minute");
     const secondEl = document.getElementById("second");
 
@@ -198,11 +246,17 @@ async function fetchAndStartDeal() {
     startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl, dealSection);
   } catch (err) {
     console.error("Deal fetch error:", err);
-    // stay hidden on error
   }
 }
 
-function startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl, dealSection) {
+function startCountdown(
+  endDate,
+  dayEl,
+  hourEl,
+  minuteEl,
+  secondEl,
+  dealSection
+) {
   if (timerInterval) clearInterval(timerInterval);
 
   function pad(n) {
@@ -213,17 +267,17 @@ function startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl, dealSection)
     const diff = endDate.getTime() - Date.now();
 
     if (diff <= 0) {
-      dayEl.textContent    = "00";
-      hourEl.textContent   = "00";
+      dayEl.textContent = "00";
+      hourEl.textContent = "00";
       minuteEl.textContent = "00";
       secondEl.textContent = "00";
       clearInterval(timerInterval);
-      if (dealSection) dealSection.style.display = "none"; // hide when expired
+      if (dealSection) dealSection.style.display = "none";
       return;
     }
 
-    dayEl.textContent    = pad(Math.floor(diff / 86400000));
-    hourEl.textContent   = pad(Math.floor((diff % 86400000) / 3600000));
+    dayEl.textContent = pad(Math.floor(diff / 86400000));
+    hourEl.textContent = pad(Math.floor((diff % 86400000) / 3600000));
     minuteEl.textContent = pad(Math.floor((diff % 3600000) / 60000));
     secondEl.textContent = pad(Math.floor((diff % 60000) / 1000));
   }

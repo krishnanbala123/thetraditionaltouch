@@ -594,7 +594,7 @@ function renderRelatedSlider(products) {
            <ul class="social">
             <li>
               <a href="javascript:void(0);"
-                onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")})">
+                onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")}, ${product.stock ?? product.globalStock ?? 10})">
                 <i data-feather="shopping-cart"></i>
               </a>
             </li>

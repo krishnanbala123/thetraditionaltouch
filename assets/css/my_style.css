@@ -547,3 +547,11 @@ li.dropdownmenu .dropdownitem-list li a,
     height: 24px !important;
   }
 }
+
+#home-product-slider {
+  overflow: hidden !important;
+}
+
+#home-product-slider .swiper-slide {
+  box-sizing: border-box;
+}

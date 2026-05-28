@@ -1,0 +1,49 @@
+/* ─────────────────────────────────────────────
+   SKELETON LOADER
+───────────────────────────────────────────── */
+
+.skeleton-card {
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.skeleton-img {
+  width: 100%;
+  aspect-ratio: 3 / 4;          /* matches typical product image ratio */
+  border-radius: 8px 8px 0 0;
+}
+
+.skeleton-body {
+  padding: 10px 8px 14px;
+}
+
+.skeleton-title {
+  height: 14px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  width: 75%;
+}
+
+.skeleton-price {
+  height: 13px;
+  border-radius: 4px;
+  width: 40%;
+}
+
+/* Shimmer animation */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #ececec 25%,
+    #f5f5f5 50%,
+    #ececec 75%
+  );
+  background-size: 1200px 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
