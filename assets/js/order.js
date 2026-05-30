@@ -205,6 +205,7 @@ const OrderManager = (() => {
     const lname    = el("lname")?.value.trim()   || "";
     const phone    = el("phone")?.value.trim()   || "";
     const address  = el("address")?.value.trim() || "";
+    const notes    = el("order-notes")?.value.trim() || "";
     const fullName = `${fname} ${lname}`.trim();
     const isInsideTamilNadu = getIsInsideTamilNadu();
 
@@ -249,6 +250,7 @@ const OrderManager = (() => {
           address,
           phone,
           isInsideTamilNadu,
+          notes,
         }),
       });
       const orderData = await orderRes.json();

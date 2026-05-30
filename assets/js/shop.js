@@ -28,12 +28,13 @@ async function fetchProducts(page = 1, search = "") {
     </div>`;
 
   try {
+    // Build URL — search is sent to the backend so it queries ALL products in DB
     let url = `${CONFIG.BASE_URL}/products?page=${page}&limit=${limit}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
 
     const response = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
         "Content-Type": "application/json",
       },
     });
@@ -42,7 +43,10 @@ async function fetchProducts(page = 1, search = "") {
 
     if (response.ok) {
       allProducts = data.products;
-      renderProducts(data.products);
+
+      // Apply any active client-side filter on top of the API results
+      applyActiveFilter();
+
       renderPagination(data.pagination);
     } else {
       productGrid.innerHTML = `
@@ -56,6 +60,20 @@ async function fetchProducts(page = 1, search = "") {
       <div class="col-span-12 text-center" style="padding:60px 0;">
         <p>Network error! Check connection.</p>
       </div>`;
+  }
+}
+
+// ========================
+// Apply whichever filter is currently active
+// Called after every fetchProducts() so filters stay in sync
+// ========================
+function applyActiveFilter() {
+  if (selectedDiscount) {
+    applyDiscountFilter();
+  } else if (selectedArrival) {
+    applyArrivalFilter();
+  } else {
+    renderProducts(allProducts);
   }
 }
 
@@ -84,11 +102,9 @@ function renderProducts(products) {
         ? `<span class="product-discount-label">${product.discount}%</span>`
         : "";
 
-      // stock is product-level (single number on the product document)
       const stock    = product.stock ?? 0;
       const hasStock = stock > 0;
 
-      // Safely encode sizes array for inline onclick (sizes only have { size: "M" } — no stock field)
       const sizesJson = JSON.stringify(product.sizes || []).replace(/"/g, "&quot;");
 
       return `
@@ -144,27 +160,22 @@ function renderProducts(products) {
 }
 
 // ========================
-// Quick Add to Cart (Shop page)
-// stock is product-level — sizes array only has { size: "M" } etc.
+// Quick Add to Cart
 // ========================
 function quickAddToCart(event, id, btnEl, stock, sizes) {
   event.preventDefault();
 
-  // Guard: product must exist in local cache
   const product = allProducts.find((p) => p._id === id);
   if (!product) {
     CartManager.showToast("Product not found!", "error");
     return;
   }
 
-  // Product-level stock check
   if ((stock ?? 0) <= 0) {
     CartManager.showToast("Out of stock!", "error");
     return;
   }
 
-  // If sizes are configured, auto-add with first size;
-  // otherwise redirect to product page so customer can pick size + customisation
   const hasSizes = Array.isArray(sizes) && sizes.length > 0;
   if (!hasSizes) {
     window.location.href = `product-details.html?id=${id}`;
@@ -227,32 +238,105 @@ function changePage(page) {
 // Search Setup
 // ========================
 function setupSearch() {
-  const searchInput = document.querySelector(".search-bar input");
-  const searchBtn   = document.querySelector(".search-bar .btn-primary");
+  // ── Header search bar ──
+  const headerInput = document.querySelector(".search-bar input");
+  const headerBtn   = document.querySelector(".search-bar .btn-primary");
 
-  if (searchBtn) {
-    searchBtn.addEventListener("click", function () {
-      searchQuery = searchInput.value.trim();
-      currentPage = 1;
-      fetchProducts(currentPage, searchQuery);
+  if (headerBtn) {
+    headerBtn.addEventListener("click", function () {
+      triggerSearch(headerInput.value.trim());
       document.querySelector(".search-bar").classList.remove("show");
     });
   }
 
-  if (searchInput) {
-    searchInput.addEventListener("keypress", function (e) {
+  if (headerInput) {
+    headerInput.addEventListener("keypress", function (e) {
       if (e.key === "Enter") {
-        searchQuery = searchInput.value.trim();
-        currentPage = 1;
-        fetchProducts(currentPage, searchQuery);
+        triggerSearch(headerInput.value.trim());
         document.querySelector(".search-bar").classList.remove("show");
       }
+    });
+  }
+
+  // ── Inline shop search bar ──
+  const shopInput = document.getElementById("shop-search-input");
+  const shopBtn   = document.getElementById("shop-search-btn");
+  const shopClear = document.getElementById("shop-search-clear");
+
+  if (shopBtn) {
+    shopBtn.addEventListener("click", function () {
+      triggerSearch(shopInput.value.trim());
+    });
+  }
+
+  if (shopInput) {
+    shopInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        triggerSearch(shopInput.value.trim());
+      }
+    });
+
+    shopInput.addEventListener("input", function () {
+      toggleClearBtn(shopInput, shopClear);
+    });
+  }
+
+  if (shopClear) {
+    shopClear.addEventListener("click", function () {
+      shopInput.value = "";
+      shopClear.style.display = "none";
+      triggerSearch("");
+      shopInput.focus();
     });
   }
 }
 
 // ========================
+// Trigger Search
+// Resets page + clears client-side filters so results are consistent
+// ========================
+function triggerSearch(query) {
+  searchQuery = query;
+  currentPage = 1;
+
+  // Clear client-side filters so they don't mask search results
+  clearAllFilters();
+
+  // Update clear button visibility
+  const shopInput = document.getElementById("shop-search-input");
+  const shopClear = document.getElementById("shop-search-clear");
+  toggleClearBtn(shopInput, shopClear);
+
+  // Fetch from backend — search runs across ALL products in the database
+  fetchProducts(currentPage, searchQuery);
+}
+
+// ========================
+// Clear all client-side filters (checkboxes + state)
+// ========================
+function clearAllFilters() {
+  selectedDiscount = null;
+  selectedArrival  = null;
+
+  const allCheckboxIds = [
+    "discount1","discount2","discount3","discount4","discount5",
+    "ratinglist1","ratinglist2","ratinglist3","ratinglist4","ratinglist5",
+  ];
+  allCheckboxIds.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = false;
+  });
+}
+
+function toggleClearBtn(input, clearBtn) {
+  if (!clearBtn) return;
+  clearBtn.style.display = input && input.value.trim() ? "flex" : "none";
+}
+
+// ========================
 // Discount Filter
+// NOTE: filters the current page's 8 products client-side.
+// For full-database discount filtering, move this param to the API.
 // ========================
 function setupDiscountFilter() {
   const discountMap = {
@@ -267,10 +351,14 @@ function setupDiscountFilter() {
     const checkbox = document.getElementById(id);
     if (checkbox) {
       checkbox.addEventListener("change", function () {
-        // Only one checkbox active at a time
+        // Uncheck all others
         Object.keys(discountMap).forEach((otherId) => {
           if (otherId !== id) document.getElementById(otherId).checked = false;
         });
+        // Clear arrival filter
+        selectedArrival = null;
+        ["ratinglist1","ratinglist2","ratinglist3","ratinglist4","ratinglist5"]
+          .forEach((rid) => { const el = document.getElementById(rid); if (el) el.checked = false; });
 
         selectedDiscount = this.checked ? discountMap[id] : null;
         applyDiscountFilter();
@@ -284,15 +372,15 @@ function applyDiscountFilter() {
     renderProducts(allProducts);
     return;
   }
-
-  const filteredProducts = allProducts.filter(
-    (product) => (product.discount || 0) >= selectedDiscount,
+  const filtered = allProducts.filter(
+    (p) => (p.discount || 0) >= selectedDiscount
   );
-  renderProducts(filteredProducts);
+  renderProducts(filtered);
 }
 
 // ========================
 // Arrival Filter
+// NOTE: filters the current page's 8 products client-side.
 // ========================
 function setupArrivalFilter() {
   const arrivalMap = {
@@ -307,10 +395,14 @@ function setupArrivalFilter() {
     const checkbox = document.getElementById(id);
     if (checkbox) {
       checkbox.addEventListener("change", function () {
-        // Only one checkbox active at a time
+        // Uncheck all others
         Object.keys(arrivalMap).forEach((otherId) => {
           if (otherId !== id) document.getElementById(otherId).checked = false;
         });
+        // Clear discount filter
+        selectedDiscount = null;
+        ["discount1","discount2","discount3","discount4","discount5"]
+          .forEach((did) => { const el = document.getElementById(did); if (el) el.checked = false; });
 
         selectedArrival = this.checked ? arrivalMap[id] : null;
         applyArrivalFilter();
@@ -324,14 +416,12 @@ function applyArrivalFilter() {
     renderProducts(allProducts);
     return;
   }
-
   const now = new Date();
-  const filteredProducts = allProducts.filter((product) => {
-    const diffDays = (now - new Date(product.createdAt)) / (1000 * 60 * 60 * 24);
+  const filtered = allProducts.filter((p) => {
+    const diffDays = (now - new Date(p.createdAt)) / (1000 * 60 * 60 * 24);
     return diffDays <= selectedArrival;
   });
-
-  renderProducts(filteredProducts);
+  renderProducts(filtered);
 }
 
 // ========================

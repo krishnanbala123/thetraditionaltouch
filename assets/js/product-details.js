@@ -32,10 +32,10 @@ const FEEDING_ADDONS = [
 // ── Sleeve options ───────────────────────────────────────────────────────────
 const SLEEVE_OPTIONS = [
   { id: "full_gathering", label: "Full Gathering Sleeves", extra: 0 },
-  { id: "elbow", label: "Elbow Sleeves", extra: 50 },
-  { id: "elbow_puff", label: "Elbow Puff Sleeve", extra: 50 },
-  { id: "three_quarter_scallop", label: "3/4 Scallop Sleeve", extra: 20 },
-  { id: "three_quarter", label: "3/4 Sleeve", extra: 50 },
+  { id: "elbow", label: "Elbow Sleeves", extra: -50 },
+  { id: "elbow_puff", label: "Elbow Puff Sleeve", extra: -50 },
+  { id: "three_quarter_scallop", label: "3/4 Scallop Sleeve", extra: -20 },
+  { id: "three_quarter", label: "3/4 Sleeve", extra: -50 },
 ];
 
 // ── Length options ───────────────────────────────────────────────────────────
@@ -113,7 +113,7 @@ function computeFinalPrice(product) {
   const sleeveExtra = sleeveObj ? sleeveObj.extra : 0;
   const dupattaExtra = selectedDupatta ? DUPATTA_EXTRA : 0;
 
-  return base + sizeExtra + addonExtra + lengthExtra + dupattaExtra;
+  return base + sizeExtra + addonExtra + lengthExtra + sleeveExtra + dupattaExtra;
 }
 
 function updatePriceDisplay() {
@@ -156,10 +156,12 @@ function updatePriceDisplay() {
     );
   if (selectedDupatta)
     lines.push(`<span class="pb-extra">+ Dupatta: ₹${DUPATTA_EXTRA}</span>`);
+  if (sleeveExtra < 0)
+    lines.push(`<span class="pb-extra">- Sleeve (${sleeveObj.label}): ₹${Math.abs(sleeveExtra)}</span>`);
 
   breakdownEl.innerHTML = lines.join("");
   breakdownEl.style.display =
-    sizeExtra + addonExtra + lengthExtra + dupattaExtra > 0 ? "flex" : "none";
+    sizeExtra + addonExtra + lengthExtra + sleeveExtra + dupattaExtra !== 0 ? "flex" : "none";
 }
 
 // ── Render product ────────────────────────────────────────────────────────────
@@ -370,10 +372,9 @@ function renderSleeveOptions() {
             style="flex:unset; min-width:unset; padding:10px 16px;">
           <span class="addon-check"><i class="fa fa-check"></i></span>
           <span class="addon-name" style="white-space:nowrap;">${s.label}</span>
-          ${
-            s.extra > 0
-              ? `<span class="addon-price-badge">+₹${s.extra}</span>`
-              : `<span class="addon-price-badge free">Free</span>`
+          ${s.extra < 0
+            ? `<span class="addon-price-badge">-₹${Math.abs(s.extra)}</span>`
+            : `<span class="addon-price-badge free">Free</span>`
           }
         </li>`,
       ).join("")}

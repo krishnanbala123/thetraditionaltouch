@@ -1,6 +1,11 @@
 // home.js
+
+// ─── All module-level state declared once ───────────────────
 let homeSwiper = null;
+let skeletonSwiper = null;   // tracks the skeleton swiper so we can destroy it cleanly
 let timerInterval = null;
+let dealIndex = 0;
+let dealRotateTimeout = null;
 
 document.addEventListener("DOMContentLoaded", function () {
   fetchHomeProducts();
@@ -15,7 +20,16 @@ function showSkeletonLoader() {
   const container = document.querySelector("#home-product-slider");
   if (!container) return;
 
-  // Build 5 skeleton slides
+  // Destroy any previous swiper on this element before touching innerHTML
+  if (skeletonSwiper) {
+    skeletonSwiper.destroy(true, true);
+    skeletonSwiper = null;
+  }
+  if (homeSwiper) {
+    homeSwiper.destroy(true, true);
+    homeSwiper = null;
+  }
+
   const skeletonSlides = Array.from({ length: 5 })
     .map(
       () => `
@@ -27,15 +41,17 @@ function showSkeletonLoader() {
             <div class="skeleton-price skeleton-shimmer"></div>
           </div>
         </div>
-      </div>
-    `
+      </div>`
     )
     .join("");
 
   container.innerHTML = `<div class="swiper-wrapper">${skeletonSlides}</div>`;
 
-  // Init a plain swiper just for the skeleton so it respects breakpoints
-  new Swiper("#home-product-slider", {
+  // Guard: make sure the element is still in the DOM before Swiper touches it
+  const el = document.querySelector("#home-product-slider");
+  if (!el || !document.body.contains(el)) return;
+
+  skeletonSwiper = new Swiper("#home-product-slider", {
     slidesPerView: 1,
     spaceBetween: 16,
     allowTouchMove: false,
@@ -53,7 +69,7 @@ function showSkeletonLoader() {
 // ─────────────────────────────────────────────
 
 async function fetchHomeProducts() {
-  showSkeletonLoader(); // ← show skeletons immediately
+  showSkeletonLoader();
 
   const token = localStorage.getItem("token");
 
@@ -78,7 +94,6 @@ async function fetchHomeProducts() {
     }
   } catch (error) {
     console.error("Home products error:", error);
-    // On error, clear the skeleton gracefully
     const container = document.querySelector("#home-product-slider");
     if (container) {
       container.innerHTML = `<div class="swiper-wrapper">
@@ -94,6 +109,11 @@ function renderHomeSlider(products) {
   const container = document.querySelector("#home-product-slider");
   if (!container) return;
 
+  // ── Destroy BOTH swiper instances before replacing innerHTML ──
+  if (skeletonSwiper) {
+    skeletonSwiper.destroy(true, true);
+    skeletonSwiper = null;
+  }
   if (homeSwiper) {
     homeSwiper.destroy(true, true);
     homeSwiper = null;
@@ -123,10 +143,7 @@ function renderHomeSlider(products) {
       const stock = product.stock ?? 0;
       const hasStock = stock > 0;
 
-      const sizesJson = JSON.stringify(product.sizes || []).replace(
-        /"/g,
-        "&quot;"
-      );
+      const sizesJson = JSON.stringify(product.sizes || []).replace(/"/g, "&quot;");
 
       return `
         <div class="swiper-slide">
@@ -171,12 +188,15 @@ function renderHomeSlider(products) {
               </div>
             </div>
           </div>
-        </div>
-      `;
+        </div>`;
     })
     .join("");
 
   container.innerHTML = `<div class="swiper-wrapper">${slidesHTML}</div>`;
+
+  // Guard: element must still be in the DOM
+  const el = document.querySelector("#home-product-slider");
+  if (!el || !document.body.contains(el)) return;
 
   const count = products.length;
 
@@ -186,8 +206,7 @@ function renderHomeSlider(products) {
     loop: count > 5,
     speed: 1200,
     centeredSlides: false,
-    autoplay:
-      count > 1 ? { delay: 2500, disableOnInteraction: false } : false,
+    autoplay: count > 1 ? { delay: 2500, disableOnInteraction: false } : false,
     breakpoints: {
       480: { slidesPerView: Math.min(2, count), spaceBetween: 20 },
       720: { slidesPerView: Math.min(4, count), spaceBetween: 24 },
@@ -200,84 +219,110 @@ function renderHomeSlider(products) {
 }
 
 // ─────────────────────────────────────────────
-// DEAL BANNER + COUNTDOWN TIMER
+// DEAL BANNER + ROTATING COUNTDOWN TIMER
 // ─────────────────────────────────────────────
 
 async function fetchAndStartDeal() {
-  const dealSection = document
-    .querySelector(".counter-banner")
-    ?.closest("section");
+  const dealSection = document.querySelector(".counter-banner")?.closest("section");
   if (dealSection) dealSection.style.display = "none";
 
   try {
     const res = await fetch(`${CONFIG.BASE_URL}/deal`);
     const data = await res.json();
 
-    if (!res.ok || !data.deal) return;
+    const now = new Date();
+    const deals = (data.deals || (data.deal ? [data.deal] : [])).filter(
+      (d) => new Date(d.endsAt) > now
+    );
 
-    const deal = data.deal;
-
-    const endDate = new Date(deal.endsAt);
-    if (endDate <= new Date()) return;
+    if (!deals.length) return;
 
     if (dealSection) dealSection.style.display = "";
 
-    const heading = document.querySelector(".counter-banner h3");
-    const subheading = document.querySelector(".counter-banner h2");
-    if (heading && deal.product?.name) {
-      heading.textContent = `Hurry up! Get ${deal.discountPercent}% off on ${deal.product.name}`;
-    }
-    if (subheading) {
-      subheading.textContent = "Deals Of The Day";
-    }
+    injectDealDots(deals.length);
 
-    const shopBtn = document.querySelector(".counter-banner .btn-white");
-    if (shopBtn && deal.product?._id) {
-      shopBtn.href = `product-details.html?id=${deal.product._id}`;
-    }
-
-    const dayEl = document.getElementById("day");
-    const hourEl = document.getElementById("hour");
-    const minuteEl = document.getElementById("minute");
-    const secondEl = document.getElementById("second");
-
-    if (!dayEl || !hourEl || !minuteEl || !secondEl) return;
-
-    startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl, dealSection);
+    dealIndex = 0;
+    showDeal(deals, dealIndex, dealSection);
   } catch (err) {
     console.error("Deal fetch error:", err);
   }
 }
 
-function startCountdown(
-  endDate,
-  dayEl,
-  hourEl,
-  minuteEl,
-  secondEl,
-  dealSection
-) {
+function injectDealDots(count) {
+  const banner = document.querySelector(".counter-banner");
+  if (!banner || count < 2) return;
+
+  banner.querySelector(".deal-dots")?.remove();
+
+  const dotsEl = document.createElement("div");
+  dotsEl.className = "deal-dots";
+  dotsEl.style.cssText = "display:flex;gap:6px;justify-content:center;margin-top:14px;";
+
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement("span");
+    dot.dataset.index = i;
+    dot.style.cssText =
+      "width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.35);transition:background .3s,transform .3s;cursor:pointer;display:inline-block;";
+    dotsEl.appendChild(dot);
+  }
+
+  banner.querySelector(".btn-white")?.insertAdjacentElement("afterend", dotsEl);
+}
+
+function updateDots(activeIndex) {
+  document.querySelectorAll(".deal-dots span").forEach((dot, i) => {
+    dot.style.background =
+      i === activeIndex ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)";
+    dot.style.transform = i === activeIndex ? "scale(1.25)" : "scale(1)";
+  });
+}
+
+function showDeal(deals, index, dealSection) {
+  if (dealRotateTimeout) clearTimeout(dealRotateTimeout);
   if (timerInterval) clearInterval(timerInterval);
 
-  function pad(n) {
-    return String(n).padStart(2, "0");
+  const deal = deals[index];
+  updateDots(index);
+
+  const heading = document.querySelector(".counter-banner h3");
+  const shopBtn = document.querySelector(".counter-banner .btn-white");
+
+  if (heading && deal.product?.name) {
+    heading.textContent = `Hurry up! Get ${deal.discountPercent}% off on ${deal.product.name}`;
   }
+  if (shopBtn && deal.product?._id) {
+    shopBtn.href = `product-details.html?id=${deal.product._id}`;
+  }
+
+  const dayEl = document.getElementById("day");
+  const hourEl = document.getElementById("hour");
+  const minuteEl = document.getElementById("minute");
+  const secondEl = document.getElementById("second");
+  if (!dayEl || !hourEl || !minuteEl || !secondEl) return;
+
+  startCountdown(new Date(deal.endsAt), dayEl, hourEl, minuteEl, secondEl);
+
+  if (deals.length > 1) {
+    dealRotateTimeout = setTimeout(() => {
+      showDeal(deals, (index + 1) % deals.length, dealSection);
+    }, 6000);
+  }
+}
+
+function startCountdown(endDate, dayEl, hourEl, minuteEl, secondEl) {
+  if (timerInterval) clearInterval(timerInterval);
+
+  function pad(n) { return String(n).padStart(2, "0"); }
 
   function tick() {
     const diff = endDate.getTime() - Date.now();
-
     if (diff <= 0) {
-      dayEl.textContent = "00";
-      hourEl.textContent = "00";
-      minuteEl.textContent = "00";
-      secondEl.textContent = "00";
+      dayEl.textContent = hourEl.textContent = minuteEl.textContent = secondEl.textContent = "00";
       clearInterval(timerInterval);
-      if (dealSection) dealSection.style.display = "none";
       return;
     }
-
-    dayEl.textContent = pad(Math.floor(diff / 86400000));
-    hourEl.textContent = pad(Math.floor((diff % 86400000) / 3600000));
+    dayEl.textContent    = pad(Math.floor(diff / 86400000));
+    hourEl.textContent   = pad(Math.floor((diff % 86400000) / 3600000));
     minuteEl.textContent = pad(Math.floor((diff % 3600000) / 60000));
     secondEl.textContent = pad(Math.floor((diff % 60000) / 1000));
   }

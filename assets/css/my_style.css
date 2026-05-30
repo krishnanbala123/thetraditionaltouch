@@ -555,3 +555,8 @@ li.dropdownmenu .dropdownitem-list li a,
 #home-product-slider .swiper-slide {
   box-sizing: border-box;
 }
+
+/* Deal rotation dots */
+.deal-dots span:hover {
+  background: rgba(255, 255, 255, 0.7) !important;
+}
