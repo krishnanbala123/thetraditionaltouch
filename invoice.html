@@ -542,6 +542,13 @@
                           <td style="text-align: left; color:#777;">Subtotal</td>
                           <td id="inv-subtotal" style="text-align: right; font-weight: 500; color:#333;">—</td>
                         </tr>
+                        <tr id="inv-discount-row" style="display:none;">
+                          <td style="text-align: left; color:#2a7a4f;">
+                            Discount
+                            <span id="inv-discount-label" style="font-size:11px; background:rgba(42,122,79,.1); color:#2a7a4f; padding:2px 8px; border-radius:20px; margin-left:6px; font-weight:600;"></span>
+                          </td>
+                          <td id="inv-discount" style="text-align: right; font-weight: 500; color:#2a7a4f;">—</td>
+                        </tr>
                         <tr>
                           <td style="text-align: left; color:#777;">Delivery Fee</td>
                           <td id="inv-delivery" style="text-align: right; font-weight: 500; color:#333;">—</td>
@@ -742,6 +749,7 @@
         const SIZE_EXTRA   = { "2XL": 50, "3XL": 50, "4XL": 100 };
         const ADDON_EXTRA  = { center_feeding: 50, dupatta: 150 };
         const LENGTH_EXTRA = { "52": 30, "54": 50 };
+        const SLEEVE_EXTRA  = { elbow: -50, elbow_puff: -50, three_quarter_scallop: -20, three_quarter: -50 };
 
         document.getElementById("invoice-items").innerHTML = items.map((item, i) => {
           const name      = item.productId?.name || item.name || "Product";
@@ -760,8 +768,9 @@
           const sizeExtra   = SIZE_EXTRA[size]      || 0;
           const addonExtra  = ADDON_EXTRA[addonType] || 0;
           const lengthExtra = LENGTH_EXTRA[length]   || 0;
+          const sleeveExtra = SLEEVE_EXTRA[sleeve]      || 0;
           const dupattaExtra = dupatta ? 200 : 0;
-          const totalExtra  = sizeExtra + addonExtra + lengthExtra + dupattaExtra;
+          const totalExtra  = sizeExtra + addonExtra + lengthExtra + sleeveExtra + dupattaExtra;
           const basePrice   = unitPrice - totalExtra;
 
           const prettyAddon  = addonType.replace(/_/g, " ").replace(/\b\w/g, s => s.toUpperCase());
@@ -791,28 +800,45 @@
         }).join("");
 
         // ── Totals ───────────────────────────────────────────────────────
-        const deliveryFee = order.deliveryFee ?? order.shippingCharge ?? 0;
-        const grandTotal  = order.totalAmount  ?? order.grandTotal    ?? (subtotal + deliveryFee);
+        const deliveryFee    = order.deliveryFee ?? order.shippingCharge ?? 0;
+        const discountAmount = order.discountAmount || 0;
+        const grandTotal     = order.totalPrice ?? order.totalAmount ?? order.grandTotal ?? (subtotal + deliveryFee);
 
         document.getElementById("inv-subtotal").textContent = `₹${subtotal.toFixed(2)}`;
         document.getElementById("inv-delivery").textContent = deliveryFee > 0 ? `₹${deliveryFee}` : "FREE";
         document.getElementById("inv-total").innerHTML      = `<strong>₹${grandTotal.toFixed(2)}</strong>`;
 
-        // ── Show invoice ─────────────────────────────────────────────────
+        // Show discount row if a coupon was used
+        // Show discount row if a coupon was used
+        if (discountAmount > 0) {
+          const coupon  = order.appliedCoupon;
+          const discRow = document.getElementById("inv-discount-row");
+          if (discRow) discRow.style.display = "";
+          const discLabel = document.getElementById("inv-discount-label");
+          if (discLabel && coupon) {
+            // discountType may not be saved on old orders — fall back to value check
+            discLabel.textContent = coupon.discountType === "percentage"
+              ? `${coupon.value}% off`
+              : `₹${coupon.value} off`;
+          }
+          const discEl = document.getElementById("inv-discount");
+          if (discEl) discEl.textContent = `-₹${discountAmount.toFixed(2)}`;
+        }
+
+        // ── THESE LINES WERE MISSING — add them back ──────────────────
         loadingEl.style.display = "none";
         invoiceEl.style.display = "block";
         actionsEl.style.display = "flex";
 
         if (typeof feather !== "undefined") feather.replace();
 
-        // ── Download PDF (uses print dialog) ────────────────────────────
         document.getElementById("download-btn").addEventListener("click", () => {
           const originalTitle = document.title;
           document.title      = `Invoice-${order._id}`;
           window.print();
           document.title      = originalTitle;
         });
-      }
+      } 
     })();
     </script>
 

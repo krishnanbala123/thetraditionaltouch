@@ -1,18 +1,53 @@
 // assets/js/shop.js
 
-let currentPage = 1;
-const limit = 8;
-let searchQuery = "";
-let allProducts = [];
-let selectedDiscount = null;
-let selectedArrival = null;
+let currentPage       = 1;
+const limit           = 8;
+let searchQuery       = "";
+let allProducts       = [];
+let selectedDiscount  = null;
+let selectedArrival   = null;
+
+/** Discount % from an active event deal (0 = none) */
+let activeEventDiscount = 0;
+
+/**
+ * effectiveDiscount(product)
+ * Returns whichever is higher: the product's own discount or the live
+ * event deal discount.  Always use this instead of product.discount directly.
+ */
+function effectiveDiscount(product) {
+  return Math.max(product.discount || 0, activeEventDiscount);
+}
 
 document.addEventListener("DOMContentLoaded", function () {
-  fetchProducts();
-  setupSearch();
-  setupDiscountFilter();
-  setupArrivalFilter();
+  // Fetch deal first so activeEventDiscount is set before products render
+  fetchActiveDeal().then(() => {
+    fetchProducts();
+    setupSearch();
+    setupDiscountFilter();
+    setupArrivalFilter();
+  });
 });
+
+// ========================
+// Fetch active event deal
+// Sets activeEventDiscount so every card uses the right price
+// ========================
+async function fetchActiveDeal() {
+  try {
+    const res  = await fetch(`${CONFIG.BASE_URL}/deal`);
+    const data = await res.json();
+
+    if (data.isEventDeal && data.deals?.length) {
+      activeEventDiscount = Math.max(...data.deals.map((d) => d.discountPercent));
+    } else {
+      activeEventDiscount = 0;
+    }
+  } catch (err) {
+    console.error("Deal fetch error:", err);
+    activeEventDiscount = 0;
+  }
+}
 
 // ========================
 // Fetch Products
@@ -28,7 +63,6 @@ async function fetchProducts(page = 1, search = "") {
     </div>`;
 
   try {
-    // Build URL — search is sent to the backend so it queries ALL products in DB
     let url = `${CONFIG.BASE_URL}/products?page=${page}&limit=${limit}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
 
@@ -43,10 +77,7 @@ async function fetchProducts(page = 1, search = "") {
 
     if (response.ok) {
       allProducts = data.products;
-
-      // Apply any active client-side filter on top of the API results
       applyActiveFilter();
-
       renderPagination(data.pagination);
     } else {
       productGrid.innerHTML = `
@@ -65,7 +96,6 @@ async function fetchProducts(page = 1, search = "") {
 
 // ========================
 // Apply whichever filter is currently active
-// Called after every fetchProducts() so filters stay in sync
 // ========================
 function applyActiveFilter() {
   if (selectedDiscount) {
@@ -94,17 +124,18 @@ function renderProducts(products) {
 
   productGrid.innerHTML = products
     .map((product) => {
-      const discountedPrice = product.discount
-        ? Math.round(product.price - (product.price * product.discount) / 100)
+      // ── Use effectiveDiscount so event deal is respected ──
+      const disc            = effectiveDiscount(product);
+      const discountedPrice = disc
+        ? Math.round(product.price - (product.price * disc) / 100)
         : product.price;
 
-      const discountLabel = product.discount
-        ? `<span class="product-discount-label">${product.discount}%</span>`
+      const discountLabel = disc
+        ? `<span class="product-discount-label">${disc}%</span>`
         : "";
 
       const stock    = product.stock ?? 0;
       const hasStock = stock > 0;
-
       const sizesJson = JSON.stringify(product.sizes || []).replace(/"/g, "&quot;");
 
       return `
@@ -146,7 +177,7 @@ function renderProducts(products) {
               </a>
               <div class="pro-price">
                 ₹${discountedPrice}
-                ${product.discount ? `<span class="old-price">₹${product.price}</span>` : ""}
+                ${disc ? `<span class="old-price">₹${product.price}</span>` : ""}
               </div>
             </div>
           </div>
@@ -238,7 +269,6 @@ function changePage(page) {
 // Search Setup
 // ========================
 function setupSearch() {
-  // ── Header search bar ──
   const headerInput = document.querySelector(".search-bar input");
   const headerBtn   = document.querySelector(".search-bar .btn-primary");
 
@@ -248,7 +278,6 @@ function setupSearch() {
       document.querySelector(".search-bar").classList.remove("show");
     });
   }
-
   if (headerInput) {
     headerInput.addEventListener("keypress", function (e) {
       if (e.key === "Enter") {
@@ -258,29 +287,19 @@ function setupSearch() {
     });
   }
 
-  // ── Inline shop search bar ──
   const shopInput = document.getElementById("shop-search-input");
   const shopBtn   = document.getElementById("shop-search-btn");
   const shopClear = document.getElementById("shop-search-clear");
 
   if (shopBtn) {
-    shopBtn.addEventListener("click", function () {
-      triggerSearch(shopInput.value.trim());
-    });
+    shopBtn.addEventListener("click", function () { triggerSearch(shopInput.value.trim()); });
   }
-
   if (shopInput) {
     shopInput.addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        triggerSearch(shopInput.value.trim());
-      }
+      if (e.key === "Enter") triggerSearch(shopInput.value.trim());
     });
-
-    shopInput.addEventListener("input", function () {
-      toggleClearBtn(shopInput, shopClear);
-    });
+    shopInput.addEventListener("input", function () { toggleClearBtn(shopInput, shopClear); });
   }
-
   if (shopClear) {
     shopClear.addEventListener("click", function () {
       shopInput.value = "";
@@ -291,33 +310,20 @@ function setupSearch() {
   }
 }
 
-// ========================
-// Trigger Search
-// Resets page + clears client-side filters so results are consistent
-// ========================
 function triggerSearch(query) {
   searchQuery = query;
   currentPage = 1;
-
-  // Clear client-side filters so they don't mask search results
   clearAllFilters();
-
-  // Update clear button visibility
-  const shopInput = document.getElementById("shop-search-input");
-  const shopClear = document.getElementById("shop-search-clear");
-  toggleClearBtn(shopInput, shopClear);
-
-  // Fetch from backend — search runs across ALL products in the database
+  toggleClearBtn(
+    document.getElementById("shop-search-input"),
+    document.getElementById("shop-search-clear")
+  );
   fetchProducts(currentPage, searchQuery);
 }
 
-// ========================
-// Clear all client-side filters (checkboxes + state)
-// ========================
 function clearAllFilters() {
   selectedDiscount = null;
   selectedArrival  = null;
-
   const allCheckboxIds = [
     "discount1","discount2","discount3","discount4","discount5",
     "ratinglist1","ratinglist2","ratinglist3","ratinglist4","ratinglist5",
@@ -335,8 +341,6 @@ function toggleClearBtn(input, clearBtn) {
 
 // ========================
 // Discount Filter
-// NOTE: filters the current page's 8 products client-side.
-// For full-database discount filtering, move this param to the API.
 // ========================
 function setupDiscountFilter() {
   const discountMap = {
@@ -351,11 +355,9 @@ function setupDiscountFilter() {
     const checkbox = document.getElementById(id);
     if (checkbox) {
       checkbox.addEventListener("change", function () {
-        // Uncheck all others
         Object.keys(discountMap).forEach((otherId) => {
           if (otherId !== id) document.getElementById(otherId).checked = false;
         });
-        // Clear arrival filter
         selectedArrival = null;
         ["ratinglist1","ratinglist2","ratinglist3","ratinglist4","ratinglist5"]
           .forEach((rid) => { const el = document.getElementById(rid); if (el) el.checked = false; });
@@ -372,15 +374,15 @@ function applyDiscountFilter() {
     renderProducts(allProducts);
     return;
   }
+  // Filter using effectiveDiscount so event-deal products are included
   const filtered = allProducts.filter(
-    (p) => (p.discount || 0) >= selectedDiscount
+    (p) => effectiveDiscount(p) >= selectedDiscount
   );
   renderProducts(filtered);
 }
 
 // ========================
 // Arrival Filter
-// NOTE: filters the current page's 8 products client-side.
 // ========================
 function setupArrivalFilter() {
   const arrivalMap = {
@@ -395,11 +397,9 @@ function setupArrivalFilter() {
     const checkbox = document.getElementById(id);
     if (checkbox) {
       checkbox.addEventListener("change", function () {
-        // Uncheck all others
         Object.keys(arrivalMap).forEach((otherId) => {
           if (otherId !== id) document.getElementById(otherId).checked = false;
         });
-        // Clear discount filter
         selectedDiscount = null;
         ["discount1","discount2","discount3","discount4","discount5"]
           .forEach((did) => { const el = document.getElementById(did); if (el) el.checked = false; });
@@ -434,14 +434,9 @@ function showShopMessage(msg, type) {
   const div = document.createElement("div");
   div.id = "shop-toast";
   div.style.cssText = `
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    z-index: 9999;
+    position: fixed; bottom: 30px; right: 30px;
+    padding: 12px 20px; border-radius: 8px; font-size: 14px;
+    font-weight: 500; z-index: 9999;
     background: ${type === "success" ? "#d4edda" : "#f8d7da"};
     color: ${type === "success" ? "#155724" : "#721c24"};
     border: 1px solid ${type === "success" ? "#c3e6cb" : "#f5c6cb"};

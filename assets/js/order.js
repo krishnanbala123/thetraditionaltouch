@@ -7,6 +7,9 @@ const OrderManager = (() => {
   const ADDON_EXTRA  = { center_feeding: 50 };
   const LENGTH_EXTRA = { "52": 30, "54": 50 };
 
+  // ── Coupon state ────────────────────────────────────────────────────────────
+  let appliedCoupon = null; // { code, type, value } or null
+
   function calcDeliveryFee(totalQty, isInsideTamilNadu) {
     const pairs = Math.ceil(totalQty / 2);
     return isInsideTamilNadu ? pairs * 70 : pairs * 100;
@@ -22,6 +25,16 @@ const OrderManager = (() => {
     const addonExtra  = ADDON_EXTRA[item.customisation?.addonType] || 0;
     const lengthExtra = LENGTH_EXTRA[item.customisation?.length]   || 0;
     return base + sizeExtra + addonExtra + lengthExtra;
+  }
+
+  // ── Compute discount from applied coupon ────────────────────────────────────
+  function computeDiscount(subtotal) {
+    if (!appliedCoupon) return 0;
+    if (appliedCoupon.type === "percentage") {
+      return Math.round((subtotal * appliedCoupon.value) / 100);
+    }
+    // flat — never exceed subtotal
+    return Math.min(appliedCoupon.value, subtotal);
   }
 
   // ── Fetch cart from API ─────────────────────────────────────────────────────
@@ -51,18 +64,126 @@ const OrderManager = (() => {
       subtotal += computeUnitPrice(item) * (item.quantity || 1);
       totalQty += item.quantity || 1;
     });
+
     const deliveryFee = totalQty > 0
       ? calcDeliveryFee(totalQty, isInsideTamilNadu) : 0;
-    const grandTotal  = subtotal + deliveryFee;
+    const discount   = computeDiscount(subtotal);
+    const grandTotal = Math.max(0, subtotal - discount + deliveryFee);
 
     const el = id => document.getElementById(id);
     if (el("summary-subtotal"))  el("summary-subtotal").textContent  = `₹${subtotal.toFixed(2)}`;
     if (el("summary-delivery"))  el("summary-delivery").textContent  = deliveryFee > 0 ? `₹${deliveryFee}` : "FREE";
     if (el("summary-total"))     el("summary-total").textContent     = `₹${grandTotal.toFixed(2)}`;
 
+    // Show / hide discount row
+    const discountRow = el("discount-row");
+    if (discountRow) {
+      if (discount > 0) {
+        discountRow.style.display = "";
+        if (el("summary-discount"))  el("summary-discount").textContent  = `-₹${discount}`;
+        if (el("discount-label"))    el("discount-label").textContent    =
+          appliedCoupon.type === "percentage"
+            ? `${appliedCoupon.value}% off`
+            : `₹${appliedCoupon.value} off`;
+      } else {
+        discountRow.style.display = "none";
+      }
+    }
+
     window._checkoutSubtotal   = subtotal;
+    window._checkoutDiscount   = discount;
     window._checkoutDelivery   = deliveryFee;
     window._checkoutGrandTotal = grandTotal;
+  }
+
+  // ── Apply coupon ────────────────────────────────────────────────────────────
+  async function applyCoupon() {
+    const inputEl = document.getElementById("coupon-input");
+    const msgEl   = document.getElementById("coupon-msg");
+    const applyBtn = document.getElementById("apply-coupon-btn");
+    const code    = inputEl?.value.trim().toUpperCase();
+
+    if (!code) {
+      showCoToast("Please enter a coupon code.", "warn");
+      return;
+    }
+
+    // Show loading state
+    if (applyBtn) { applyBtn.disabled = true; applyBtn.textContent = "Checking…"; }
+    if (msgEl)    { msgEl.style.display = "block"; msgEl.className = "coupon-msg loading"; msgEl.textContent = "Validating code…"; }
+
+    try {
+      // Need subtotal to check minimum order
+      const items    = await fetchCart();
+      let subtotal   = 0;
+      items.forEach(item => { subtotal += computeUnitPrice(item) * (item.quantity || 1); });
+
+      const res  = await fetch(`${API}/coupons`, {
+        method:  "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:  `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({ action: "validate", code, subtotal }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.valid) {
+        // Invalid coupon
+        appliedCoupon = null;
+        if (msgEl) {
+          msgEl.className   = "coupon-msg error";
+          msgEl.textContent = data.message || "Invalid or expired coupon.";
+        }
+        updatePriceSummary(items, getIsInsideTamilNadu());
+      } else {
+        // Valid coupon
+        appliedCoupon = data.coupon; // { code, type, value }
+        const savingText = appliedCoupon.type === "percentage"
+          ? `${appliedCoupon.value}% off`
+          : `₹${appliedCoupon.value} off`;
+        if (msgEl) {
+          msgEl.className   = "coupon-msg success";
+          msgEl.textContent = `✓ Coupon applied — ${savingText}!`;
+        }
+        if (inputEl) inputEl.disabled = true;
+        // ✅ Update prices FIRST before anything else
+        updatePriceSummary(items, getIsInsideTamilNadu());
+        if (applyBtn) {
+          applyBtn.textContent = "Remove";
+          applyBtn.disabled    = false;
+          applyBtn.onclick     = removeCoupon;
+          return; // skip re-enabling below (button already set to Remove)
+        }
+      }
+    } catch (err) {
+      console.error("[OrderManager] applyCoupon:", err);
+      if (msgEl) {
+        msgEl.className   = "coupon-msg error";
+        msgEl.textContent = "Could not validate coupon. Please try again.";
+      }
+    } finally {
+      // Only reset button text if coupon was NOT successfully applied
+      if (!appliedCoupon) {
+        if (applyBtn) { applyBtn.disabled = false; applyBtn.textContent = "Apply"; }
+      }
+    }
+  }
+
+  // ── Remove coupon ───────────────────────────────────────────────────────────
+  async function removeCoupon() {
+    appliedCoupon = null;
+
+    const inputEl  = document.getElementById("coupon-input");
+    const msgEl    = document.getElementById("coupon-msg");
+    const applyBtn = document.getElementById("apply-coupon-btn");
+
+    if (inputEl)  { inputEl.disabled = false; inputEl.value = ""; }
+    if (msgEl)    { msgEl.style.display = "none"; msgEl.textContent = ""; }
+    if (applyBtn) { applyBtn.textContent = "Apply"; applyBtn.onclick = applyCoupon; }
+
+    const items = await fetchCart();
+    updatePriceSummary(items, getIsInsideTamilNadu());
   }
 
   // ── Load & render order summary ─────────────────────────────────────────────
@@ -232,7 +353,8 @@ const OrderManager = (() => {
           subtotal += computeUnitPrice(item) * (item.quantity || 1);
           qty      += item.quantity || 1;
         });
-        grandTotal = subtotal + calcDeliveryFee(qty, isInsideTamilNadu);
+        const discount = computeDiscount(subtotal);
+        grandTotal = subtotal - discount + calcDeliveryFee(qty, isInsideTamilNadu);
       }
 
       // ── Step 1: Create order in DB (paymentStatus: Pending) ───────────────
@@ -251,6 +373,7 @@ const OrderManager = (() => {
           phone,
           isInsideTamilNadu,
           notes,
+          couponCode: appliedCoupon?.code || null, // ← send coupon to backend
         }),
       });
       const orderData = await orderRes.json();
@@ -308,13 +431,12 @@ const OrderManager = (() => {
               resetPayBtn(); return;
             }
 
-            // ✅ Order complete — redirect to invoice with orderId in URL only
-            // Nothing sensitive is stored in localStorage
+            // ✅ Order complete
             showCoToast("🎉 Order placed successfully!", "success");
             localStorage.removeItem("cart");
+            appliedCoupon = null; // clear coupon state
 
             setTimeout(() => {
-              // orderId in URL is safe — backend verifies JWT token ownership
               window.location.href = `invoice.html?orderId=${mongoOrderId}`;
             }, 1500);
 
@@ -326,7 +448,6 @@ const OrderManager = (() => {
 
         modal: {
           ondismiss: function () {
-            // Payment cancelled — cancel the pending order & restore stock
             fetch(`${API}/orders/${mongoOrderId}`, {
               method:  "PATCH",
               headers: { Authorization: `Bearer ${token}` },
@@ -363,6 +484,18 @@ const OrderManager = (() => {
       });
     }
 
+    // Wire up coupon apply button
+    const applyBtn = document.getElementById("apply-coupon-btn");
+    if (applyBtn) applyBtn.addEventListener("click", applyCoupon);
+
+    // Allow Enter key in coupon input
+    const couponInput = document.getElementById("coupon-input");
+    if (couponInput) {
+      couponInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") { e.preventDefault(); applyCoupon(); }
+      });
+    }
+
     // Attach pay button listener
     const btn = document.getElementById("pay-btn");
     if (btn) {
@@ -373,7 +506,7 @@ const OrderManager = (() => {
     }
   }
 
-  return { init, loadSummary, updatePriceSummary };
+  return { init, loadSummary, updatePriceSummary, applyCoupon, removeCoupon };
 })();
 
 document.addEventListener("DOMContentLoaded", OrderManager.init);

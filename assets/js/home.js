@@ -1,15 +1,27 @@
 // home.js
 
 // ─── All module-level state declared once ───────────────────
-let homeSwiper = null;
-let skeletonSwiper = null;   // tracks the skeleton swiper so we can destroy it cleanly
-let timerInterval = null;
-let dealIndex = 0;
+let homeSwiper       = null;
+let skeletonSwiper   = null;
+let timerInterval    = null;
+let dealIndex        = 0;
 let dealRotateTimeout = null;
 
+/** Discount % from an active event deal (0 = no event deal live) */
+let activeEventDiscount = 0;
+
+/**
+ * effectiveDiscount(product)
+ * Returns whichever is higher: the product's own discount or the live
+ * event deal discount.  Always use this instead of product.discount directly.
+ */
+function effectiveDiscount(product) {
+  return Math.max(product.discount || 0, activeEventDiscount);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
-  fetchHomeProducts();
-  fetchAndStartDeal();
+  // Fetch deal first so activeEventDiscount is set before the slider renders
+  fetchAndStartDeal().then(() => fetchHomeProducts());
 });
 
 // ─────────────────────────────────────────────
@@ -20,19 +32,11 @@ function showSkeletonLoader() {
   const container = document.querySelector("#home-product-slider");
   if (!container) return;
 
-  // Destroy any previous swiper on this element before touching innerHTML
-  if (skeletonSwiper) {
-    skeletonSwiper.destroy(true, true);
-    skeletonSwiper = null;
-  }
-  if (homeSwiper) {
-    homeSwiper.destroy(true, true);
-    homeSwiper = null;
-  }
+  if (skeletonSwiper) { skeletonSwiper.destroy(true, true); skeletonSwiper = null; }
+  if (homeSwiper)     { homeSwiper.destroy(true, true);     homeSwiper = null; }
 
   const skeletonSlides = Array.from({ length: 5 })
-    .map(
-      () => `
+    .map(() => `
       <div class="swiper-slide">
         <div class="skeleton-card">
           <div class="skeleton-img skeleton-shimmer"></div>
@@ -41,13 +45,11 @@ function showSkeletonLoader() {
             <div class="skeleton-price skeleton-shimmer"></div>
           </div>
         </div>
-      </div>`
-    )
+      </div>`)
     .join("");
 
   container.innerHTML = `<div class="swiper-wrapper">${skeletonSlides}</div>`;
 
-  // Guard: make sure the element is still in the DOM before Swiper touches it
   const el = document.querySelector("#home-product-slider");
   if (!el || !document.body.contains(el)) return;
 
@@ -56,8 +58,8 @@ function showSkeletonLoader() {
     spaceBetween: 16,
     allowTouchMove: false,
     breakpoints: {
-      480: { slidesPerView: 2, spaceBetween: 20 },
-      720: { slidesPerView: 4, spaceBetween: 24 },
+      480:  { slidesPerView: 2, spaceBetween: 20 },
+      720:  { slidesPerView: 4, spaceBetween: 24 },
       1024: { slidesPerView: 4, spaceBetween: 24 },
       1400: { slidesPerView: 5, spaceBetween: 24 },
     },
@@ -109,15 +111,8 @@ function renderHomeSlider(products) {
   const container = document.querySelector("#home-product-slider");
   if (!container) return;
 
-  // ── Destroy BOTH swiper instances before replacing innerHTML ──
-  if (skeletonSwiper) {
-    skeletonSwiper.destroy(true, true);
-    skeletonSwiper = null;
-  }
-  if (homeSwiper) {
-    homeSwiper.destroy(true, true);
-    homeSwiper = null;
-  }
+  if (skeletonSwiper) { skeletonSwiper.destroy(true, true); skeletonSwiper = null; }
+  if (homeSwiper)     { homeSwiper.destroy(true, true);     homeSwiper = null; }
 
   container.innerHTML = "";
 
@@ -132,17 +127,18 @@ function renderHomeSlider(products) {
 
   const slidesHTML = products
     .map((product) => {
-      const discountedPrice = product.discount
-        ? Math.round(product.price - (product.price * product.discount) / 100)
+      // ── Use effectiveDiscount so event deal is respected ──
+      const disc           = effectiveDiscount(product);
+      const discountedPrice = disc
+        ? Math.round(product.price - (product.price * disc) / 100)
         : product.price;
 
-      const discountLabel = product.discount
-        ? `<span class="product-discount-label">${product.discount}%</span>`
+      const discountLabel = disc
+        ? `<span class="product-discount-label">${disc}%</span>`
         : "";
 
-      const stock = product.stock ?? 0;
+      const stock    = product.stock ?? 0;
       const hasStock = stock > 0;
-
       const sizesJson = JSON.stringify(product.sizes || []).replace(/"/g, "&quot;");
 
       return `
@@ -183,7 +179,7 @@ function renderHomeSlider(products) {
                 </a>
                 <div class="pro-price">
                   ₹${discountedPrice}
-                  ${product.discount ? `<span class="old-price">₹${product.price}</span>` : ""}
+                  ${disc ? `<span class="old-price">₹${product.price}</span>` : ""}
                 </div>
               </div>
             </div>
@@ -194,7 +190,6 @@ function renderHomeSlider(products) {
 
   container.innerHTML = `<div class="swiper-wrapper">${slidesHTML}</div>`;
 
-  // Guard: element must still be in the DOM
   const el = document.querySelector("#home-product-slider");
   if (!el || !document.body.contains(el)) return;
 
@@ -208,8 +203,8 @@ function renderHomeSlider(products) {
     centeredSlides: false,
     autoplay: count > 1 ? { delay: 2500, disableOnInteraction: false } : false,
     breakpoints: {
-      480: { slidesPerView: Math.min(2, count), spaceBetween: 20 },
-      720: { slidesPerView: Math.min(4, count), spaceBetween: 24 },
+      480:  { slidesPerView: Math.min(2, count), spaceBetween: 20 },
+      720:  { slidesPerView: Math.min(4, count), spaceBetween: 24 },
       1024: { slidesPerView: Math.min(4, count), spaceBetween: 24 },
       1400: { slidesPerView: Math.min(5, count), spaceBetween: 24 },
     },
@@ -227,13 +222,21 @@ async function fetchAndStartDeal() {
   if (dealSection) dealSection.style.display = "none";
 
   try {
-    const res = await fetch(`${CONFIG.BASE_URL}/deal`);
+    const res  = await fetch(`${CONFIG.BASE_URL}/deal`);
     const data = await res.json();
 
-    const now = new Date();
+    const now   = new Date();
     const deals = (data.deals || (data.deal ? [data.deal] : [])).filter(
       (d) => new Date(d.endsAt) > now
     );
+
+    // ── Set the global event discount so renderHomeSlider can use it ──
+    if (data.isEventDeal && deals.length > 0) {
+      // Use the highest discountPercent across all active event deals
+      activeEventDiscount = Math.max(...deals.map((d) => d.discountPercent));
+    } else {
+      activeEventDiscount = 0;
+    }
 
     if (!deals.length) return;
 
@@ -242,7 +245,7 @@ async function fetchAndStartDeal() {
     injectDealDots(deals.length);
 
     dealIndex = 0;
-    showDeal(deals, dealIndex, dealSection);
+    showDeal(deals, dealIndex, dealSection, !!data.isEventDeal);
   } catch (err) {
     console.error("Deal fetch error:", err);
   }
@@ -271,15 +274,14 @@ function injectDealDots(count) {
 
 function updateDots(activeIndex) {
   document.querySelectorAll(".deal-dots span").forEach((dot, i) => {
-    dot.style.background =
-      i === activeIndex ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)";
-    dot.style.transform = i === activeIndex ? "scale(1.25)" : "scale(1)";
+    dot.style.background = i === activeIndex ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)";
+    dot.style.transform  = i === activeIndex ? "scale(1.25)" : "scale(1)";
   });
 }
 
-function showDeal(deals, index, dealSection) {
+function showDeal(deals, index, dealSection, isEventDeal) {
   if (dealRotateTimeout) clearTimeout(dealRotateTimeout);
-  if (timerInterval) clearInterval(timerInterval);
+  if (timerInterval)     clearInterval(timerInterval);
 
   const deal = deals[index];
   updateDots(index);
@@ -287,15 +289,24 @@ function showDeal(deals, index, dealSection) {
   const heading = document.querySelector(".counter-banner h3");
   const shopBtn = document.querySelector(".counter-banner .btn-white");
 
-  if (heading && deal.product?.name) {
-    heading.textContent = `Hurry up! Get ${deal.discountPercent}% off on ${deal.product.name}`;
-  }
-  if (shopBtn && deal.product?._id) {
-    shopBtn.href = `product-details.html?id=${deal.product._id}`;
+  if (isEventDeal) {
+    const eventName  = deal.eventName || "Event Sale";
+    const scopeLabel = deal.scope === "manual" ? "on selected items" : "on everything";
+    if (heading) {
+      heading.textContent = `Hurry up! ${eventName} — ${deal.discountPercent}% off ${scopeLabel}!`;
+    }
+    if (shopBtn) shopBtn.href = "shop.html";
+  } else {
+    if (heading && deal.product?.name) {
+      heading.textContent = `Hurry up! Get ${deal.discountPercent}% off on ${deal.product.name}`;
+    }
+    if (shopBtn && deal.product?._id) {
+      shopBtn.href = `product-details.html?id=${deal.product._id}`;
+    }
   }
 
-  const dayEl = document.getElementById("day");
-  const hourEl = document.getElementById("hour");
+  const dayEl    = document.getElementById("day");
+  const hourEl   = document.getElementById("hour");
   const minuteEl = document.getElementById("minute");
   const secondEl = document.getElementById("second");
   if (!dayEl || !hourEl || !minuteEl || !secondEl) return;
@@ -304,7 +315,7 @@ function showDeal(deals, index, dealSection) {
 
   if (deals.length > 1) {
     dealRotateTimeout = setTimeout(() => {
-      showDeal(deals, (index + 1) % deals.length, dealSection);
+      showDeal(deals, (index + 1) % deals.length, dealSection, isEventDeal);
     }, 6000);
   }
 }

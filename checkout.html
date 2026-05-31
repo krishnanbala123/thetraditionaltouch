@@ -389,6 +389,29 @@
         transition: all .3s ease;
         position: relative; overflow: hidden;
       }
+      .coupon-msg {
+        font-size: 12px;
+        font-weight: 500;
+        padding: 7px 12px;
+        border-radius: var(--radius);
+        margin-top: 4px;
+        line-height: 1.4;
+      }
+      .coupon-msg.success {
+        background: rgba(42,122,79,.1);
+        color: #2a7a4f;
+        border: 1px solid rgba(42,122,79,.2);
+      }
+      .coupon-msg.error {
+        background: rgba(227,41,29,.08);
+        color: #c0392b;
+        border: 1px solid rgba(227,41,29,.15);
+      }
+      .coupon-msg.loading {
+        background: rgba(52,152,219,.07);
+        color: var(--muted);
+        border: 1px solid rgba(52,152,219,.15);
+      }
       .btn-pay:hover { background: var(--white); color: var(--theme-primary); }
       .btn-pay:disabled { opacity: .6; cursor: not-allowed; }
       .btn-pay .lock-icon { font-size: 13px; opacity: .8; }
@@ -604,8 +627,8 @@
             </div>
 
             <div class="form-row">
-              <div class="form-field">
-                <label>State</label>
+              <div class="form-field" id="field-state">
+                <label>State <span class="req">*</span></label>
                 <div class="select-wrap">
                   <select id="state">
                     <option value="">Select state…</option>
@@ -621,11 +644,14 @@
                     <option>Chhattisgarh</option><option>Uttarakhand</option>
                     <option>Himachal Pradesh</option><option>Goa</option>
                   </select>
+                  
+                  <span class="field-error">Please select your state</span>
                 </div>
               </div>
-              <div class="form-field">
-                <label>PIN Code</label>
+              <div class="form-field" id="field-pincode">
+                <label>PIN Code <span class="req">*</span></label>
                 <input type="text" id="pincode" placeholder="6-digit PIN" maxlength="6" autocomplete="postal-code">
+                <span class="field-error">Valid 6-digit PIN code required</span>
               </div>
             </div>
 
@@ -706,8 +732,10 @@
 
             <div class="coupon-row">
               <input type="text" id="coupon-input" placeholder="COUPON CODE">
-              <button onclick="applyCoupon()">Apply</button>
+              <button id="apply-coupon-btn">Apply</button>
             </div>
+            <!-- Coupon feedback message — shown/hidden by order.js -->
+            <div id="coupon-msg" style="display:none;"></div>
 
             <div class="price-lines">
               <div class="price-line">
@@ -846,23 +874,27 @@
         const fname   = document.getElementById('fname').value.trim();
         const phone   = document.getElementById('phone').value.trim();
         const address = document.getElementById('address').value.trim();
-        if (!fname) { setError('fname', true); ok = false; } else setError('fname', false);
-        if (!phone || !/^[6-9]\d{9}$/.test(phone.replace(/\D/g,''))) { setError('phone', true); ok = false; } else setError('phone', false);
+        const state   = document.getElementById('state').value.trim();
+        const pincode = document.getElementById('pincode').value.trim();
+
+        if (!fname)   { setError('fname',   true); ok = false; } else setError('fname',   false);
+        if (!phone || !/^[6-9]\d{9}$/.test(phone.replace(/\D/g,'')))
+                      { setError('phone',   true); ok = false; } else setError('phone',   false);
         if (!address) { setError('address', true); ok = false; } else setError('address', false);
+        if (!state)   { setError('state',   true); ok = false; } else setError('state',   false);
+        if (!pincode || !/^\d{6}$/.test(pincode))
+                      { setError('pincode', true); ok = false; } else setError('pincode', false);
         return ok;
       }
 
-      ['fname','phone','address'].forEach(id => {
+      ['fname','phone','address','pincode'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', () => setError(id, false));
       });
 
-      /* Coupon placeholder */
-      function applyCoupon() {
-        const code = document.getElementById('coupon-input').value.trim().toUpperCase();
-        if (!code) { showToast('Enter a coupon code', 'warn'); return; }
-        showToast(`Coupon "${code}" is not valid.`, 'error');
-      }
+      const stateSelect = document.getElementById('state');
+        if (stateSelect) stateSelect.addEventListener('change', () => setError('state', false));
+
     </script>
   </body>
 </html>
