@@ -555,3 +555,6 @@ li.dropdownmenu .dropdownitem-list li a,
 #home-product-slider .swiper-slide {
   box-sizing: border-box;
 }
+.form-check-label a:hover {
+  color: #007bff !important;
+}
