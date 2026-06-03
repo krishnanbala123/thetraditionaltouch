@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>The Traditional Touch || Checkout</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="author" content="The Traditional Touch">
     <link rel="shortcut icon" href="./assets/images/dress/logo_1.png" type="image/x-icon">
 
     <link rel="preconnect" href="https://fonts.googleapis.com/">
@@ -756,6 +758,16 @@
               </div>
             </div>
 
+            <!-- Policy notice before payment -->
+            <div style="margin-top: 16px; padding: 12px 14px; background: rgba(52,152,219,.05); border: 1px solid rgba(52,152,219,.15); border-radius: var(--radius); display: flex; gap: 10px; align-items: flex-start;">
+              <i class="fa fa-circle-info" style="color: var(--theme-primary); margin-top: 2px; flex-shrink: 0; font-size: 13px;"></i>
+              <p style="font-size: 12px; color: var(--muted); line-height: 1.6; margin: 0;">
+                All products are <strong style="color: var(--ink);">made to order</strong> — cancellations and refunds are not accepted. 
+                By placing this order you agree to our 
+                <a href="privacy-policy.html" target="_blank" style="color: var(--theme-primary); font-weight: 600; text-decoration: none;">Refund &amp; Terms Policy</a>.
+              </p>
+            </div>
+
             <button class="btn-pay" id="pay-btn" disabled>
               <i class="fa fa-lock lock-icon"></i>
               <span id="pay-btn-text">Place Order &amp; Pay</span>
@@ -814,13 +826,22 @@
         </div>
       </div>
     </footer>
-    <div class="subfooter" style="padding:10px 0;border-top:1px solid rgba(255,255,255,.1);">
-      <div class="container">
-        <div style="display:flex;justify-content:center;align-items:center;">
-          <p style="text-align:center;margin:0;">&copy; <strong>The Traditional Touch</strong> <span id="current-year"></span>. All Rights Reserved.</p>
-        </div>
+    <div class="subfooter" style="padding: 10px 0; border-top: 1px solid #eee;">
+  <div class="container">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; color: #ffffff;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 16px;">
+        <a href="privacy-policy.html#privacy" target="_blank" style="font-size: 12px; color: white; text-decoration: none; opacity: 0.7;">Privacy Policy</a>
+        <span style="opacity: 0.3;">|</span>
+        <a href="privacy-policy.html#terms" target="_blank" style="font-size: 12px; color: white; text-decoration: none; opacity: 0.7;">Terms of Service</a>
+        <span style="opacity: 0.3;">|</span>
+        <a href="privacy-policy.html#refund" target="_blank" style="font-size: 12px; color: white; text-decoration: none; opacity: 0.7;">Refund Policy</a>
+        <span style="opacity: 0.3;">|</span>
+        <a href="privacy-policy.html#shipping" target="_blank" style="font-size: 12px; color: white; text-decoration: none; opacity: 0.7;">Shipping Policy</a>
       </div>
+      <p style="text-align: center; padding-top: 10px; font-size: 12px;">&copy; <strong>The Traditional Touch</strong> <span id="current-year"></span>. All Rights Reserved. Developed by <strong>Bala</strong> & <strong>Selva</strong></p>
     </div>
+  </div>
+</div>
 
     <a class="scroll-top" href="javascript:void(0);"><i class="fa fa-angle-double-up"></i></a>
 

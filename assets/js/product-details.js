@@ -92,9 +92,10 @@ async function fetchProductById(productId) {
     const data = await response.json();
     if (response.ok) {
       const product = data.products.find((p) => p._id === productId);
+      console.log("product check in stock", product)
       if (product) {
         currentProduct = product;
-        currentProduct.globalStock = data.globalStock ?? 10;
+        currentProduct.stock = product.stock ?? 10;
         renderProductDetail(product);
         const others = (data.products || [])
           .filter((p) => p._id !== productId)
@@ -216,7 +217,7 @@ function renderProductDetail(product) {
   const descEl = document.getElementById("product-description");
   if (descEl) descEl.textContent = product.description;
 
-  renderStockNotice(product.globalStock ?? 10);
+  renderStockNotice(product.stock ?? 10);
   renderSizes(product);
   renderFeedingAddons();
   renderSleeveOptions();
@@ -283,17 +284,17 @@ function setupShareButtons(product) {
 }
 
 // ── Global stock notice ──────────────────────────────────────────────────────
-function renderStockNotice(globalStock) {
+function renderStockNotice(stock) {
   const stockEl = document.querySelector(".product-detailright h5");
   if (!stockEl) return;
-  if (globalStock <= 0) {
+  if (stock <= 0) {
     stockEl.textContent = "⚠️ Currently out of stock — next batch coming soon!";
     stockEl.style.color = "#e53935";
-  } else if (globalStock <= 3) {
-    stockEl.textContent = `🔥 Hurry! Only ${globalStock} dress(es) left in this batch!`;
+  } else if (stock <= 3) {
+    stockEl.textContent = `🔥 Hurry! Only ${stock} dress(es) left in this batch!`;
     stockEl.style.color = "#e53935";
   } else {
-    stockEl.textContent = `Hurry! Only ${globalStock} left in stock`;
+    stockEl.textContent = `Hurry! Only ${stock} left in stock`;
     stockEl.style.color = "";
   }
 }
