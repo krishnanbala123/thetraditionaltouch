@@ -1,289 +1,341 @@
-// assets/js/track-order.js
-// Handles shipment tracking — manual form + auto-track from ?id= URL param
-// Requires config.js loaded first (provides CONFIG.BASE_URL)
+// =============================================
+//  track-order.js  —  The Traditional Touch
+//  Handles: manual tracking form + auto-load
+//  from ?id= (coming from My Orders in profile)
+// =============================================
 
-document.addEventListener("DOMContentLoaded", () => {
+const TOKEN = localStorage.getItem("token");
 
-  // ── DOM refs ─────────────────────────────────────────────────────────────────
-  const form           = document.getElementById("tracking-form");
-  const input          = document.getElementById("tracking-input");
-  const courierSelect  = document.getElementById("courier-select");
-  const errorBox       = document.getElementById("tracking-error");
-  const errorText      = errorBox.querySelector("span");
-  const resultsSection = document.getElementById("tracking-results");
-  const autoLoadBanner = document.getElementById("auto-load-banner");
-  const autoLoadText   = document.getElementById("auto-load-text");
+// ── 17track carrier code map ──────────────────────────────────────────────
+// Update these codes to match what's in your 17track dashboard
+const CARRIER_CODES = {
+  dtdc:      100069,
+  stcourier: 100604,
+};
 
-  // Result slots
-  const elCourier     = document.getElementById("res-courier");
-  const elAWB         = document.getElementById("res-awb");
-  const elStatus      = document.getElementById("res-status");
-  const elLastUpdate  = document.getElementById("res-last-update");
-  const elOrigin      = document.getElementById("res-origin");
-  const elDest        = document.getElementById("res-destination");
-  const elSigned      = document.getElementById("res-signed-by");
-  const elOriginRow   = document.getElementById("res-origin-row");
-  const elDestRow     = document.getElementById("res-dest-row");
-  const elSignedRow   = document.getElementById("res-signed-row");
-  const elEventCount  = document.getElementById("res-event-count");
-  const elTimeline    = document.getElementById("res-timeline");
+// ── Status badge metadata ─────────────────────────────────────────────────
+// ── Complete 17track main status + sub_status label map ───────────────────
+const STATUS_META = {
+  // Main statuses
+  InfoReceived:        { cls: "status-info",      label: "Info Received" },
+  InTransit:           { cls: "status-transit",   label: "In Transit" },
+  OutForDelivery:      { cls: "status-out",       label: "Out for Delivery" },
+  Delivered:           { cls: "status-delivered", label: "Delivered" },
+  AvailableForPickup:  { cls: "status-transit",   label: "Ready for Pickup" },
+  DeliveryFailure:     { cls: "status-attempt",   label: "Delivery Failed" },
+  Exception:           { cls: "status-exception", label: "Exception" },
+  Expired:             { cls: "status-expired",   label: "Expired" },
+  NotFound:            { cls: "status-expired",   label: "Not Found" },
 
-  // Progress steps
-  const stepOrdered   = document.getElementById("step-ordered");
-  const stepPickup    = document.getElementById("step-pickup");
-  const stepTransit   = document.getElementById("step-transit");
-  const stepDelivered = document.getElementById("step-delivered");
+  // InTransit sub-statuses
+  InTransit_PickedUp:                  { cls: "status-transit",   label: "Picked Up" },
+  InTransit_Departure:                 { cls: "status-transit",   label: "Departed Origin" },
+  InTransit_Arrival:                   { cls: "status-transit",   label: "Arrived at Hub" },
+  InTransit_CustomsProcessing:         { cls: "status-transit",   label: "Customs Processing" },
+  InTransit_CustomsReleased:           { cls: "status-transit",   label: "Customs Cleared" },
+  InTransit_CustomsRequiringInformation:{ cls: "status-attempt",  label: "Customs: Info Needed" },
+  InTransit_Other:                     { cls: "status-transit",   label: "On the Way" },
 
-  // ── Status meta ───────────────────────────────────────────────────────────────
-  const STATUS_META = {
-    Pending:        { label: "Pending",           cls: "status-pending",   step: 1 },
-    InfoReceived:   { label: "Info Received",     cls: "status-info",      step: 1 },
-    InTransit:      { label: "In Transit",        cls: "status-transit",   step: 3 },
-    OutForDelivery: { label: "Out for Delivery",  cls: "status-out",       step: 3 },
-    AttemptFail:    { label: "Attempt Failed",    cls: "status-attempt",   step: 3 },
-    Delivered:      { label: "Delivered",         cls: "status-delivered", step: 4 },
-    Exception:      { label: "Exception / Issue", cls: "status-exception", step: 3 },
-    Expired:        { label: "Expired",           cls: "status-expired",   step: 1 },
+  // Delivered sub-statuses
+  Delivered_Other:                     { cls: "status-delivered", label: "Delivered" },
+
+  // AvailableForPickup sub-statuses
+  AvailableForPickup_Other:            { cls: "status-transit",   label: "Ready for Pickup" },
+
+  // OutForDelivery sub-statuses
+  OutForDelivery_Other:                { cls: "status-out",       label: "Out for Delivery" },
+
+  // DeliveryFailure sub-statuses
+  DeliveryFailure_Other:               { cls: "status-attempt",   label: "Delivery Failed" },
+  DeliveryFailure_NoBody:              { cls: "status-attempt",   label: "Recipient Unavailable" },
+  DeliveryFailure_Security:            { cls: "status-attempt",   label: "Security Hold" },
+  DeliveryFailure_Rejected:            { cls: "status-attempt",   label: "Recipient Refused" },
+  DeliveryFailure_InvalidAddress:      { cls: "status-attempt",   label: "Invalid Address" },
+
+  // Exception sub-statuses
+  Exception_Other:                     { cls: "status-exception", label: "Exception" },
+  Exception_Returning:                 { cls: "status-exception", label: "Returning to Sender" },
+  Exception_Returned:                  { cls: "status-exception", label: "Returned to Sender" },
+  Exception_NoBody:                    { cls: "status-exception", label: "Recipient Not Found" },
+  Exception_Security:                  { cls: "status-exception", label: "Security Issue" },
+  Exception_Damaged:                   { cls: "status-exception", label: "Parcel Damaged" },
+  Exception_Lost:                      { cls: "status-exception", label: "Parcel Lost" },
+
+  // Expired sub-statuses
+  Expired_Other:                       { cls: "status-expired",   label: "Expired" },
+
+  // NotFound sub-statuses
+  NotFound_Other:                      { cls: "status-expired",   label: "Not Found" },
+  NotFound_InvalidCode:                { cls: "status-expired",   label: "Invalid Number" },
+};
+
+// ── Updated statusBadge: checks stage AND sub_status, never shows Unknown ──
+function statusBadge(stage, subStatus) {
+  // Try sub_status first (more specific), then stage, then generic fallback
+  const key = (subStatus && STATUS_META[subStatus]) ? subStatus
+             : (stage    && STATUS_META[stage])    ? stage
+             : null;
+
+  if (!key) return "";  // blank — never "Unknown"
+
+  const m = STATUS_META[key];
+  return `<span class="track-status-badge ${m.cls}">${m.label}</span>`;
+}
+
+// ── Progress bar step activator ───────────────────────────────────────────
+function setProgressSteps(status) {
+  const STEP_IDS = ["step-ordered", "step-pickup", "step-transit", "step-delivered"];
+
+  // How many steps should be "active" for each 17track status
+  const REACHED = {
+    InfoReceived:   1,
+    InTransit:      2,
+    OutForDelivery: 3,
+    Delivered:      4,
+    AttemptFail:    3,
+    Exception:      2,
+    Expired:        2,
   };
 
-  function getStatusMeta(tag) {
-    return STATUS_META[tag] || { label: tag || "Unknown", cls: "status-pending", step: 1 };
+  const reached = REACHED[status] ?? 1;
+
+  STEP_IDS.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (i < reached) el.classList.add("active");
+    else             el.classList.remove("active");
+  });
+}
+
+// ── Error banner helpers ──────────────────────────────────────────────────
+function showTrackError(msg) {
+  const el = document.getElementById("tracking-error");
+  el.style.display = "flex";
+  el.querySelector("span").textContent = msg;
+  document.getElementById("tracking-results").style.display = "none";
+}
+
+function hideTrackError() {
+  document.getElementById("tracking-error").style.display = "none";
+}
+
+// ── Render full tracking results into the page ────────────────────────────
+function renderTrackingResults(data, trackingNumber, courierLabel) {
+  hideTrackError();
+
+  const lastUpdate = data.lastUpdate
+    ? new Date(data.lastUpdate).toLocaleString("en-IN", {
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
+      })
+    : "—";
+
+  // Info grid
+  document.getElementById("res-courier").textContent     = courierLabel || "—";
+  document.getElementById("res-awb").textContent         = trackingNumber || "—";
+  document.getElementById("res-last-update").textContent = lastUpdate;
+  document.getElementById("res-event-count").textContent =
+    (data.events?.length ?? 0) + " event" + (data.events?.length !== 1 ? "s" : "");
+
+  // Status badge — swap outerHTML so the badge classes apply correctly
+  const statusEl = document.getElementById("res-status");
+  if (statusEl) statusEl.outerHTML =
+    `<div class="track-info-value" id="res-status">${statusBadge(data.status)}</div>`;
+
+  // Origin = earliest event location; destination = latest known location
+  const events = data.events || [];
+  document.getElementById("res-origin").textContent =
+    events.length ? (events[events.length - 1].location || "—") : "—";
+  document.getElementById("res-destination").textContent = data.location || "—";
+
+  // Signed-by row — only show for Delivered
+  const signedRow = document.getElementById("res-signed-row");
+  const signedByEl = document.getElementById("res-signed-by");
+  if (data.status === "Delivered" && events[0]?.description) {
+    signedByEl.textContent   = events[0].description;
+    signedRow.style.display  = "";
+  } else {
+    signedRow.style.display  = "none";
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────────
-  function formatDate(iso) {
-    if (!iso) return "—";
-    return new Date(iso).toLocaleString("en-IN", {
-      day: "2-digit", month: "short", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
-    });
-  }
+  // Progress steps
+  setProgressSteps(data.status);
 
-  function showError(msg) {
-    errorText.textContent        = msg;
-    errorBox.style.display       = "flex";
-    resultsSection.style.display = "none";
-  }
+  // Timeline table
+  const tbody = document.getElementById("res-timeline");
+  if (!events.length) {
+    tbody.innerHTML =
+      `<tr><td colspan="5" style="text-align:center;padding:28px;color:#aaa;">
+        No tracking events available yet.
+       </td></tr>`;
+  } else {
+    tbody.innerHTML = events.map((ev, i) => {
+      const dt   = ev.time_iso ? new Date(ev.time_iso) : null;
+      const date = dt
+        ? dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+        : "—";
+      const time = dt
+        ? dt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
+        : "—";
 
-  function hideError() { errorBox.style.display = "none"; }
+      // Pass both stage and sub_status — badge picks the most specific known one
+      const badge = statusBadge(ev.stage, ev.sub_status);
 
-  function setButtonLoading(isLoading) {
-    const btn     = form.querySelector("button[type=submit]");
-    btn.disabled  = isLoading;
-    btn.innerHTML = isLoading
-      ? `<i class="fa fa-spinner fa-spin"></i> Tracking…`
-      : `<i class="fa fa-search"></i> Track Order`;
-  }
-
-  function updateProgressSteps(step) {
-    [stepOrdered, stepPickup, stepTransit, stepDelivered].forEach((el, i) => {
-      if (el) el.classList.toggle("active", i < step);
-    });
-  }
-
-  function renderTimeline(checkpoints) {
-    if (!checkpoints || checkpoints.length === 0) {
-      elTimeline.innerHTML = `
-        <tr>
-          <td colspan="5" style="text-align:center;padding:24px;color:#999;">
-            No checkpoint data available yet.
-          </td>
-        </tr>`;
-      return;
-    }
-    elTimeline.innerHTML = checkpoints.map((cp, i) => {
-      const dt   = cp.time ? new Date(cp.time) : null;
-      const date = dt ? dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
-      const time = dt ? dt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "—";
-      const meta = getStatusMeta(cp.tag);
       return `
-        <tr${i === 0 ? ' class="latest-checkpoint"' : ""}>
+        <tr class="${i === 0 ? "latest-checkpoint" : ""}">
           <td>${date}</td>
           <td>${time}</td>
-          <td>${cp.location || "—"}</td>
-          <td><span class="track-status-badge ${meta.cls}">${meta.label}</span></td>
-          <td>${cp.message || "—"}</td>
+          <td>${ev.location || "—"}</td>
+          <td>${badge || '<span style="font-size:11px;color:#ccc;">—</span>'}</td>
+          <td>${ev.description || "—"}</td>
         </tr>`;
     }).join("");
   }
 
-  // ── Fetch from AfterShip via your backend ─────────────────────────────────────
-  async function trackShipment(trackingNumber, courier) {
-    const res = await fetch(`${CONFIG.BASE_URL}/track`, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ trackingNumber, courier }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Server error (${res.status})`);
-    }
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || "Tracking failed.");
-    return data.data;
-  }
+  // Show the results section and scroll to it smoothly
+  const resultsEl = document.getElementById("tracking-results");
+  resultsEl.style.display = "block";
+  resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  // ── Fetch order from your backend by order ID ─────────────────────────────────
-  // Your order object should have `trackingNumber` and `courier` fields.
-  // If your schema uses different field names, adjust below.
-  async function fetchOrderById(orderId) {
-    const token = localStorage.getItem("token");
-    const res   = await fetch(`${CONFIG.BASE_URL}/orders/${orderId}`, {
+  // Re-init feather icons in case any were injected dynamically
+  if (typeof feather !== "undefined") feather.replace();
+}
+
+// ── Core API call → POST /tracking/info ──────────────────────────────────
+async function fetchTracking({ trackingNumber, carrierCode, orderId, courierLabel }) {
+  try {
+    const res = await fetch(`${CONFIG.BASE_URL}/tracking/info`, {
+      method: "POST",
       headers: {
-        "Content-Type":  "application/json",
-        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
       },
+      body: JSON.stringify({
+        trackingNumber,
+        carrierCode: Number(carrierCode) || 0,
+        ...(orderId ? { orderId } : {}),
+      }),
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `Could not fetch order (${res.status})`);
-    }
-    return res.json();
-  }
 
-  // ── Render live AfterShip result ──────────────────────────────────────────────
-  function renderResult(result) {
-    const meta = getStatusMeta(result.status);
+    const data = await res.json();
 
-    elCourier.textContent    = result.courierName || result.courier;
-    elAWB.textContent        = result.trackingNumber;
-    elLastUpdate.textContent = formatDate(result.lastUpdate);
-    elEventCount.textContent = result.checkpoints.length;
-    elStatus.textContent     = meta.label;
-    elStatus.className       = `track-status-badge ${meta.cls}`;
-
-    if (result.origin)      { elOrigin.textContent = result.origin;      elOriginRow.style.display = ""; }
-    else                      elOriginRow.style.display = "none";
-    if (result.destination) { elDest.textContent   = result.destination; elDestRow.style.display   = ""; }
-    else                      elDestRow.style.display = "none";
-    if (result.signedBy)    { elSigned.textContent  = result.signedBy;   elSignedRow.style.display  = ""; }
-    else                      elSignedRow.style.display = "none";
-
-    updateProgressSteps(meta.step);
-    renderTimeline(result.checkpoints);
-    resultsSection.style.display = "block";
-    resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  // ── Render order-only status (no AWB yet) ─────────────────────────────────────
-  // Uses your own DB order status without hitting AfterShip.
-  function renderOrderOnlyStatus(order) {
-    const ORDER_STATUS_META = {
-      Pending:   { label: "Order Placed",  cls: "status-pending",   step: 1 },
-      Confirmed: { label: "Confirmed",     cls: "status-info",      step: 2 },
-      Shipped:   { label: "Shipped",       cls: "status-transit",   step: 3 },
-      Delivered: { label: "Delivered",     cls: "status-delivered", step: 4 },
-      Cancelled: { label: "Cancelled",     cls: "status-exception", step: 1 },
-    };
-    const meta    = ORDER_STATUS_META[order.status] || { label: order.status || "Processing", cls: "status-pending", step: 1 };
-    const shortId = "#TTT-" + (order._id || "").toString().slice(-6).toUpperCase();
-
-    elCourier.textContent    = order.courierName || order.courier || "Awaiting Assignment";
-    elAWB.textContent        = shortId;
-    elLastUpdate.textContent = formatDate(order.updatedAt || order.createdAt);
-    elEventCount.textContent = "—";
-    elStatus.textContent     = meta.label;
-    elStatus.className       = `track-status-badge ${meta.cls}`;
-
-    elOriginRow.style.display = "none";
-    elDestRow.style.display   = "none";
-    elSignedRow.style.display = "none";
-
-    updateProgressSteps(meta.step);
-
-    // Build a timeline from whatever order history your API returns,
-    // falling back to a single row showing current status.
-    const history = Array.isArray(order.statusHistory) ? order.statusHistory : [];
-    if (history.length > 0) {
-      elEventCount.textContent = history.length;
-      elTimeline.innerHTML = history.map((h, i) => {
-        const hMeta = ORDER_STATUS_META[h.status] || meta;
-        return `
-          <tr${i === 0 ? ' class="latest-checkpoint"' : ""}>
-            <td>${formatDate(h.updatedAt || h.date)}</td>
-            <td>—</td>
-            <td>${h.location || "Maraimalai Nagar, Chengalpattu"}</td>
-            <td><span class="track-status-badge ${hMeta.cls}">${hMeta.label}</span></td>
-            <td>${h.note || `Order ${hMeta.label.toLowerCase()}.`}</td>
-          </tr>`;
-      }).join("");
-    } else {
-      elTimeline.innerHTML = `
-        <tr class="latest-checkpoint">
-          <td>${formatDate(order.createdAt)}</td>
-          <td>—</td>
-          <td>Maraimalai Nagar, Chengalpattu</td>
-          <td><span class="track-status-badge ${meta.cls}">${meta.label}</span></td>
-          <td>Your order is ${meta.label.toLowerCase()}. Tracking details will appear once shipped.</td>
-        </tr>`;
+    if (!res.ok || !data.success) {
+      showTrackError(
+        data.error ||
+        "No tracking information found for this number. " +
+        "Please check the number and try again."
+      );
+      return;
     }
 
-    resultsSection.style.display = "block";
-    resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    renderTrackingResults(data, trackingNumber, courierLabel);
+
+  } catch (err) {
+    console.error("Track fetch error:", err);
+    showTrackError(
+      "Network error. Please check your connection and try again."
+    );
+  }
+}
+
+// ── Manual form submit ────────────────────────────────────────────────────
+document.getElementById("tracking-form").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  hideTrackError();
+
+  const trackingNumber = document.getElementById("tracking-input").value.trim().toUpperCase();
+  const courierSelect  = document.getElementById("courier-select");
+  const courierKey     = courierSelect.value;
+  const courierLabel   = courierSelect.options[courierSelect.selectedIndex].text;
+  const carrierCode    = CARRIER_CODES[courierKey] ?? 0;
+
+  if (!trackingNumber) {
+    showTrackError("Please enter a tracking / AWB number.");
+    return;
   }
 
-  // ── AUTO-TRACK from ?id= ──────────────────────────────────────────────────────
-  async function autoTrackFromOrderId(orderId) {
-    autoLoadBanner.style.display = "flex";
-    autoLoadText.textContent     = "Loading your order details…";
-    hideError();
+  const btn  = this.querySelector("button[type=submit]");
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> Tracking…`;
 
-    try {
-      const order = await fetchOrderById(orderId);
+  await fetchTracking({ trackingNumber, carrierCode, courierLabel });
 
-      // Case A: order has a courier AWB → hit AfterShip for live tracking
-      if (order.trackingNumber && order.courier) {
-        autoLoadText.textContent = `Fetching live tracking for ${order.trackingNumber}…`;
-
-        // Pre-fill the manual form so user can re-search if needed
-        input.value         = order.trackingNumber;
-        courierSelect.value = order.courier;
-
-        try {
-          const result = await trackShipment(order.trackingNumber, order.courier);
-          renderResult(result);
-          autoLoadText.textContent = "Live tracking loaded ✓";
-          setTimeout(() => { autoLoadBanner.style.display = "none"; }, 2000);
-        } catch (trackErr) {
-          // AfterShip failed — fall back to order status
-          autoLoadBanner.style.display = "none";
-          showError(`Live courier tracking unavailable: ${trackErr.message}. Showing your order status instead.`);
-          renderOrderOnlyStatus(order);
-        }
-
-      // Case B: no AWB yet — show order status from your DB
-      } else {
-        autoLoadBanner.style.display = "none";
-        renderOrderOnlyStatus(order);
-      }
-
-    } catch (err) {
-      autoLoadBanner.style.display = "none";
-      showError(`Could not load order: ${err.message}`);
-    }
-  }
-
-  // ── Manual form submit ─────────────────────────────────────────────────────────
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const trackingNumber = input.value.trim();
-    const courier        = courierSelect.value;
-    if (!trackingNumber) return;
-
-    hideError();
-    setButtonLoading(true);
-    try {
-      const result = await trackShipment(trackingNumber, courier);
-      renderResult(result);
-    } catch (err) {
-      showError(err.message || "Something went wrong. Please try again.");
-    } finally {
-      setButtonLoading(false);
-    }
-  });
-
-  // ── Boot ──────────────────────────────────────────────────────────────────────
-  const orderId = new URLSearchParams(window.location.search).get("id");
-  if (orderId) autoTrackFromOrderId(orderId);
-
+  btn.disabled  = false;
+  btn.innerHTML = orig;
 });
+
+// ── Auto-load from ?id= (arriving from My Orders via profile page) ─────────
+
+(async function autoLoadFromOrderId() {
+  const params  = new URLSearchParams(window.location.search);
+  const orderId = params.get("id");
+
+  if (!orderId || !TOKEN) return;
+
+  const banner   = document.getElementById("auto-load-banner");
+  const bannerTx = document.getElementById("auto-load-text");
+  banner.style.display = "flex";
+  bannerTx.textContent = "Looking up your order…";
+
+  try {
+    const orderRes = await fetch(`${CONFIG.BASE_URL}/orders/${orderId}`, {
+      headers: { Authorization: `Bearer ${TOKEN}` },
+    });
+
+    if (!orderRes.ok) {
+      throw new Error(
+        orderRes.status === 404
+          ? "Order not found. It may belong to a different account."
+          : "Failed to load order details."
+      );
+    }
+
+    // FIX: API returns { order: {...} } — unwrap it
+    const json  = await orderRes.json();
+    const order = json.order ?? json;
+
+    if (!order?.trackingNumber) {
+      banner.style.display = "none";
+      showTrackError(
+        "No tracking number has been assigned to this order yet. " +
+        "Please check back after your order is dispatched."
+      );
+      return;
+    }
+
+    const trackingNumber = order.trackingNumber;
+    const carrierCode    = order.courierCode;   // 100604 for stcourier
+
+    // Pre-fill the form
+    document.getElementById("tracking-input").value = trackingNumber;
+
+    const CODE_TO_KEY = Object.fromEntries(
+      Object.entries(CARRIER_CODES).map(([k, v]) => [v, k])
+    );
+    const selectKey = CODE_TO_KEY[carrierCode] || "dtdc";
+    document.getElementById("courier-select").value = selectKey;
+
+    const courierSelect = document.getElementById("courier-select");
+    // Use the select label, fall back to courierName from DB (e.g. "ST Courier")
+    const courierLabel  = courierSelect.options[courierSelect.selectedIndex]?.text
+                          || order.courierName
+                          || "Unknown Courier";
+
+    const shortId = orderId.slice(-6).toUpperCase();
+    bannerTx.textContent = `Fetching live tracking for order #TTT-${shortId}…`;
+
+    await fetchTracking({
+      trackingNumber,
+      carrierCode: Number(carrierCode) || 0,
+      orderId,
+      courierLabel,
+    });
+
+  } catch (err) {
+    console.error("Auto-load error:", err);
+    showTrackError(err.message || "Could not load order tracking details.");
+  } finally {
+    banner.style.display = "none";
+  }
+})();
