@@ -322,13 +322,22 @@ const OrderManager = (() => {
     }
 
     const el       = id => document.getElementById(id);
-    const fname    = el("fname")?.value.trim()   || "";
-    const lname    = el("lname")?.value.trim()   || "";
-    const phone    = el("phone")?.value.trim()   || "";
-    const address  = el("address")?.value.trim() || "";
+    const fname    = el("fname")?.value.trim()    || "";
+    const lname    = el("lname")?.value.trim()    || "";
+    const phone    = el("phone")?.value.trim()    || "";
+    const rawAddr  = el("address")?.value.trim()  || "";
+    const district = el("district")?.value.trim() || "";
+    const state    = el("state")?.value.trim()    || "";
+    const pincode  = el("pincode")?.value.trim()  || "";
+    const country  = el("country")?.value.trim()  || "";
     const notes    = el("order-notes")?.value.trim() || "";
     const fullName = `${fname} ${lname}`.trim();
     const isInsideTamilNadu = getIsInsideTamilNadu();
+
+    // Build full address string: "Door no., Street, Area, City, District, State - Pincode, Country"
+    const address = [rawAddr, district, state, pincode, country]
+      .filter(Boolean)
+      .join(", ");
 
     const payBtn    = el("pay-btn");
     const payBtnTxt = el("pay-btn-text");
