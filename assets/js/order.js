@@ -346,7 +346,7 @@ const OrderManager = (() => {
       '<span class="spin"><i class="fa fa-spinner"></i></span> Processing…';
 
     try {
-      await updateUserProfile(fullName, address, phone);
+      await updateUserProfile(fullName, rawAddr, phone);
 
       // Ensure grand total is calculated
       const items = await fetchCart();
