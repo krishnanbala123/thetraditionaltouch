@@ -411,7 +411,7 @@ const OrderManager = (() => {
 
       // ── Step 3: Open Razorpay modal ───────────────────────────────────────
       const options = {
-        key:         "rzp_test_Skvus1wnQRpKJr",
+        key:         "rzp_live_T1ZjErMMCEB7AM",
         amount:      rzpOrder.amount,
         currency:    "INR",
         name:        "The Traditional Touch",
