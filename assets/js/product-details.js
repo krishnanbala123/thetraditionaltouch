@@ -1,6 +1,6 @@
 // assets/js/product-details.js
-let selectedSize   = null;
-let selectedAddon  = null;
+let selectedSize = null;
+let selectedAddon = null;
 let selectedSleeve = null;
 let selectedLength = "48";
 let currentProduct = null;
@@ -20,33 +20,44 @@ function effectiveDiscount(product) {
 
 // ── Size extra ──────────────────────────────────────────────────────────────
 const SIZE_EXTRA_PRICE = {
-  XS: 0, S: 0, M: 0, L: 0, XL: 0,
-  "2XL": 50, "3XL": 50, "4XL": 100,
+  XS: 0,
+  S: 0,
+  M: 0,
+  L: 0,
+  XL: 0,
+  "2XL": 50,
+  "3XL": 50,
+  "4XL": 100,
 };
 
 // ── Feeding add-ons ─────────────────────────────────────────────────────────
 const FEEDING_ADDONS = [
-  { id: "non_feeding",    label: "Non Feeding",    sublabel: "",                extra: 0  },
-  { id: "center_feeding", label: "Center Feeding", sublabel: "(1 Invisible Zip)", extra: 50 },
+  { id: "non_feeding", label: "Non Feeding", sublabel: "", extra: 0 },
+  {
+    id: "center_feeding",
+    label: "Center Feeding",
+    sublabel: "(1 Invisible Zip)",
+    extra: 50,
+  },
 ];
 
 // ── Sleeve options ───────────────────────────────────────────────────────────
 const SLEEVE_OPTIONS = [
-  { id: "full_gathering",         label: "Full Gathering Sleeves", extra: 0   },
-  { id: "elbow",                  label: "Elbow Sleeves",          extra: -50 },
-  { id: "elbow_puff",             label: "Elbow Puff Sleeve",      extra: -50 },
-  { id: "three_quarter_scallop",  label: "3/4 Scallop Sleeve",     extra: -20 },
-  { id: "three_quarter",          label: "3/4 Sleeve",             extra: -50 },
+  { id: "full_gathering", label: "Full Gathering Sleeves", extra: 0 },
+  { id: "elbow", label: "Elbow Sleeves", extra: -50 },
+  { id: "elbow_puff", label: "Elbow Puff Sleeve", extra: -50 },
+  { id: "three_quarter_scallop", label: "3/4 Scallop Sleeve", extra: -20 },
+  { id: "three_quarter", label: "3/4 Sleeve", extra: -50 },
 ];
 
 // ── Length options ───────────────────────────────────────────────────────────
 const LENGTH_OPTIONS = [
-  { id: "44", label: '44"',           extra: 0,  isDefault: false },
-  { id: "46", label: '46"',           extra: 0,  isDefault: false },
-  { id: "48", label: '48" (Standard)',extra: 0,  isDefault: true  },
-  { id: "50", label: '50"',           extra: 0,  isDefault: false },
-  { id: "52", label: '52"',           extra: 30, isDefault: false },
-  { id: "54", label: '54"',           extra: 50, isDefault: false },
+  { id: "44", label: '44"', extra: 0, isDefault: false },
+  { id: "46", label: '46"', extra: 0, isDefault: false },
+  { id: "48", label: '48" (Standard)', extra: 0, isDefault: true },
+  { id: "50", label: '50"', extra: 0, isDefault: false },
+  { id: "52", label: '52"', extra: 30, isDefault: false },
+  { id: "54", label: '54"', extra: 50, isDefault: false },
 ];
 
 const DUPATTA_EXTRA = 200;
@@ -66,10 +77,12 @@ document.addEventListener("DOMContentLoaded", function () {
 // ── Fetch active event deal ──────────────────────────────────────────────────
 async function fetchActiveDeal() {
   try {
-    const res  = await fetch(`${CONFIG.BASE_URL}/deal`);
+    const res = await fetch(`${CONFIG.BASE_URL}/deal`);
     const data = await res.json();
     if (data.isEventDeal && data.deals?.length) {
-      activeEventDiscount = Math.max(...data.deals.map((d) => d.discountPercent));
+      activeEventDiscount = Math.max(
+        ...data.deals.map((d) => d.discountPercent),
+      );
     } else {
       activeEventDiscount = 0;
     }
@@ -92,7 +105,7 @@ async function fetchProductById(productId) {
     const data = await response.json();
     if (response.ok) {
       const product = data.products.find((p) => p._id === productId);
-      console.log("product check in stock", product)
+      console.log("product check in stock", product);
       if (product) {
         currentProduct = product;
         currentProduct.stock = product.stock ?? 10;
@@ -124,23 +137,25 @@ function computeFinalPrice(product) {
     ? Math.round(product.price - (product.price * disc) / 100)
     : product.price;
 
-  const sizeExtra   = selectedSize   ? SIZE_EXTRA_PRICE[selectedSize] || 0 : 0;
-  const addonObj    = FEEDING_ADDONS.find((a) => a.id === selectedAddon);
-  const addonExtra  = addonObj  ? addonObj.extra  : 0;
-  const lengthObj   = LENGTH_OPTIONS.find((l) => l.id === selectedLength);
+  const sizeExtra = selectedSize ? SIZE_EXTRA_PRICE[selectedSize] || 0 : 0;
+  const addonObj = FEEDING_ADDONS.find((a) => a.id === selectedAddon);
+  const addonExtra = addonObj ? addonObj.extra : 0;
+  const lengthObj = LENGTH_OPTIONS.find((l) => l.id === selectedLength);
   const lengthExtra = lengthObj ? lengthObj.extra : 0;
-  const sleeveObj   = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve);
+  const sleeveObj = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve);
   const sleeveExtra = sleeveObj ? sleeveObj.extra : 0;
   const dupattaExtra = selectedDupatta ? DUPATTA_EXTRA : 0;
 
-  return base + sizeExtra + addonExtra + lengthExtra + sleeveExtra + dupattaExtra;
+  return (
+    base + sizeExtra + addonExtra + lengthExtra + sleeveExtra + dupattaExtra
+  );
 }
 
 function updatePriceDisplay() {
   if (!currentProduct) return;
 
   const finalPrice = computeFinalPrice(currentProduct);
-  const priceEl    = document.querySelector(".new-price");
+  const priceEl = document.querySelector(".new-price");
   if (priceEl) priceEl.textContent = `₹${finalPrice}`;
 
   // ── Use effectiveDiscount for the base in the breakdown too ──
@@ -149,12 +164,12 @@ function updatePriceDisplay() {
     ? Math.round(currentProduct.price - (currentProduct.price * disc) / 100)
     : currentProduct.price;
 
-  const sizeExtra   = selectedSize   ? SIZE_EXTRA_PRICE[selectedSize] || 0 : 0;
-  const addonObj    = FEEDING_ADDONS.find((a) => a.id === selectedAddon);
-  const addonExtra  = addonObj  ? addonObj.extra  : 0;
-  const lengthObj   = LENGTH_OPTIONS.find((l) => l.id === selectedLength);
+  const sizeExtra = selectedSize ? SIZE_EXTRA_PRICE[selectedSize] || 0 : 0;
+  const addonObj = FEEDING_ADDONS.find((a) => a.id === selectedAddon);
+  const addonExtra = addonObj ? addonObj.extra : 0;
+  const lengthObj = LENGTH_OPTIONS.find((l) => l.id === selectedLength);
   const lengthExtra = lengthObj ? lengthObj.extra : 0;
-  const sleeveObj   = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve);
+  const sleeveObj = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve);
   const sleeveExtra = sleeveObj ? sleeveObj.extra : 0;
   const dupattaExtra = selectedDupatta ? DUPATTA_EXTRA : 0;
 
@@ -163,31 +178,41 @@ function updatePriceDisplay() {
 
   let lines = [`<span class="pb-base">Base: ₹${base}</span>`];
   if (sizeExtra > 0)
-    lines.push(`<span class="pb-extra">+ Size (${selectedSize}): ₹${sizeExtra}</span>`);
+    lines.push(
+      `<span class="pb-extra">+ Size (${selectedSize}): ₹${sizeExtra}</span>`,
+    );
   if (addonExtra > 0)
-    lines.push(`<span class="pb-extra">+ Center Feeding: ₹${addonExtra}</span>`);
+    lines.push(
+      `<span class="pb-extra">+ Center Feeding: ₹${addonExtra}</span>`,
+    );
   if (lengthExtra > 0)
-    lines.push(`<span class="pb-extra">+ Length (${selectedLength}"): ₹${lengthExtra}</span>`);
+    lines.push(
+      `<span class="pb-extra">+ Length (${selectedLength}"): ₹${lengthExtra}</span>`,
+    );
   if (selectedDupatta)
     lines.push(`<span class="pb-extra">+ Dupatta: ₹${DUPATTA_EXTRA}</span>`);
   if (sleeveExtra < 0)
-    lines.push(`<span class="pb-extra">- Sleeve (${sleeveObj.label}): ₹${Math.abs(sleeveExtra)}</span>`);
+    lines.push(
+      `<span class="pb-extra">- Sleeve (${sleeveObj.label}): ₹${Math.abs(sleeveExtra)}</span>`,
+    );
 
   breakdownEl.innerHTML = lines.join("");
   breakdownEl.style.display =
-    sizeExtra + addonExtra + lengthExtra + sleeveExtra + dupattaExtra !== 0 ? "flex" : "none";
+    sizeExtra + addonExtra + lengthExtra + sleeveExtra + dupattaExtra !== 0
+      ? "flex"
+      : "none";
 }
 
 // ── Render product ────────────────────────────────────────────────────────────
 function renderProductDetail(product) {
   // ── Use effectiveDiscount for the displayed price ──
-  const disc           = effectiveDiscount(product);
+  const disc = effectiveDiscount(product);
   const discountedPrice = disc
     ? Math.round(product.price - (product.price * disc) / 100)
     : product.price;
 
   // images
-  const mainWrapper  = document.querySelector(".forslider .swiper-wrapper");
+  const mainWrapper = document.querySelector(".forslider .swiper-wrapper");
   const thumbWrapper = document.querySelector(".toslider .swiper-wrapper");
   if (mainWrapper && thumbWrapper) {
     mainWrapper.innerHTML = thumbWrapper.innerHTML = "";
@@ -198,7 +223,7 @@ function renderProductDetail(product) {
             <img class="img-fluid" src="${imgUrl}" alt="${product.name}">
           </div>
         </div>`;
-      mainWrapper.innerHTML  += slide();
+      mainWrapper.innerHTML += slide();
       thumbWrapper.innerHTML += slide();
     });
   }
@@ -206,12 +231,14 @@ function renderProductDetail(product) {
   // text
   document.querySelector(".cdxpro-detail h2").textContent = product.name;
   document.querySelector(".new-price").textContent = `₹${discountedPrice}`;
-  document.querySelector(".old-price del").textContent = disc ? `₹${product.price}` : "";
+  document.querySelector(".old-price del").textContent = disc
+    ? `₹${product.price}`
+    : "";
 
   const badge = document.querySelector(".ofr-price .badge");
   if (badge) {
-    badge.textContent    = disc ? `${disc}% off` : "";
-    badge.style.display  = disc ? "inline-block" : "none";
+    badge.textContent = disc ? `${disc}% off` : "";
+    badge.style.display = disc ? "inline-block" : "none";
   }
 
   const descEl = document.getElementById("product-description");
@@ -227,10 +254,13 @@ function renderProductDetail(product) {
   selectedLength = "48";
   highlightLength("48");
 
-  const wishlistBtn = document.querySelector(".cdxpro-detail a[href='wishlist.html']");
+  const wishlistBtn = document.querySelector(
+    ".cdxpro-detail a[href='wishlist.html']",
+  );
   if (wishlistBtn) {
-    wishlistBtn.href    = "javascript:void(0)";
-    wishlistBtn.onclick = () => WishlistManager.toggleWishlist(product._id, wishlistBtn);
+    wishlistBtn.href = "javascript:void(0)";
+    wishlistBtn.onclick = () =>
+      WishlistManager.toggleWishlist(product._id, wishlistBtn);
   }
 
   document.title = `${product.name} - The Traditional Touch`;
@@ -240,35 +270,43 @@ function renderProductDetail(product) {
 
 // ── Share buttons ─────────────────────────────────────────────────────────
 function setupShareButtons(product) {
-  const pageUrl   = encodeURIComponent(window.location.href);
-  const pageTitle = encodeURIComponent(product.name || "Check out this product");
-  const pageDesc  = encodeURIComponent(
+  const pageUrl = encodeURIComponent(window.location.href);
+  const pageTitle = encodeURIComponent(
+    product.name || "Check out this product",
+  );
+  const pageDesc = encodeURIComponent(
     product.description
       ? product.description.substring(0, 100) + "..."
-      : "Beautiful traditional wear from The Traditional Touch"
+      : "Beautiful traditional wear from The Traditional Touch",
   );
 
-  const fbBtn    = document.querySelector(".share-iconlist .bg-fb a");
-  const twtBtn   = document.querySelector(".share-iconlist .bg-twt a");
+  const fbBtn = document.querySelector(".share-iconlist .bg-fb a");
+  const twtBtn = document.querySelector(".share-iconlist .bg-twt a");
   const instaBtn = document.querySelector(".share-iconlist .bg-insta a");
-  const whpBtn   = document.querySelector(".share-iconlist .bg-whp a");
+  const whpBtn = document.querySelector(".share-iconlist .bg-whp a");
 
   if (fbBtn) {
-    fbBtn.href   = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
+    fbBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
     fbBtn.target = "_blank";
-    fbBtn.rel    = "noopener noreferrer";
+    fbBtn.rel = "noopener noreferrer";
   }
   if (twtBtn) {
-    twtBtn.href   = `https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`;
+    twtBtn.href = `https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`;
     twtBtn.target = "_blank";
-    twtBtn.rel    = "noopener noreferrer";
+    twtBtn.rel = "noopener noreferrer";
   }
   if (instaBtn) {
-    instaBtn.href    = "javascript:void(0);";
+    instaBtn.href = "javascript:void(0);";
     instaBtn.onclick = (e) => {
       e.preventDefault();
       if (navigator.share) {
-        navigator.share({ title: product.name, text: pageDesc, url: window.location.href }).catch(() => {});
+        navigator
+          .share({
+            title: product.name,
+            text: pageDesc,
+            url: window.location.href,
+          })
+          .catch(() => {});
       } else {
         navigator.clipboard.writeText(window.location.href).then(() => {
           showDetailMessage("Link copied! Paste it on Instagram.", "success");
@@ -277,9 +315,9 @@ function setupShareButtons(product) {
     };
   }
   if (whpBtn) {
-    whpBtn.href   = `https://api.whatsapp.com/send?text=${pageTitle}%20${pageUrl}`;
+    whpBtn.href = `https://api.whatsapp.com/send?text=${pageTitle}%20${pageUrl}`;
     whpBtn.target = "_blank";
-    whpBtn.rel    = "noopener noreferrer";
+    whpBtn.rel = "noopener noreferrer";
   }
 }
 
@@ -306,9 +344,10 @@ function renderSizes(product) {
   sizeList.innerHTML = product.sizes
     .map((s) => {
       const extraPrice = SIZE_EXTRA_PRICE[s.size] || 0;
-      const extraLabel = extraPrice > 0
-        ? `<span class="size-extra-badge">+₹${extraPrice}</span>`
-        : "";
+      const extraLabel =
+        extraPrice > 0
+          ? `<span class="size-extra-badge">+₹${extraPrice}</span>`
+          : "";
       return `
       <li class="size-item" data-size="${s.size}">
         <span class="size-label">${s.size}</span>
@@ -317,7 +356,9 @@ function renderSizes(product) {
     })
     .join("");
   sizeList.querySelectorAll(".size-item").forEach((li) => {
-    li.addEventListener("click", function () { selectSize(this, this.dataset.size); });
+    li.addEventListener("click", function () {
+      selectSize(this, this.dataset.size);
+    });
   });
 }
 
@@ -330,10 +371,12 @@ function renderFeedingAddons() {
     <li class="addon-item" id="addon-${addon.id}" onclick="selectAddon('${addon.id}')">
       <span class="addon-check"><i class="fa fa-check"></i></span>
       <span class="addon-name">${addon.label}${addon.sublabel ? ` <small>${addon.sublabel}</small>` : ""}</span>
-      ${addon.extra > 0
-        ? `<span class="addon-price-badge">+₹${addon.extra}</span>`
-        : `<span class="addon-price-badge free">Free</span>`}
-    </li>`
+      ${
+        addon.extra > 0
+          ? `<span class="addon-price-badge">+₹${addon.extra}</span>`
+          : `<span class="addon-price-badge free">Free</span>`
+      }
+    </li>`,
   ).join("");
 }
 
@@ -341,7 +384,9 @@ function renderFeedingAddons() {
 function renderSleeveOptions() {
   let sleeveGroup = document.getElementById("sleeve-group");
   if (!sleeveGroup) {
-    const addonGroup = document.getElementById("addon-section")?.closest(".detail-group");
+    const addonGroup = document
+      .getElementById("addon-section")
+      ?.closest(".detail-group");
     if (!addonGroup) return;
     sleeveGroup = document.createElement("div");
     sleeveGroup.className = "detail-group";
@@ -351,15 +396,19 @@ function renderSleeveOptions() {
   sleeveGroup.innerHTML = `
     <h6>Sleeve Style</h6>
     <ul id="sleeve-section" style="display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:10px 0 18px;">
-      ${SLEEVE_OPTIONS.map((s) => `
+      ${SLEEVE_OPTIONS.map(
+        (s) => `
         <li class="addon-item" id="sleeve-${s.id}" onclick="selectSleeve('${s.id}')"
             style="flex:unset;min-width:unset;padding:10px 16px;">
           <span class="addon-check"><i class="fa fa-check"></i></span>
           <span class="addon-name" style="white-space:nowrap;">${s.label}</span>
-          ${s.extra < 0
-            ? `<span class="addon-price-badge">-₹${Math.abs(s.extra)}</span>`
-            : `<span class="addon-price-badge free">Free</span>`}
-        </li>`).join("")}
+          ${
+            s.extra < 0
+              ? `<span class="addon-price-badge">-₹${Math.abs(s.extra)}</span>`
+              : `<span class="addon-price-badge free">Free</span>`
+          }
+        </li>`,
+      ).join("")}
     </ul>`;
 }
 
@@ -378,12 +427,14 @@ function renderLengthOptions() {
     <h6>Length</h6>
     <p class="size-notice">* Standard is 48" | 52" +₹30 | 54" +₹50</p>
     <ul id="length-section" style="display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:10px 0 18px;">
-      ${LENGTH_OPTIONS.map((l) => `
+      ${LENGTH_OPTIONS.map(
+        (l) => `
         <li class="size-item" id="length-${l.id}" onclick="selectLength('${l.id}')"
             style="min-width:80px;height:auto;padding:10px 14px;width:auto;">
           <span class="size-label" style="font-size:12px;">${l.label}</span>
           ${l.extra > 0 ? `<span class="size-extra-badge">+₹${l.extra}</span>` : ""}
-        </li>`).join("")}
+        </li>`,
+      ).join("")}
     </ul>`;
 }
 
@@ -416,14 +467,18 @@ function renderDupattaOption() {
 
 // ── Selection handlers ────────────────────────────────────────────────────────
 function selectSize(el, size) {
-  document.querySelectorAll(".product-size .size-item").forEach((li) => li.classList.remove("active"));
+  document
+    .querySelectorAll(".product-size .size-item")
+    .forEach((li) => li.classList.remove("active"));
   el.classList.add("active");
   selectedSize = size;
   updatePriceDisplay();
 }
 
 function selectAddon(addonId) {
-  document.querySelectorAll(".addon-item").forEach((el) => el.classList.remove("active"));
+  document
+    .querySelectorAll(".addon-item")
+    .forEach((el) => el.classList.remove("active"));
   if (selectedSleeve) {
     const sleeveEl = document.getElementById(`sleeve-${selectedSleeve}`);
     if (sleeveEl) sleeveEl.classList.add("active");
@@ -457,8 +512,12 @@ function selectLength(lengthId) {
 
 function selectDupatta(withDupatta) {
   selectedDupatta = withDupatta;
-  document.getElementById("dupatta-yes").classList.toggle("active",  withDupatta);
-  document.getElementById("dupatta-no").classList.toggle("active",  !withDupatta);
+  document
+    .getElementById("dupatta-yes")
+    .classList.toggle("active", withDupatta);
+  document
+    .getElementById("dupatta-no")
+    .classList.toggle("active", !withDupatta);
   updatePriceDisplay();
 }
 
@@ -485,23 +544,23 @@ function setupCartButton(product) {
         return;
       }
 
-      const qty        = parseInt(document.querySelector(".pro-qty")?.value || 1);
+      const qty = parseInt(document.querySelector(".pro-qty")?.value || 1);
       const finalPrice = computeFinalPrice(product);
-      const addonObj   = FEEDING_ADDONS.find((a) => a.id === selectedAddon);
-      const sleeveObj  = SLEEVE_OPTIONS.find((s)  => s.id === selectedSleeve);
-      const lengthObj  = LENGTH_OPTIONS.find((l)  => l.id === selectedLength);
+      const addonObj = FEEDING_ADDONS.find((a) => a.id === selectedAddon);
+      const sleeveObj = SLEEVE_OPTIONS.find((s) => s.id === selectedSleeve);
+      const lengthObj = LENGTH_OPTIONS.find((l) => l.id === selectedLength);
 
       CartManager.addToCart(product._id, qty, btn, selectedSize, {
-        sleeve    : selectedSleeve,
-        length    : selectedLength,
-        addonType : selectedAddon,
-        dupatta   : selectedDupatta,
-        unitPrice : finalPrice,
+        sleeve: selectedSleeve,
+        length: selectedLength,
+        addonType: selectedAddon,
+        dupatta: selectedDupatta,
+        unitPrice: finalPrice,
       });
 
       showDetailMessage(
         `Added! Size: ${selectedSize} | ${sleeveObj.label} | ${lengthObj.label} | ${addonObj.label}${selectedDupatta ? " | Dupatta" : ""} | ₹${finalPrice}`,
-        "success"
+        "success",
       );
     };
   });
@@ -531,7 +590,10 @@ let relatedSwiper = null;
 function renderRelatedSlider(products) {
   const container = document.querySelector(".productslide4");
   if (!container) return;
-  if (relatedSwiper) { relatedSwiper.destroy(true, true); relatedSwiper = null; }
+  if (relatedSwiper) {
+    relatedSwiper.destroy(true, true);
+    relatedSwiper = null;
+  }
   container.innerHTML = "";
   if (!products || products.length === 0) {
     container.innerHTML = `<div class="swiper-wrapper"><div class="swiper-slide"><p style="text-align:center;padding:40px;">No related products found!</p></div></div>`;
@@ -540,7 +602,7 @@ function renderRelatedSlider(products) {
   const slidesHTML = products
     .map((product) => {
       // ── Use effectiveDiscount in related slider too ──
-      const disc            = effectiveDiscount(product);
+      const disc = effectiveDiscount(product);
       const discountedPrice = disc
         ? Math.round(product.price - (product.price * disc) / 100)
         : product.price;
@@ -552,12 +614,6 @@ function renderRelatedSlider(products) {
                 onerror="this.src='./assets/images/dress/shop_1.jpeg'">
             ${disc ? `<span class="product-discount-label">${disc}%</span>` : ""}
             <ul class="social">
-              <li>
-                <a href="javascript:void(0);"
-                  onclick="CartManager.addToCartAuto('${product._id}', 1, this, ${JSON.stringify(product.sizes).replace(/"/g, "&quot;")}, ${product.stock ?? product.globalStock ?? 10})">
-                  <i data-feather="shopping-cart"></i>
-                </a>
-              </li>
               <li><a href="product-details.html?id=${product._id}"><i data-feather="eye"></i></a></li>
               <li><a href="javascript:void(0);" data-wishlist-id="${product._id}"
                     onclick="WishlistManager.toggleWishlist('${product._id}', this)">
@@ -589,8 +645,8 @@ function renderRelatedSlider(products) {
     breakpoints: {
       1400: { slidesPerView: Math.min(4, count), centeredSlides: false },
       1024: { slidesPerView: Math.min(3, count), centeredSlides: false },
-      768:  { slidesPerView: Math.min(2, count), centeredSlides: false },
-      480:  { slidesPerView: Math.min(2, count), centeredSlides: false },
+      768: { slidesPerView: Math.min(2, count), centeredSlides: false },
+      480: { slidesPerView: Math.min(2, count), centeredSlides: false },
     },
   });
   if (typeof feather !== "undefined") feather.replace();
@@ -601,8 +657,12 @@ function openSizeGuide() {
   const modal = document.getElementById("size-guide-modal");
   if (!modal) return;
   modal.style.display = "flex";
-  modal.onclick = function (e) { if (e.target === modal) closeSizeGuide(); };
-  document._sizeGuideEsc = (e) => { if (e.key === "Escape") closeSizeGuide(); };
+  modal.onclick = function (e) {
+    if (e.target === modal) closeSizeGuide();
+  };
+  document._sizeGuideEsc = (e) => {
+    if (e.key === "Escape") closeSizeGuide();
+  };
   document.addEventListener("keydown", document._sizeGuideEsc);
 }
 

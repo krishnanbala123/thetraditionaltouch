@@ -249,14 +249,16 @@ const WishlistManager = (() => {
 
           // ── Price ──────────────────────────────────────────────
           const discountedPrice = product.discount
-            ? Math.round(product.price - (product.price * product.discount) / 100)
+            ? Math.round(
+                product.price - (product.price * product.discount) / 100,
+              )
             : product.price;
 
           // ── Stock ─────────────────────────────────────────────
           // sizes[] = [{ size: "M" }, { size: "L" }] — labels only, NO per-size stock
           // Stock is a single top-level number: product.stock
           const sizesArray = Array.isArray(product.sizes) ? product.sizes : [];
-          const hasStock   = (product.stock ?? 0) > 0;
+          const hasStock = (product.stock ?? 0) > 0;
 
           // First defined size — auto-picked for "Add to cart"
           // User can always go to the product page to pick a different size
@@ -283,16 +285,20 @@ const WishlistManager = (() => {
                 <a class="text-default" href="product-details.html?id=${product._id}">
                   <strong>${product.name}</strong>
                 </a>
-                ${allSizes
-                  ? `<br><small class="text-muted">Sizes: ${allSizes}</small>`
-                  : ""}
+                ${
+                  allSizes
+                    ? `<br><small class="text-muted">Sizes: ${allSizes}</small>`
+                    : ""
+                }
               </td>
 
               <td>
                 ₹${discountedPrice}
-                ${product.discount
-                  ? `<br><small><del style="color:#aaa;">₹${product.price}</del></small>`
-                  : ""}
+                ${
+                  product.discount
+                    ? `<br><small><del style="color:#aaa;">₹${product.price}</del></small>`
+                    : ""
+                }
               </td>
 
               <td>
@@ -301,19 +307,15 @@ const WishlistManager = (() => {
                 </span>
               </td>
 
-              <td>
-                ${hasStock
-                  ? `<a
-                      class="btn btn-primary btn-sm"
-                      href="javascript:void(0);"
-                      onclick="WishlistManager.addToCartFromWishlist('${product._id}', '${firstAvailableSize}', this)"
-                    >
-                      Add to cart
-                    </a>`
-                  : `<button class="btn btn-sm" disabled style="background:#ccc; cursor:not-allowed;">
-                      Out of Stock
-                    </button>`}
-              </td>
+               <td>
+                  <a
+                    class="btn btn-primary btn-sm"
+                    href="product-details.html?id=${product._id}"
+                  >
+                    View
+                  </a>
+                </td>
+
 
               <td>
                 <div class="cart-action">
@@ -381,7 +383,9 @@ const WishlistManager = (() => {
       row.remove();
       loadWishlistCount();
 
-      const remaining = document.querySelectorAll(".wishlistBody tr[data-product-id]");
+      const remaining = document.querySelectorAll(
+        ".wishlistBody tr[data-product-id]",
+      );
 
       if (remaining.length === 0) {
         document.querySelector(".wishlistBody").innerHTML = `
@@ -410,8 +414,8 @@ const WishlistManager = (() => {
     const existing = document.getElementById("wishlist-toast");
     if (existing) existing.remove();
 
-    const bg   = { success: "#22c55e", error: "#ef4444", warn: "#f97316" };
-    const icon = { success: "✓",       error: "✕",       warn: "⚠" };
+    const bg = { success: "#22c55e", error: "#ef4444", warn: "#f97316" };
+    const icon = { success: "✓", error: "✕", warn: "⚠" };
 
     const toast = document.createElement("div");
     toast.id = "wishlist-toast";
@@ -429,7 +433,7 @@ const WishlistManager = (() => {
 
     setTimeout(() => {
       toast.style.transition = "opacity .3s";
-      toast.style.opacity    = "0";
+      toast.style.opacity = "0";
       setTimeout(() => toast.remove(), 320);
     }, 2800);
   }

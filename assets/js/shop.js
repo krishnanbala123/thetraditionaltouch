@@ -1,11 +1,11 @@
 // assets/js/shop.js
 
-let currentPage       = 1;
-const limit           = 8;
-let searchQuery       = "";
-let allProducts       = [];
-let selectedDiscount  = null;
-let selectedArrival   = null;
+let currentPage = 1;
+const limit = 8;
+let searchQuery = "";
+let allProducts = [];
+let selectedDiscount = null;
+let selectedArrival = null;
 
 /** Discount % from an active event deal (0 = none) */
 let activeEventDiscount = 0;
@@ -35,11 +35,13 @@ document.addEventListener("DOMContentLoaded", function () {
 // ========================
 async function fetchActiveDeal() {
   try {
-    const res  = await fetch(`${CONFIG.BASE_URL}/deal`);
+    const res = await fetch(`${CONFIG.BASE_URL}/deal`);
     const data = await res.json();
 
     if (data.isEventDeal && data.deals?.length) {
-      activeEventDiscount = Math.max(...data.deals.map((d) => d.discountPercent));
+      activeEventDiscount = Math.max(
+        ...data.deals.map((d) => d.discountPercent),
+      );
     } else {
       activeEventDiscount = 0;
     }
@@ -125,7 +127,7 @@ function renderProducts(products) {
   productGrid.innerHTML = products
     .map((product) => {
       // ── Use effectiveDiscount so event deal is respected ──
-      const disc            = effectiveDiscount(product);
+      const disc = effectiveDiscount(product);
       const discountedPrice = disc
         ? Math.round(product.price - (product.price * disc) / 100)
         : product.price;
@@ -134,9 +136,12 @@ function renderProducts(products) {
         ? `<span class="product-discount-label">${disc}%</span>`
         : "";
 
-      const stock    = product.stock ?? 0;
+      const stock = product.stock ?? 0;
       const hasStock = stock > 0;
-      const sizesJson = JSON.stringify(product.sizes || []).replace(/"/g, "&quot;");
+      const sizesJson = JSON.stringify(product.sizes || []).replace(
+        /"/g,
+        "&quot;",
+      );
 
       return `
       <div class="col-span-12 lg:col-span-3 md:col-span-4 sm:col-span-6">
@@ -150,12 +155,6 @@ function renderProducts(products) {
             ${discountLabel}
             ${!hasStock ? `<span class="product-sale-label" style="background:gray;">Out of Stock</span>` : ""}
             <ul class="social">
-              <li>
-                <a href="javascript:void(0);"
-                   onclick="quickAddToCart(event, '${product._id}', this, ${stock}, ${sizesJson})">
-                  <i data-feather="shopping-cart"></i>
-                </a>
-              </li>
               <li>
                 <a href="product-details.html?id=${product._id}">
                   <i data-feather="eye"></i>
@@ -230,6 +229,20 @@ function renderPagination(pagination) {
     return;
   }
 
+  const width = window.innerWidth;
+  let maxVisible = 5;
+  if (width <= 767) {
+    maxVisible = 3;
+  }
+
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let endPage = startPage + maxVisible - 1;
+
+  if (endPage > totalPages) {
+    endPage = totalPages;
+    startPage = Math.max(1, endPage - maxVisible + 1);
+  }
+
   let html = `
     <li>
       <a href="javascript:void(0);" onclick="${hasPrevPage ? `changePage(${currentPage - 1})` : "void(0)"}"
@@ -238,11 +251,25 @@ function renderPagination(pagination) {
       </a>
     </li>`;
 
-  for (let i = 1; i <= totalPages; i++) {
+  if (startPage > 1) {
+    html += `<li><a href="javascript:void(0);" onclick="changePage(1)">1</a></li>`;
+    if (startPage > 2) {
+      html += `<li><span style="padding:0 6px;">...</span></li>`;
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
     html += `
       <li class="${i === currentPage ? "active" : ""}">
         <a href="javascript:void(0);" onclick="changePage(${i})">${i}</a>
       </li>`;
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      html += `<li><span style="padding:0 6px;">...</span></li>`;
+    }
+    html += `<li><a href="javascript:void(0);" onclick="changePage(${totalPages})">${totalPages}</a></li>`;
   }
 
   html += `
@@ -270,7 +297,7 @@ function changePage(page) {
 // ========================
 function setupSearch() {
   const headerInput = document.querySelector(".search-bar input");
-  const headerBtn   = document.querySelector(".search-bar .btn-primary");
+  const headerBtn = document.querySelector(".search-bar .btn-primary");
 
   if (headerBtn) {
     headerBtn.addEventListener("click", function () {
@@ -288,17 +315,21 @@ function setupSearch() {
   }
 
   const shopInput = document.getElementById("shop-search-input");
-  const shopBtn   = document.getElementById("shop-search-btn");
+  const shopBtn = document.getElementById("shop-search-btn");
   const shopClear = document.getElementById("shop-search-clear");
 
   if (shopBtn) {
-    shopBtn.addEventListener("click", function () { triggerSearch(shopInput.value.trim()); });
+    shopBtn.addEventListener("click", function () {
+      triggerSearch(shopInput.value.trim());
+    });
   }
   if (shopInput) {
     shopInput.addEventListener("keypress", function (e) {
       if (e.key === "Enter") triggerSearch(shopInput.value.trim());
     });
-    shopInput.addEventListener("input", function () { toggleClearBtn(shopInput, shopClear); });
+    shopInput.addEventListener("input", function () {
+      toggleClearBtn(shopInput, shopClear);
+    });
   }
   if (shopClear) {
     shopClear.addEventListener("click", function () {
@@ -316,17 +347,25 @@ function triggerSearch(query) {
   clearAllFilters();
   toggleClearBtn(
     document.getElementById("shop-search-input"),
-    document.getElementById("shop-search-clear")
+    document.getElementById("shop-search-clear"),
   );
   fetchProducts(currentPage, searchQuery);
 }
 
 function clearAllFilters() {
   selectedDiscount = null;
-  selectedArrival  = null;
+  selectedArrival = null;
   const allCheckboxIds = [
-    "discount1","discount2","discount3","discount4","discount5",
-    "ratinglist1","ratinglist2","ratinglist3","ratinglist4","ratinglist5",
+    "discount1",
+    "discount2",
+    "discount3",
+    "discount4",
+    "discount5",
+    "ratinglist1",
+    "ratinglist2",
+    "ratinglist3",
+    "ratinglist4",
+    "ratinglist5",
   ];
   allCheckboxIds.forEach((id) => {
     const el = document.getElementById(id);
@@ -359,8 +398,16 @@ function setupDiscountFilter() {
           if (otherId !== id) document.getElementById(otherId).checked = false;
         });
         selectedArrival = null;
-        ["ratinglist1","ratinglist2","ratinglist3","ratinglist4","ratinglist5"]
-          .forEach((rid) => { const el = document.getElementById(rid); if (el) el.checked = false; });
+        [
+          "ratinglist1",
+          "ratinglist2",
+          "ratinglist3",
+          "ratinglist4",
+          "ratinglist5",
+        ].forEach((rid) => {
+          const el = document.getElementById(rid);
+          if (el) el.checked = false;
+        });
 
         selectedDiscount = this.checked ? discountMap[id] : null;
         applyDiscountFilter();
@@ -376,7 +423,7 @@ function applyDiscountFilter() {
   }
   // Filter using effectiveDiscount so event-deal products are included
   const filtered = allProducts.filter(
-    (p) => effectiveDiscount(p) >= selectedDiscount
+    (p) => effectiveDiscount(p) >= selectedDiscount,
   );
   renderProducts(filtered);
 }
@@ -401,8 +448,16 @@ function setupArrivalFilter() {
           if (otherId !== id) document.getElementById(otherId).checked = false;
         });
         selectedDiscount = null;
-        ["discount1","discount2","discount3","discount4","discount5"]
-          .forEach((did) => { const el = document.getElementById(did); if (el) el.checked = false; });
+        [
+          "discount1",
+          "discount2",
+          "discount3",
+          "discount4",
+          "discount5",
+        ].forEach((did) => {
+          const el = document.getElementById(did);
+          if (el) el.checked = false;
+        });
 
         selectedArrival = this.checked ? arrivalMap[id] : null;
         applyArrivalFilter();
