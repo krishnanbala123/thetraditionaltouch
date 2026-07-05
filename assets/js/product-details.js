@@ -96,29 +96,25 @@ async function fetchActiveDeal() {
 async function fetchProductById(productId) {
   const token = localStorage.getItem("token");
   try {
-    const response = await fetch(`${CONFIG.BASE_URL}/products`, {
+    const response = await fetch(`${CONFIG.BASE_URL}/products/${productId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
     const data = await response.json();
+
     if (response.ok) {
-      const product = data.products.find((p) => p._id === productId);
-      console.log("product check in stock", product);
-      if (product) {
-        currentProduct = product;
-        currentProduct.stock = product.stock ?? 10;
-        renderProductDetail(product);
-        const others = (data.products || [])
-          .filter((p) => p._id !== productId)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 8);
-        renderRelatedSlider(others);
-      } else {
-        alert("Product not found!");
-        window.location.href = "shop.html";
-      }
+      const product = data.product;
+      currentProduct = product;
+      currentProduct.stock = product.stock ?? 10;
+      renderProductDetail(product);
+
+      // Related products still use the paginated list — fetch separately
+      fetchRelatedProducts(productId);
+    } else if (response.status === 404) {
+      alert("Product not found!");
+      window.location.href = "shop.html";
     } else {
       alert("Failed to load product!");
       window.location.href = "shop.html";
@@ -126,6 +122,21 @@ async function fetchProductById(productId) {
   } catch (error) {
     console.error("Error:", error);
     alert("Network error!");
+  }
+}
+
+async function fetchRelatedProducts(currentId) {
+  try {
+    const response = await fetch(`${CONFIG.BASE_URL}/products?limit=9`);
+    const data = await response.json();
+    if (response.ok) {
+      const others = (data.products || [])
+        .filter((p) => p._id !== currentId)
+        .slice(0, 8);
+      renderRelatedSlider(others);
+    }
+  } catch (err) {
+    console.error("Related products fetch error:", err);
   }
 }
 
