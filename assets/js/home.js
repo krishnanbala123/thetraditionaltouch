@@ -1,8 +1,6 @@
 // home.js
 
 // ─── All module-level state declared once ───────────────────
-let homeSwiper = null;
-let skeletonSwiper = null;
 let timerInterval = null;
 let dealIndex = 0;
 let dealRotateTimeout = null;
@@ -20,7 +18,7 @@ function effectiveDiscount(product) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Fetch deal first so activeEventDiscount is set before the slider renders
+  // Fetch deal first so activeEventDiscount is set before the grid renders
   fetchAndStartDeal().then(() => fetchHomeProducts());
 });
 
@@ -29,53 +27,27 @@ document.addEventListener("DOMContentLoaded", function () {
 // ─────────────────────────────────────────────
 
 function showSkeletonLoader() {
-  const container = document.querySelector("#home-product-slider");
+  const container = document.querySelector("#home-product-grid");
   if (!container) return;
 
-  if (skeletonSwiper) {
-    skeletonSwiper.destroy(true, true);
-    skeletonSwiper = null;
-  }
-  if (homeSwiper) {
-    homeSwiper.destroy(true, true);
-    homeSwiper = null;
-  }
-
-  const skeletonSlides = Array.from({ length: 5 })
+  const skeletonCards = Array.from({ length: 8 })
     .map(
       () => `
-      <div class="swiper-slide">
-        <div class="skeleton-card">
-          <div class="skeleton-img skeleton-shimmer"></div>
-          <div class="skeleton-body">
-            <div class="skeleton-title skeleton-shimmer"></div>
-            <div class="skeleton-price skeleton-shimmer"></div>
-          </div>
+      <div class="skeleton-card">
+        <div class="skeleton-img skeleton-shimmer"></div>
+        <div class="skeleton-body">
+          <div class="skeleton-title skeleton-shimmer"></div>
+          <div class="skeleton-price skeleton-shimmer"></div>
         </div>
       </div>`,
     )
     .join("");
 
-  container.innerHTML = `<div class="swiper-wrapper">${skeletonSlides}</div>`;
-
-  const el = document.querySelector("#home-product-slider");
-  if (!el || !document.body.contains(el)) return;
-
-  skeletonSwiper = new Swiper("#home-product-slider", {
-    slidesPerView: 1,
-    spaceBetween: 16,
-    allowTouchMove: false,
-    breakpoints: {
-      480: { slidesPerView: 2, spaceBetween: 20 },
-      720: { slidesPerView: 4, spaceBetween: 24 },
-      1024: { slidesPerView: 4, spaceBetween: 24 },
-      1400: { slidesPerView: 5, spaceBetween: 24 },
-    },
-  });
+  container.innerHTML = skeletonCards;
 }
 
 // ─────────────────────────────────────────────
-// PRODUCT SLIDER
+// PRODUCT GRID
 // ─────────────────────────────────────────────
 
 async function fetchHomeProducts() {
@@ -100,47 +72,28 @@ async function fetchHomeProducts() {
       const sorted = (data.products || []).sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
-      renderHomeSlider(sorted.slice(0, 8));
+      renderHomeGrid(sorted.slice(0, 8));
     }
   } catch (error) {
     console.error("Home products error:", error);
-    const container = document.querySelector("#home-product-slider");
+    const container = document.querySelector("#home-product-grid");
     if (container) {
-      container.innerHTML = `<div class="swiper-wrapper">
-        <div class="swiper-slide">
-          <p style="text-align:center;padding:40px;">Failed to load products.</p>
-        </div>
-      </div>`;
+      container.innerHTML = `<p style="grid-column:1/-1;text-align:center;padding:40px;">Failed to load products.</p>`;
     }
   }
 }
 
-function renderHomeSlider(products) {
-  const container = document.querySelector("#home-product-slider");
+function renderHomeGrid(products) {
+  const container = document.querySelector("#home-product-grid");
   if (!container) return;
 
-  if (skeletonSwiper) {
-    skeletonSwiper.destroy(true, true);
-    skeletonSwiper = null;
-  }
-  if (homeSwiper) {
-    homeSwiper.destroy(true, true);
-    homeSwiper = null;
-  }
-
-  container.innerHTML = "";
-
   if (!products || products.length === 0) {
-    container.innerHTML = `<div class="swiper-wrapper">
-      <div class="swiper-slide">
-        <p style="text-align:center;padding:40px;">No products found!</p>
-      </div>
-    </div>`;
+    container.innerHTML = `<p style="grid-column:1/-1;text-align:center;padding:40px;">No products found!</p>`;
     return;
   }
 
-  const slidesHTML = products
-    .map((product) => {
+  const cardsHTML = products
+    .map((product, i) => {
       // ── Use effectiveDiscount so event deal is respected ──
       const disc = effectiveDiscount(product);
       const discountedPrice = disc
@@ -153,45 +106,39 @@ function renderHomeSlider(products) {
 
       const stock = product.stock ?? 0;
       const hasStock = stock > 0;
-      const sizesJson = JSON.stringify(product.sizes || []).replace(
-        /"/g,
-        "&quot;",
-      );
 
       return `
-        <div class="swiper-slide">
-          <div class="product-boxwrap" data-product-id="${product._id}">
-            <div class="product-imgwrap">
-              <a href="product-details.html?id=${product._id}">
-                <img class="img-fluid" src="${product.images[0]}" alt="${product.name}"
-                  onerror="this.src='./assets/images/dress/shop_1.jpeg'">
-              </a>
-              ${discountLabel}
-              ${!hasStock ? `<span class="product-sale-label" style="background:gray;">Out of Stock</span>` : ""}
-              <ul class="social">
-                <li>
-                  <a href="product-details.html?id=${product._id}">
-                    <i data-feather="eye"></i>
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:void(0);"
-                    data-wishlist-id="${product._id}"
-                    onclick="WishlistManager.toggleWishlist('${product._id}', this)">
-                    <i data-feather="heart"></i>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="product-detailwrap">
-              <div>
+        <div class="product-boxwrap" data-product-id="${product._id}" style="animation-delay:${i * 0.06}s;">
+          <div class="product-imgwrap">
+            <a href="product-details.html?id=${product._id}">
+              <img class="img-fluid" src="${product.images[0]}" alt="${product.name}"
+                onerror="this.src='./assets/images/dress/shop_1.jpeg'">
+            </a>
+            ${discountLabel}
+            ${!hasStock ? `<span class="product-sale-label" style="background:gray;">Out of Stock</span>` : ""}
+            <ul class="social">
+              <li>
                 <a href="product-details.html?id=${product._id}">
-                  <h5>${product.name}</h5>
+                  <i data-feather="eye"></i>
                 </a>
-                <div class="pro-price">
-                  ₹${discountedPrice}
-                  ${disc ? `<span class="old-price">₹${product.price}</span>` : ""}
-                </div>
+              </li>
+              <li>
+                <a href="javascript:void(0);"
+                  data-wishlist-id="${product._id}"
+                  onclick="WishlistManager.toggleWishlist('${product._id}', this)">
+                  <i data-feather="heart"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="product-detailwrap">
+            <div>
+              <a href="product-details.html?id=${product._id}">
+                <h5>${product.name}</h5>
+              </a>
+              <div class="pro-price">
+                ₹${discountedPrice}
+                ${disc ? `<span class="old-price">₹${product.price}</span>` : ""}
               </div>
             </div>
           </div>
@@ -199,27 +146,7 @@ function renderHomeSlider(products) {
     })
     .join("");
 
-  container.innerHTML = `<div class="swiper-wrapper">${slidesHTML}</div>`;
-
-  const el = document.querySelector("#home-product-slider");
-  if (!el || !document.body.contains(el)) return;
-
-  const count = products.length;
-
-  homeSwiper = new Swiper("#home-product-slider", {
-    slidesPerView: 1,
-    spaceBetween: 16,
-    loop: count > 5,
-    speed: 1200,
-    centeredSlides: false,
-    autoplay: count > 1 ? { delay: 2500, disableOnInteraction: false } : false,
-    breakpoints: {
-      480: { slidesPerView: Math.min(2, count), spaceBetween: 20 },
-      720: { slidesPerView: Math.min(4, count), spaceBetween: 24 },
-      1024: { slidesPerView: Math.min(4, count), spaceBetween: 24 },
-      1400: { slidesPerView: Math.min(5, count), spaceBetween: 24 },
-    },
-  });
+  container.innerHTML = cardsHTML;
 
   if (typeof feather !== "undefined") feather.replace();
 }
@@ -243,7 +170,7 @@ async function fetchAndStartDeal() {
       (d) => new Date(d.endsAt) > now,
     );
 
-    // ── Set the global event discount so renderHomeSlider can use it ──
+    // ── Set the global event discount so renderHomeGrid can use it ──
     if (data.isEventDeal && deals.length > 0) {
       // Use the highest discountPercent across all active event deals
       activeEventDiscount = Math.max(...deals.map((d) => d.discountPercent));

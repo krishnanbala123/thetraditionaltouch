@@ -560,3 +560,91 @@ li.dropdownmenu .dropdownitem-list li a,
 .deal-dots span:hover {
   background: rgba(255, 255, 255, 0.7) !important;
 }
+/* ── New Arrivals Grid ── */
+.home-product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (min-width: 576px) {
+  .home-product-grid { grid-template-columns: repeat(3, 1fr); gap: 22px; }
+}
+@media (min-width: 992px) {
+  .home-product-grid { grid-template-columns: repeat(4, 1fr); gap: 24px; }
+}
+@media (min-width: 1400px) {
+  .home-product-grid { grid-template-columns: repeat(5, 1fr); gap: 24px; }
+}
+
+.home-product-grid .product-boxwrap {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: cardFadeIn 0.5s ease forwards;
+}
+
+@keyframes cardFadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* subtle hover lift, layered on top of existing product-boxwrap styles */
+.home-product-grid .product-boxwrap {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.home-product-grid .product-boxwrap:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+}
+.home-product-grid .product-imgwrap img {
+  transition: transform 0.5s ease;
+}
+.home-product-grid .product-boxwrap:hover .product-imgwrap img {
+  transform: scale(1.06);
+}
+
+/* View All button */
+.view-all-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.btn-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 36px;
+  border: 2px solid #000;
+  border-radius: 50px;
+  font-family: 'Jost', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #000;
+  background: transparent;
+  text-decoration: none;
+  transition: all 0.35s ease;
+}
+
+.btn-view-all i {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.35s ease;
+}
+
+.btn-view-all:hover {
+  background: #000;
+  color: #fff;
+}
+.btn-view-all:hover i {
+  transform: translateX(4px);
+}
+
+/* Skeleton grid (reuses existing skeleton card styles) */
+.home-product-grid .skeleton-card {
+  border-radius: 12px;
+  overflow: hidden;
+}

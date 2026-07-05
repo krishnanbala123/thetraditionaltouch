@@ -218,6 +218,12 @@ function quickAddToCart(event, id, btnEl, stock, sizes) {
 // ========================
 // Render Pagination
 // ========================
+// ========================
+// Render Pagination
+// Fixed-size sliding window (3 numbers), stops sliding once it
+// reaches the end. E.g. for 5 pages:
+// page1 -> 1 2 3 | page2 -> 2 3 4 | page3/4/5 -> 3 4 5
+// ========================
 function renderPagination(pagination) {
   const paginationEl = document.querySelector(".cdx-pagination");
   if (!paginationEl) return;
@@ -229,19 +235,13 @@ function renderPagination(pagination) {
     return;
   }
 
-  const width = window.innerWidth;
-  let maxVisible = 5;
-  if (width <= 767) {
-    maxVisible = 3;
-  }
+  const windowSize = 3;
 
-  let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-  let endPage = startPage + maxVisible - 1;
-
-  if (endPage > totalPages) {
-    endPage = totalPages;
-    startPage = Math.max(1, endPage - maxVisible + 1);
-  }
+  // Window starts at currentPage, but clamps once it would run
+  // past the last possible window position.
+  let startPage = Math.min(currentPage, totalPages - windowSize + 1);
+  startPage = Math.max(1, startPage);
+  const endPage = Math.min(startPage + windowSize - 1, totalPages);
 
   let html = `
     <li>
@@ -251,25 +251,11 @@ function renderPagination(pagination) {
       </a>
     </li>`;
 
-  if (startPage > 1) {
-    html += `<li><a href="javascript:void(0);" onclick="changePage(1)">1</a></li>`;
-    if (startPage > 2) {
-      html += `<li><span style="padding:0 6px;">...</span></li>`;
-    }
-  }
-
   for (let i = startPage; i <= endPage; i++) {
     html += `
       <li class="${i === currentPage ? "active" : ""}">
         <a href="javascript:void(0);" onclick="changePage(${i})">${i}</a>
       </li>`;
-  }
-
-  if (endPage < totalPages) {
-    if (endPage < totalPages - 1) {
-      html += `<li><span style="padding:0 6px;">...</span></li>`;
-    }
-    html += `<li><a href="javascript:void(0);" onclick="changePage(${totalPages})">${totalPages}</a></li>`;
   }
 
   html += `
