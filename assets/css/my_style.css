@@ -616,14 +616,14 @@ li.dropdownmenu .dropdownitem-list li a,
   align-items: center;
   gap: 10px;
   padding: 14px 36px;
-  border: 2px solid #000;
+  border: 2px solid #2d86bb;
   border-radius: 50px;
   font-family: 'Jost', sans-serif;
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #000;
+  color: #2d86bb;
   background: transparent;
   text-decoration: none;
   transition: all 0.35s ease;
@@ -636,7 +636,7 @@ li.dropdownmenu .dropdownitem-list li a,
 }
 
 .btn-view-all:hover {
-  background: #000;
+  background: #2d86bb;
   color: #fff;
 }
 .btn-view-all:hover i {

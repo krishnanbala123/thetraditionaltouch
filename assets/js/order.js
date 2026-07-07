@@ -10,6 +10,50 @@ const OrderManager = (() => {
   // ── Coupon state ────────────────────────────────────────────────────────────
   let appliedCoupon = null; // { code, type, value } or null
 
+  // ── Payment-in-flight guard ──────────────────────────────────────────────────
+  // Checked synchronously in the click handler, BEFORE any async work starts,
+  // so a rapid double-tap can't slip two calls through.
+  let isProcessingPayment = false;
+
+  // ── Idempotency key for this checkout attempt ───────────────────────────────
+  // Regenerated whenever the cart/summary is (re)loaded. Sent with every
+  // /orders create call so the backend can safely dedupe retries caused by
+  // a stalled request instead of creating a fresh Pending order each time.
+  function getOrCreateIdempotencyKey() {
+    let key = sessionStorage.getItem("checkoutIdempotencyKey");
+    if (!key) {
+      key = (crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      sessionStorage.setItem("checkoutIdempotencyKey", key);
+    }
+    return key;
+  }
+
+  function resetIdempotencyKey() {
+    sessionStorage.removeItem("checkoutIdempotencyKey");
+  }
+
+  // ── Fetch with timeout ───────────────────────────────────────────────────────
+  // Wraps fetch with an AbortController so a slow/cold-starting endpoint or a
+  // weak mobile connection fails loudly (and quickly) instead of leaving the
+  // button stuck on "Processing…" indefinitely.
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      return res;
+    } catch (err) {
+      if (err.name === "AbortError") {
+        throw new Error("TIMEOUT");
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   function calcDeliveryFee(totalQty, isInsideTamilNadu) {
     const pairs = Math.ceil(totalQty / 2);
     return isInsideTamilNadu ? pairs * 70 : pairs * 100;
@@ -39,12 +83,12 @@ const OrderManager = (() => {
 
   // ── Fetch cart from API ─────────────────────────────────────────────────────
   async function fetchCart() {
-    const res  = await fetch(`${API}/cart`, {
+    const res  = await fetchWithTimeout(`${API}/cart`, {
       headers: {
         Authorization:  `Bearer ${getToken()}`,
         "Content-Type": "application/json",
       },
-    });
+    }, 10000);
     const data = await res.json();
     return data?.items || data?.cart?.items || [];
   }
@@ -118,14 +162,14 @@ const OrderManager = (() => {
       let subtotal   = 0;
       items.forEach(item => { subtotal += computeUnitPrice(item) * (item.quantity || 1); });
 
-      const res  = await fetch(`${API}/coupons`, {
+      const res  = await fetchWithTimeout(`${API}/coupons`, {
         method:  "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization:  `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ action: "validate", code, subtotal }),
-      });
+      }, 10000);
       const data = await res.json();
 
       if (!res.ok || !data.valid) {
@@ -160,7 +204,9 @@ const OrderManager = (() => {
       console.error("[OrderManager] applyCoupon:", err);
       if (msgEl) {
         msgEl.className   = "coupon-msg error";
-        msgEl.textContent = "Could not validate coupon. Please try again.";
+        msgEl.textContent = err.message === "TIMEOUT"
+          ? "Request timed out. Please try again."
+          : "Could not validate coupon. Please try again.";
       }
     } finally {
       // Only reset button text if coupon was NOT successfully applied
@@ -192,6 +238,9 @@ const OrderManager = (() => {
     const countEl = document.getElementById("summary-item-count");
     const payBtn  = document.getElementById("pay-btn");
     if (!listEl) return;
+
+    // Fresh checkout page load = fresh idempotency key for this attempt.
+    resetIdempotencyKey();
 
     const token = getToken();
     if (!token) {
@@ -260,9 +309,9 @@ const OrderManager = (() => {
   // ── Load user profile into form fields ─────────────────────────────────────
   async function loadUserProfile() {
     try {
-      const res  = await fetch(`${API}/user/profile`, {
+      const res  = await fetchWithTimeout(`${API}/user/profile`, {
         headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      }, 10000);
       const user = await res.json();
       const parts = (user.name || "").split(" ");
       const el    = id => document.getElementById(id);
@@ -277,14 +326,14 @@ const OrderManager = (() => {
 
   // ── Save profile ────────────────────────────────────────────────────────────
   async function updateUserProfile(name, address, phone) {
-    await fetch(`${API}/user/profile`, {
+    await fetchWithTimeout(`${API}/user/profile`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization:  `Bearer ${getToken()}`,
       },
       body: JSON.stringify({ name, address, phone }),
-    });
+    }, 10000);
   }
 
   // ── Reset pay button ────────────────────────────────────────────────────────
@@ -293,6 +342,7 @@ const OrderManager = (() => {
     const txt = document.getElementById("pay-btn-text");
     if (btn) btn.disabled = false;
     if (txt) txt.textContent = "Place Order & Pay";
+    isProcessingPayment = false;
   }
 
   // ── Toast helper ────────────────────────────────────────────────────────────
@@ -311,13 +361,24 @@ const OrderManager = (() => {
   async function startPayment() {
     if (typeof validate === "function" && !validate()) {
       showCoToast("Please fill required fields correctly.", "warn");
+      isProcessingPayment = false;
       return;
     }
 
     const token = getToken();
     if (!token) {
       showCoToast("Please login to continue.", "warn");
+      isProcessingPayment = false;
       setTimeout(() => (window.location.href = "login.html"), 1500);
+      return;
+    }
+
+    // ── Guard: bail early if the Razorpay SDK never loaded ──────────────────
+    // Checked BEFORE we create anything in the DB, so a blocked/slow CDN
+    // script doesn't leave behind an orphaned Pending order.
+    if (typeof Razorpay === "undefined") {
+      showCoToast("Payment service failed to load. Please refresh and try again.", "error");
+      resetPayBtn();
       return;
     }
 
@@ -345,6 +406,10 @@ const OrderManager = (() => {
     if (payBtnTxt) payBtnTxt.innerHTML =
       '<span class="spin"><i class="fa fa-spinner"></i></span> Processing…';
 
+    // Same key reused across retries within this checkout attempt so the
+    // backend can dedupe instead of creating a new order every retry.
+    const idempotencyKey = getOrCreateIdempotencyKey();
+
     try {
       await updateUserProfile(fullName, rawAddr, phone);
 
@@ -370,11 +435,12 @@ const OrderManager = (() => {
       if (payBtnTxt) payBtnTxt.innerHTML =
         '<span class="spin"><i class="fa fa-spinner"></i></span> Creating order…';
 
-      const orderRes  = await fetch(`${API}/orders`, {
+      const orderRes  = await fetchWithTimeout(`${API}/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization:  `Bearer ${token}`,
+          "Idempotency-Key": idempotencyKey,
         },
         body: JSON.stringify({
           paymentMethod: "Razorpay",
@@ -382,9 +448,10 @@ const OrderManager = (() => {
           phone,
           isInsideTamilNadu,
           notes,
-          couponCode: appliedCoupon?.code || null, // ← send coupon to backend
+          couponCode: appliedCoupon?.code || null,
+          idempotencyKey, // also in body as a fallback if backend reads from body
         }),
-      });
+      }, 15000);
       const orderData = await orderRes.json();
       if (!orderRes.ok) {
         showCoToast(orderData.message || "Order creation failed.", "error");
@@ -397,11 +464,11 @@ const OrderManager = (() => {
       if (payBtnTxt) payBtnTxt.innerHTML =
         '<span class="spin"><i class="fa fa-spinner"></i></span> Opening payment…';
 
-      const rzpRes   = await fetch(`${API}/create-order`, {
+      const rzpRes   = await fetchWithTimeout(`${API}/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: grandTotal }),
-      });
+      }, 15000);
       const rzpOrder = await rzpRes.json();
 
       if (!rzpOrder.id) {
@@ -425,14 +492,14 @@ const OrderManager = (() => {
               '<span class="spin"><i class="fa fa-spinner"></i></span> Verifying payment…';
 
             // ── Step 4: Verify + update paymentId & paymentStatus ─────────
-            const verifyRes  = await fetch(`${API}/verify-payment`, {
+            const verifyRes  = await fetchWithTimeout(`${API}/verify-payment`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ...response,
                 mongoOrderId,
               }),
-            });
+            }, 15000);
             const verifyData = await verifyRes.json();
 
             if (!verifyData.success) {
@@ -444,23 +511,29 @@ const OrderManager = (() => {
             showCoToast("🎉 Order placed successfully!", "success");
             localStorage.removeItem("cart");
             appliedCoupon = null; // clear coupon state
+            resetIdempotencyKey(); // this checkout attempt is done
 
             setTimeout(() => {
               window.location.href = `invoice.html?orderId=${mongoOrderId}`;
             }, 1500);
 
           } catch (err) {
-            showCoToast(err.message || "Order failed. Contact support.", "error");
+            showCoToast(
+              err.message === "TIMEOUT"
+                ? "Verifying your payment is taking longer than usual. Please check My Orders before paying again."
+                : (err.message || "Order failed. Contact support."),
+              "error"
+            );
             resetPayBtn();
           }
         },
 
         modal: {
           ondismiss: function () {
-            fetch(`${API}/orders/${mongoOrderId}`, {
+            fetchWithTimeout(`${API}/orders/${mongoOrderId}`, {
               method:  "PATCH",
               headers: { Authorization: `Bearer ${token}` },
-            }).catch(() => {});
+            }, 10000).catch(() => {});
             showCoToast("Payment cancelled.", "warn");
             resetPayBtn();
           },
@@ -471,10 +544,18 @@ const OrderManager = (() => {
       };
 
       new Razorpay(options).open();
+      // Once the modal is open, the button no longer needs to reflect our
+      // own network state — Razorpay owns the UI from here. We only clear
+      // isProcessingPayment on dismiss/success/error paths above.
 
     } catch (err) {
       console.error("[OrderManager] startPayment:", err);
-      showCoToast("Something went wrong. Please try again.", "error");
+      showCoToast(
+        err.message === "TIMEOUT"
+          ? "The request is taking longer than usual. Please check your connection and try again."
+          : "Something went wrong. Please try again.",
+        "error"
+      );
       resetPayBtn();
     }
   }
@@ -505,11 +586,13 @@ const OrderManager = (() => {
       });
     }
 
-    // Attach pay button listener
+    // Attach pay button listener — with a synchronous double-submit guard.
     const btn = document.getElementById("pay-btn");
     if (btn) {
       btn.addEventListener("click", e => {
         e.preventDefault();
+        if (isProcessingPayment) return; // ignore extra taps mid-flight
+        isProcessingPayment = true;
         startPayment();
       });
     }
