@@ -18,6 +18,11 @@ function effectiveDiscount(product) {
   return Math.max(product.discount || 0, activeEventDiscount);
 }
 
+function optimizeImageUrl(url, width = 400) {
+  if (!url || !url.includes("res.cloudinary.com")) return url;
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`);
+}
+
 // ── Size extra ──────────────────────────────────────────────────────────────
 const SIZE_EXTRA_PRICE = {
   XS: 0,
@@ -227,15 +232,30 @@ function renderProductDetail(product) {
   const thumbWrapper = document.querySelector(".toslider .swiper-wrapper");
   if (mainWrapper && thumbWrapper) {
     mainWrapper.innerHTML = thumbWrapper.innerHTML = "";
-    product.images.forEach((imgUrl) => {
-      const slide = () => `
+    product.images.forEach((imgUrl, i) => {
+      const mainSlide = `
         <div class="swiper-slide">
           <div class="product-imgwrap">
-            <img class="img-fluid" src="${imgUrl}" alt="${product.name}">
+            <img class="img-fluid" 
+                src="${optimizeImageUrl(imgUrl, 800)}" 
+                width="800" height="1067"
+                ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
+                decoding="async"
+                alt="${product.name}">
           </div>
         </div>`;
-      mainWrapper.innerHTML += slide();
-      thumbWrapper.innerHTML += slide();
+      const thumbSlide = `
+        <div class="swiper-slide">
+          <div class="product-imgwrap">
+            <img class="img-fluid" 
+                src="${optimizeImageUrl(imgUrl, 150)}" 
+                width="150" height="200"
+                loading="lazy" decoding="async"
+                alt="${product.name}">
+          </div>
+        </div>`;
+      mainWrapper.innerHTML += mainSlide;
+      thumbWrapper.innerHTML += thumbSlide;
     });
   }
 
@@ -621,8 +641,12 @@ function renderRelatedSlider(products) {
       <div class="swiper-slide">
         <div class="product-boxwrap" data-product-id="${product._id}">
           <div class="product-imgwrap">
-            <img class="img-fluid" src="${product.images[0]}" alt="${product.name}"
-                onerror="this.src='./assets/images/dress/shop_1.jpeg'">
+            <img class="img-fluid" 
+              src="${optimizeImageUrl(product.images[0], 300)}" 
+              width="300" height="400"
+              loading="lazy" decoding="async"
+              alt="${product.name}"
+              onerror="this.src='./assets/images/dress/shop_1.jpeg'">
             ${disc ? `<span class="product-discount-label">${disc}%</span>` : ""}
             <ul class="social">
               <li><a href="product-details.html?id=${product._id}"><i data-feather="eye"></i></a></li>

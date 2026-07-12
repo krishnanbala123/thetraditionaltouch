@@ -19,6 +19,11 @@ function effectiveDiscount(product) {
   return Math.max(product.discount || 0, activeEventDiscount);
 }
 
+function optimizeImageUrl(url, width = 400) {
+  if (!url || !url.includes("res.cloudinary.com")) return url;
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   // Fetch deal first so activeEventDiscount is set before products render
   fetchActiveDeal().then(() => {
@@ -148,9 +153,12 @@ function renderProducts(products) {
         <div class="product-boxwrap">
           <div class="product-imgwrap">
             <a href="product-details.html?id=${product._id}">
-              <img class="img-fluid" src="${product.images[0]}"
-                   alt="${product.name}"
-                   onerror="this.src='./assets/images/fashion/product/1.jpg'">
+              <img class="img-fluid" 
+                  src="${optimizeImageUrl(product.images[0], 400)}"
+                  width="400" height="533"
+                  loading="lazy" decoding="async"
+                  alt="${product.name}"
+                  onerror="this.src='./assets/images/fashion/product/1.jpg'">
             </a>
             ${discountLabel}
             ${!hasStock ? `<span class="product-sale-label" style="background:gray;">Out of Stock</span>` : ""}

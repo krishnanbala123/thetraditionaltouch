@@ -17,6 +17,14 @@ function effectiveDiscount(product) {
   return Math.max(product.discount || 0, activeEventDiscount);
 }
 
+// ─────────────────────────────────────────────
+// Cloudinary URL optimizer
+// ─────────────────────────────────────────────
+function optimizeImageUrl(url, width = 400) {
+  if (!url || !url.includes("res.cloudinary.com")) return url;
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   // Fetch deal first so activeEventDiscount is set before the grid renders
   fetchAndStartDeal().then(() => fetchHomeProducts());
@@ -111,7 +119,11 @@ function renderHomeGrid(products) {
         <div class="product-boxwrap" data-product-id="${product._id}" style="animation-delay:${i * 0.06}s;">
           <div class="product-imgwrap">
             <a href="product-details.html?id=${product._id}">
-              <img class="img-fluid" src="${product.images[0]}" alt="${product.name}"
+              <img class="img-fluid" 
+                src="${optimizeImageUrl(product.images[0], 400)}"
+                width="400" height="533"
+                loading="lazy" decoding="async"
+                alt="${product.name}"
                 onerror="this.src='./assets/images/dress/shop_1.jpeg'">
             </a>
             ${discountLabel}
