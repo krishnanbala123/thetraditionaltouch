@@ -323,7 +323,7 @@ document.getElementById("tracking-form").addEventListener("submit", async functi
                           || "Unknown Courier";
 
     const shortId = orderId.slice(-6).toUpperCase();
-    bannerTx.textContent = `Fetching live tracking for order #TTT-${shortId}…`;
+    bannerTx.textContent = `Fetching live tracking for order #ORD-${shortId}…`;
 
     await fetchTracking({
       trackingNumber,

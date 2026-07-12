@@ -160,7 +160,7 @@ async function loadOrders() {
         const date = new Date(o.createdAt).toLocaleDateString("en-IN", {
           day: "2-digit", month: "short", year: "numeric",
         });
-        const id = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
+        const id = "#ORD-" + o._id.toString().slice(-6).toUpperCase();
         return `
         <tr>
           <td><strong style="color:#333;">${id}</strong></td>
@@ -178,7 +178,7 @@ async function loadOrders() {
         const date = new Date(o.createdAt).toLocaleDateString("en-IN", {
           day: "2-digit", month: "short", year: "numeric",
         });
-        const id    = "#TTT-" + o._id.toString().slice(-6).toUpperCase();
+        const id    = "#ORD-" + o._id.toString().slice(-6).toUpperCase();
         const items = Array.isArray(o.items) ? o.items.length : 0;
         const pay   = o.paymentMethod || "—";
 

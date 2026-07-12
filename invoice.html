@@ -732,7 +732,7 @@
           </div>
           <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
             <strong>Order ID:</strong>
-            <span style="font-family:monospace; color:#555; font-size:13px; word-break:break-all;">${order._id || "—"}</span>
+            <span style="font-family:monospace; color:#555; font-size:13px; word-break:break-all;">${order._id ? `#ORD-${order._id.slice(-6).toUpperCase()}` : "—"}</span>
           </div>
           <div style="display:flex; justify-content:space-between; margin-bottom:0;">
             <strong>Payment:</strong>
@@ -834,7 +834,8 @@
 
         document.getElementById("download-btn").addEventListener("click", () => {
           const originalTitle = document.title;
-          document.title      = `Invoice-${order._id}`;
+          const shortRef = order._id ? String(order._id).slice(-6).toUpperCase() : "UNKNOWN";
+          document.title      = `Invoice-ORD-${shortRef}`;
           window.print();
           document.title      = originalTitle;
         });
