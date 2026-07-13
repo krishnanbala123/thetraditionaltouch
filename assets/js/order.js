@@ -2,6 +2,25 @@ const OrderManager = (() => {
   const API      = CONFIG.BASE_URL;
   const getToken = () => localStorage.getItem("token") || "";
 
+  function transformToAWSUrl(cloudinaryUrl) {
+    if (!cloudinaryUrl) return '';
+
+    // If it's already an AWS URL or not from Cloudinary, don't change anything
+    if (!cloudinaryUrl.includes('cloudinary.com')) {
+      return cloudinaryUrl;
+    }
+
+    // 1. Get the exact filename out of the very end of the URL string
+    const urlParts = cloudinaryUrl.split('/');
+    const filename = urlParts[urlParts.length - 1];
+
+    // 2. Your CloudFront Base URL string
+    const awsBaseUrl = "https://d2vyg4b901vdmf.cloudfront.net"; 
+
+    // 3. Force it to point to your S3 products folder
+    return `${awsBaseUrl}/products/${filename}`;
+  }
+
   // ── Price constants (mirrors backend) ──────────────────────────────────────
   const SIZE_EXTRA   = { "2XL": 50, "3XL": 50, "4XL": 100 };
   const ADDON_EXTRA  = { center_feeding: 50 };
@@ -275,7 +294,7 @@ const OrderManager = (() => {
         return `
           <div class="cart-item-row">
             ${img
-              ? `<img class="cart-item-img" src="${img}" alt="${name}"
+              ? `<img class="cart-item-img" src="${transformToAWSUrl(img)}" alt="${name}"
                       onerror="this.style.display='none'">`
               : `<div class="cart-item-img-placeholder">
                    <i class="fa fa-shirt"></i>

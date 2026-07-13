@@ -20,11 +20,24 @@ function effectiveDiscount(product) {
 // ─────────────────────────────────────────────
 // Cloudinary URL optimizer
 // ─────────────────────────────────────────────
-function optimizeImageUrl(url, width = 400) {
-  if (!url || !url.includes("res.cloudinary.com")) return url;
-  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`);
-}
+function transformToAWSUrl(cloudinaryUrl) {
+  if (!cloudinaryUrl) return '';
 
+  // If it's already an AWS URL or not from Cloudinary, don't change anything
+  if (!cloudinaryUrl.includes('cloudinary.com')) {
+    return cloudinaryUrl;
+  }
+
+  // 1. Get the exact filename out of the very end of the URL string
+  const urlParts = cloudinaryUrl.split('/');
+  const filename = urlParts[urlParts.length - 1];
+
+  // 2. Your CloudFront Base URL string
+  const awsBaseUrl = "https://d2vyg4b901vdmf.cloudfront.net"; 
+
+  // 3. Force it to point to your S3 products folder
+  return `${awsBaseUrl}/products/${filename}`;
+}
 document.addEventListener("DOMContentLoaded", function () {
   // Fetch deal first so activeEventDiscount is set before the grid renders
   fetchAndStartDeal().then(() => fetchHomeProducts());
@@ -120,7 +133,7 @@ function renderHomeGrid(products) {
           <div class="product-imgwrap">
             <a href="product-details.html?id=${product._id}">
               <img class="img-fluid" 
-                src="${optimizeImageUrl(product.images[0], 400)}"
+                src="${transformToAWSUrl(product.images[0])}"
                 width="400" height="533"
                 loading="lazy" decoding="async"
                 alt="${product.name}"

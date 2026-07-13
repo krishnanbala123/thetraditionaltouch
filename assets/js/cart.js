@@ -9,6 +9,24 @@ const CartManager = (() => {
     return localStorage.getItem("token") || "";
   }
 
+  function transformToAWSUrl(cloudinaryUrl) {
+    if (!cloudinaryUrl) return '';
+
+    // If it's already an AWS URL or not from Cloudinary, don't change anything
+    if (!cloudinaryUrl.includes('cloudinary.com')) {
+      return cloudinaryUrl;
+    }
+
+    // 1. Get the exact filename out of the very end of the URL string
+    const urlParts = cloudinaryUrl.split('/');
+    const filename = urlParts[urlParts.length - 1];
+
+    // 2. Your CloudFront Base URL string
+    const awsBaseUrl = "https://d2vyg4b901vdmf.cloudfront.net"; 
+
+    // 3. Force it to point to your S3 products folder
+    return `${awsBaseUrl}/products/${filename}`;
+  }
   // -------------------------------------------------------
   // Navbar Badge Update
   // -------------------------------------------------------
@@ -309,7 +327,7 @@ const CartManager = (() => {
             <td>
               <div class="product-imgwrap">
                 <a href="product-details.html?id=${pid}">
-                  <img class="img-fluid" src="${imgSrc}" alt="${name}"
+                  <img class="img-fluid" src="${transformToAWSUrl(imgSrc)}" alt="${name}"
                       style="width:70px; height:70px; object-fit:cover; border-radius:8px; cursor:pointer;"
                       onerror="this.src='./assets/images/fashion/product/1.jpg'">
                 </a>

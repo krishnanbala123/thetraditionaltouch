@@ -18,11 +18,24 @@ function effectiveDiscount(product) {
   return Math.max(product.discount || 0, activeEventDiscount);
 }
 
-function optimizeImageUrl(url, width = 400) {
-  if (!url || !url.includes("res.cloudinary.com")) return url;
-  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`);
-}
+function transformToAWSUrl(cloudinaryUrl) {
+  if (!cloudinaryUrl) return '';
 
+  // If it's already an AWS URL or not from Cloudinary, don't change anything
+  if (!cloudinaryUrl.includes('cloudinary.com')) {
+    return cloudinaryUrl;
+  }
+
+  // 1. Get the exact filename out of the very end of the URL string
+  const urlParts = cloudinaryUrl.split('/');
+  const filename = urlParts[urlParts.length - 1];
+
+  // 2. Your CloudFront Base URL string
+  const awsBaseUrl = "https://d2vyg4b901vdmf.cloudfront.net"; 
+
+  // 3. Force it to point to your S3 products folder
+  return `${awsBaseUrl}/products/${filename}`;
+}
 // ── Size extra ──────────────────────────────────────────────────────────────
 const SIZE_EXTRA_PRICE = {
   XS: 0,
@@ -237,7 +250,7 @@ function renderProductDetail(product) {
         <div class="swiper-slide">
           <div class="product-imgwrap">
             <img class="img-fluid" 
-                src="${optimizeImageUrl(imgUrl, 800)}" 
+                src="${transformToAWSUrl(imgUrl)}" 
                 width="800" height="1067"
                 ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
                 decoding="async"
@@ -248,7 +261,7 @@ function renderProductDetail(product) {
         <div class="swiper-slide">
           <div class="product-imgwrap">
             <img class="img-fluid" 
-                src="${optimizeImageUrl(imgUrl, 150)}" 
+                src="${transformToAWSUrl(imgUrl)}" 
                 width="150" height="200"
                 loading="lazy" decoding="async"
                 alt="${product.name}">
@@ -642,7 +655,7 @@ function renderRelatedSlider(products) {
         <div class="product-boxwrap" data-product-id="${product._id}">
           <div class="product-imgwrap">
             <img class="img-fluid" 
-              src="${optimizeImageUrl(product.images[0], 300)}" 
+              src="${transformToAWSUrl(product.images[0])}" 
               width="300" height="400"
               loading="lazy" decoding="async"
               alt="${product.name}"

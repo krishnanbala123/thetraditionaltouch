@@ -5,6 +5,25 @@ const token = localStorage.getItem("token");
 let currentUser = null;
 let savedAddresses = [];
 
+function transformToAWSUrl(cloudinaryUrl) {
+  if (!cloudinaryUrl) return '';
+
+  // If it's already an AWS URL or not from Cloudinary, don't change anything
+  if (!cloudinaryUrl.includes('cloudinary.com')) {
+    return cloudinaryUrl;
+  }
+
+  // 1. Get the exact filename out of the very end of the URL string
+  const urlParts = cloudinaryUrl.split('/');
+  const filename = urlParts[urlParts.length - 1];
+
+  // 2. Your CloudFront Base URL string
+  const awsBaseUrl = "https://d2vyg4b901vdmf.cloudfront.net"; 
+
+  // 3. Force it to point to your S3 products folder
+  return `${awsBaseUrl}/products/${filename}`;
+}
+
 // =============================================
 //  BOOT
 // =============================================
@@ -92,7 +111,7 @@ function initProfile() {
 
   const avatarEl = document.getElementById("avatar-init");
   if (u.image) {
-    avatarEl.innerHTML = `<img src="${u.image}" alt="${name}">`;
+    avatarEl.innerHTML = `<img src="${transformToAWSUrl(u.image)}" alt="${name}">`;
   } else {
     avatarEl.textContent = init;
   }
@@ -784,7 +803,7 @@ document.getElementById("profile-image-input").addEventListener("change", async 
 
     currentUser.image = uploadData.url;
     localStorage.setItem("user", JSON.stringify(currentUser));
-    avatarEl.innerHTML = `<img src="${uploadData.url}" alt="Profile">`;
+    avatarEl.innerHTML = `<img src="${transformToAWSUrl(uploadData.url)}" alt="Profile">`;
     showToast("Profile photo updated! ✓", "success");
 
   } catch (err) {
