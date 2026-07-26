@@ -27,6 +27,19 @@ const CartManager = (() => {
     // 3. Force it to point to your S3 products folder
     return `${awsBaseUrl}/products/${filename}`;
   }
+
+  // -------------------------------------------------------
+  // Session expiry handler — shared by all cart requests
+  // -------------------------------------------------------
+  function handleAuthExpiry(message = "Session expired. Please log in again.") {
+    localStorage.removeItem("token");
+    updateBadge(0);
+    showToast(message, "warn");
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 1500);
+  }
+
   // -------------------------------------------------------
   // Navbar Badge Update
   // -------------------------------------------------------
@@ -62,6 +75,14 @@ const CartManager = (() => {
           "Content-Type": "application/json",
         },
       });
+
+      if (res.status === 401) {
+        // Don't force-redirect just for a badge load — token is stale,
+        // just clear it quietly so the user isn't yanked mid-browse.
+        localStorage.removeItem("token");
+        updateBadge(0);
+        return;
+      }
 
       if (!res.ok) {
         updateBadge(0);
@@ -117,6 +138,11 @@ const CartManager = (() => {
         }),
       });
 
+      if (res.status === 401) {
+        handleAuthExpiry();
+        return;
+      }
+
       const data = await res.json();
       if (!res.ok) {
         showToast(data?.message || "Could not add item.", "error");
@@ -169,7 +195,10 @@ const CartManager = (() => {
   // -------------------------------------------------------
   async function updateCartItem(productId, quantity, size) {
     const token = getToken();
-    if (!token) return null;
+    if (!token) {
+      handleAuthExpiry("Please log in to update your cart.");
+      return null;
+    }
 
     try {
       const res = await fetch(getEndpoint(), {
@@ -180,6 +209,11 @@ const CartManager = (() => {
         },
         body: JSON.stringify({ productId, quantity, size }),
       });
+
+      if (res.status === 401) {
+        handleAuthExpiry();
+        return null;
+      }
 
       const data = await res.json();
       if (!res.ok) {
@@ -199,7 +233,10 @@ const CartManager = (() => {
   // -------------------------------------------------------
   async function removeCartItem(productId, size) {
     const token = getToken();
-    if (!token) return null;
+    if (!token) {
+      handleAuthExpiry("Please log in to update your cart.");
+      return null;
+    }
 
     try {
       const res = await fetch(getEndpoint(), {
@@ -210,6 +247,11 @@ const CartManager = (() => {
         },
         body: JSON.stringify({ productId, size }),
       });
+
+      if (res.status === 401) {
+        handleAuthExpiry();
+        return null;
+      }
 
       const data = await res.json();
       if (!res.ok) {
@@ -262,6 +304,20 @@ const CartManager = (() => {
           "Content-Type": "application/json",
         },
       });
+
+      if (res.status === 401) {
+        cartBody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; padding:40px;">
+              <p style="font-size:16px; color:#888;">
+                Your session has expired. Please <a href="login.html" style="color:#e74c3c;">login again</a> to view your cart.
+              </p>
+            </td>
+          </tr>`;
+        updateSummary([]);
+        handleAuthExpiry();
+        return;
+      }
 
       if (!res.ok) {
         cartBody.innerHTML = `
