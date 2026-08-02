@@ -330,7 +330,13 @@ const CartManager = (() => {
       }
 
       const data = await res.json();
-      const items = data?.items || data?.cart?.items || [];
+      const rawItems = data?.items || data?.cart?.items || [];
+
+      // Guard against orphaned items (product deleted after being added
+      // to cart). The backend now cleans these up on GET, but we still
+      // filter defensively here so a stale/unpopulated item can never
+      // render with a blank product id and break checkout downstream.
+      const items = rawItems.filter((item) => item.productId && item.productId._id);
 
       // Update navbar badge
       const totalQty = items.reduce(
@@ -369,7 +375,8 @@ const CartManager = (() => {
             : price;
           const unitPrice = item.unitPrice || basePrice;
           const image =
-            product?.images[0] || "./assets/images/fashion/product/1.jpg";
+            (product?.images && product.images[0]) ||
+            "./assets/images/fashion/product/1.jpg";
           const qty  = item.quantity || 1;
           const size = item.size || "";
           const total = unitPrice * qty;
